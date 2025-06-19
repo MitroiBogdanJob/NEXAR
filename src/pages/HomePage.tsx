@@ -318,22 +318,22 @@ const HomePage = () => {
                 </h3>
                 <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
                 
-                {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
+                {/* BADGE DEALER PREMIUM - MULT MAI ELEGANT */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                   <div className="text-sm text-gray-500">
                     Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
                   </div>
                   
-                  {/* BADGE DEALER MULT MAI VIZIBIL - MĂRIT PENTRU MOBILE */}
+                  {/* BADGE DEALER PREMIUM - DESIGN ELEGANT */}
                   {listing.sellerType === 'dealer' ? (
-                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full shadow-lg border-2 border-blue-500">
-                      <Building className="h-5 w-5" />
-                      <span className="font-bold text-base">DEALER AUTORIZAT</span>
+                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full shadow-lg border border-emerald-400">
+                      <Building className="h-4 w-4" />
+                      <span className="font-bold text-sm tracking-wide">DEALER PREMIUM</span>
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1.5 rounded-full shadow-md">
-                      <span className="font-semibold text-sm">PRIVAT</span>
+                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-3 py-1.5 rounded-full shadow-md">
+                      <span className="font-semibold text-xs">PRIVAT</span>
                     </div>
                   )}
                 </div>
