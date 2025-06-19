@@ -148,12 +148,12 @@ const Footer = () => {
               <p className="text-gray-300 text-sm">
                 © 2024 Nexar.ro. Toate drepturile rezervate.
               </p>
-              {/* NEXT SOFT Credit - Logo mai mare cu efecte premium luxoase */}
+              {/* NEXT SOFT Credit - Logo MULT MAI MARE cu text mai mic */}
               <a 
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-3 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
+                className="inline-flex items-center justify-center md:justify-start space-x-4 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
                 style={{
                   filter: 'drop-shadow(0 0 0px transparent)',
                   transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
@@ -185,11 +185,11 @@ const Footer = () => {
                   }, 300);
                 }}
               >
-                <span className="text-gray-400 text-base group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold">
+                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold">
                   Dezvoltat de
                 </span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-gray-400 text-base font-bold tracking-wide group-hover:text-nexar-accent transition-all duration-500 group-hover:tracking-wider relative">
+                <div className="flex items-center space-x-3">
+                  <span className="text-gray-400 text-sm font-bold tracking-wide group-hover:text-nexar-accent transition-all duration-500 group-hover:tracking-wider relative">
                     NEXT SOFT
                     {/* Efect de underlining premium */}
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-nexar-accent group-hover:w-full transition-all duration-500 ease-out"></span>
@@ -197,7 +197,7 @@ const Footer = () => {
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-7 w-7 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
+                    className="h-9 w-9 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
                     style={{
                       filter: 'brightness(0.8) saturate(0.8)',
                       transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
