@@ -268,14 +268,14 @@ const HomePage = () => {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100"
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-600" />
                 </button>
                 
                 <button
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100"
                 >
                   <ChevronRight className="h-4 w-4 text-gray-600" />
                 </button>
@@ -324,16 +324,16 @@ const HomePage = () => {
                     Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
                   </div>
                   
-                  {/* BADGE DEALER MULT MAI VIZIBIL */}
+                  {/* BADGE DEALER MULT MAI VIZIBIL - MĂRIT PENTRU MOBILE */}
                   {listing.sellerType === 'dealer' ? (
                     <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full shadow-lg border-2 border-blue-500">
-                      <Building className="h-4 w-4" />
-                      <span className="font-bold text-sm">DEALER AUTORIZAT</span>
+                      <Building className="h-5 w-5" />
+                      <span className="font-bold text-base">DEALER AUTORIZAT</span>
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1.5 rounded-full shadow-md">
-                      <span className="font-semibold text-xs">PRIVAT</span>
+                      <span className="font-semibold text-sm">PRIVAT</span>
                     </div>
                   )}
                 </div>

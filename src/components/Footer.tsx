@@ -5,12 +5,37 @@ import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Clock } from 'lucide
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img src="/image.png" alt="Logo" className="h-8 w-auto" />
+              <img 
+                src="/nexar-logo.jpg" 
+                alt="Nexar Logo" 
+                className="h-8 sm:h-10 w-auto"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src.includes('nexar-logo.jpg')) {
+                    target.src = '/Nexar - logo_black & red.png';
+                  } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                    target.src = '/nexar-logo.png';
+                  } else if (target.src.includes('nexar-logo.png')) {
+                    target.src = '/image.png';
+                  } else {
+                    // Final fallback - hide image and show text
+                    target.style.display = 'none';
+                    const textLogo = target.nextElementSibling as HTMLElement;
+                    if (textLogo) {
+                      textLogo.style.display = 'block';
+                    }
+                  }
+                }}
+              />
+              {/* Fallback text logo */}
+              <div className="hidden text-2xl font-bold text-nexar-accent">
+                NEXAR
+              </div>
               <div className="flex flex-col">
                 <span className="text-xs text-gray-400">Premium Motorcycles</span>
               </div>
@@ -113,12 +138,12 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-8">
+        <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-300 text-sm">
               © 2024 Nexar.ro. Toate drepturile rezervate.
             </p>
-            <div className="flex space-x-6 text-sm">
+            <div className="flex space-x-4 sm:space-x-6 text-sm">
               <Link to="/termeni" className="text-gray-300 hover:text-white transition-colors">
                 Termeni și Condiții
               </Link>

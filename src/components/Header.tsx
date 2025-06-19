@@ -27,22 +27,25 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-20">
-          {/* Logo - MULT MAI MARE */}
-          <Link to="/" className="flex items-center space-x-3 group min-w-0">
-            {/* Try multiple logo sources */}
+        <div className="flex justify-between items-center h-20 sm:h-24 lg:h-28">
+          {/* Logo - MULT MAI MARE PENTRU MOBILE ȘI DESKTOP */}
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0">
+            {/* Try multiple logo sources with much larger sizes */}
             <img 
-              src="/Nexar - logo_black & red.png" 
+              src="/nexar-logo.jpg" 
               alt="Nexar" 
-              className="h-12 sm:h-16 md:h-20 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
-                // Try nexar-logo.jpg if PNG fails
+                // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
-                if (target.src.includes('Nexar - logo_black & red.png')) {
-                  target.src = '/nexar-logo.jpg';
-                } else if (target.src.includes('nexar-logo.jpg')) {
-                  // If both fail, try the PNG version
+                if (target.src.includes('nexar-logo.jpg')) {
+                  target.src = '/Nexar - logo_black & red.png';
+                } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                  // Try nexar-logo.png if the other fails
                   target.src = '/nexar-logo.png';
+                } else if (target.src.includes('nexar-logo.png')) {
+                  // Try image.png as fallback
+                  target.src = '/image.png';
                 } else {
                   // Final fallback - hide image and show text
                   target.style.display = 'none';
@@ -57,7 +60,7 @@ const Header = () => {
               <span className="text-xs text-gray-500 -mb-1">Premium Motorcycles</span>
             </div>
             {/* Fallback text logo - MULT MAI MARE */}
-            <div className="hidden text-3xl sm:text-4xl md:text-5xl font-bold text-nexar-accent">
+            <div className="hidden text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-nexar-accent">
               NEXAR
             </div>
           </Link>
