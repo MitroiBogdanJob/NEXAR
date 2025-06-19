@@ -148,28 +148,30 @@ const Footer = () => {
               <p className="text-gray-300 text-sm">
                 © 2024 Nexar.ro. Toate drepturile rezervate.
               </p>
-              {/* NEXT SOFT Credit - Integrat elegant sub copyright */}
-              <div className="flex items-center justify-center md:justify-start space-x-2 mt-1">
-                <span className="text-gray-400 text-xs">Dezvoltat de</span>
-                <a 
-                  href="https://nextsoft-it.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-1.5 hover:opacity-80 transition-opacity group"
-                >
+              {/* NEXT SOFT Credit - Text mai mare și hover roșu */}
+              <a 
+                href="https://nextsoft-it.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-2 group transition-all duration-200 hover:scale-105"
+              >
+                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-colors">
+                  Dezvoltat de
+                </span>
+                <div className="flex items-center space-x-1.5">
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-4 w-4 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                    className="h-5 w-5 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                  <span className="text-gray-400 text-xs font-medium tracking-wide group-hover:text-gray-300 transition-colors">
+                  <span className="text-gray-400 text-sm font-semibold tracking-wide group-hover:text-nexar-accent transition-colors">
                     NEXT SOFT
                   </span>
-                </a>
-              </div>
+                </div>
+              </a>
             </div>
             
             <div className="flex space-x-4 sm:space-x-6 text-sm">
