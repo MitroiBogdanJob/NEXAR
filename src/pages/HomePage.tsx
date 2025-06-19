@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, Zap, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const HomePage = () => {
-  const [showFilters, setShowFilters] = useState(true); // TRUE pentru desktop - filtrele sunt afișate implicit
+  // On desktop, show filters by default. On mobile, hide them by default
+  const [showFilters, setShowFilters] = useState(window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     priceMin: '',
@@ -15,6 +16,16 @@ const HomePage = () => {
     location: ''
   });
   const navigate = useNavigate();
+
+  // Update showFilters state when window is resized
+  React.useEffect(() => {
+    const handleResize = () => {
+      setShowFilters(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const allListings = [
     {
@@ -458,7 +469,7 @@ const HomePage = () => {
       {/* Featured Listings with Filters - TEXTUL ELIMINAT COMPLET */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile-friendly layout */}
+          {/* Mobile-friendly layout - FILTERS HIDDEN BY DEFAULT */}
           <div className="block lg:hidden mb-6">
             <button
               onClick={() => setShowFilters(!showFilters)}

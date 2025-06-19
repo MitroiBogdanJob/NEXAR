@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
 const ListingsPage = () => {
-  const [showFilters, setShowFilters] = useState(true); // Default true on desktop
+  // On desktop, show filters by default. On mobile, hide them by default
+  const [showFilters, setShowFilters] = useState(window.innerWidth >= 1024);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -24,6 +25,16 @@ const ListingsPage = () => {
   });
   const itemsPerPage = 10;
   const navigate = useNavigate();
+
+  // Update showFilters state when window is resized
+  useEffect(() => {
+    const handleResize = () => {
+      setShowFilters(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Scroll to top when component mounts
   useEffect(() => {
