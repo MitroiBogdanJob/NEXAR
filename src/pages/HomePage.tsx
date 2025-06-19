@@ -466,10 +466,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Listings with Filters - TEXTUL ELIMINAT COMPLET */}
-      <section className="py-16 bg-gray-50">
+      {/* Featured Listings with Filters */}
+      <section className="py-8 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile-friendly layout - FILTERS HIDDEN BY DEFAULT */}
+          {/* Mobile-friendly layout */}
           <div className="block lg:hidden mb-6">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -632,9 +632,9 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* Desktop layout - FILTRELE SUNT AFIȘATE IMPLICIT */}
+          {/* Desktop layout */}
           <div className="hidden lg:flex gap-6">
-            {/* Filters Sidebar - AFIȘAT IMPLICIT PE DESKTOP */}
+            {/* Filters Sidebar */}
             <div className={`${showFilters ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
@@ -832,6 +832,33 @@ const HomePage = () => {
                   <ListingRow key={listing.id} listing={listing} />
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Mobile Listings - Show directly after filters button */}
+          <div className="block lg:hidden">
+            {/* No Results */}
+            {filteredListings.length === 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                >
+                  Șterge Toate Filtrele
+                </button>
+              </div>
+            )}
+
+            {/* Mobile Listings */}
+            <div className="space-y-4">
+              {filteredListings.map((listing) => (
+                <ListingRow key={listing.id} listing={listing} />
+              ))}
             </div>
           </div>
 

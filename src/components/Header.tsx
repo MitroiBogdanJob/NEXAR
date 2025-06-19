@@ -27,14 +27,14 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-28 sm:h-32 lg:h-36">
+        <div className="flex justify-between items-center h-20 sm:h-24 lg:h-28">
           {/* Logo - MULT MAI MARE PENTRU MOBILE ȘI DESKTOP */}
-          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0">
+          <Link to="/" className="flex flex-col sm:flex-row items-center sm:space-x-3 group min-w-0">
             {/* Try multiple logo sources with much larger sizes */}
             <img 
               src="/nexar-logo.jpg" 
               alt="Nexar" 
-              className="h-24 sm:h-28 md:h-32 lg:h-36 xl:h-40 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
@@ -56,11 +56,12 @@ const Header = () => {
                 }
               }}
             />
-            <div className="hidden lg:flex flex-col">
-              <span className="text-xs text-gray-500 -mb-1">Premium Motorcycles</span>
+            {/* Premium Motorcycles text - VISIBLE ON MOBILE TOO */}
+            <div className="flex flex-col items-center sm:items-start">
+              <span className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0 text-center sm:text-left">Premium Motorcycles</span>
             </div>
             {/* Fallback text logo - MULT MAI MARE */}
-            <div className="hidden text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-nexar-accent">
+            <div className="hidden text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-nexar-accent">
               NEXAR
             </div>
           </Link>
