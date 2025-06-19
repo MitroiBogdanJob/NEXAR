@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const HomePage = () => {
   const [showFilters, setShowFilters] = useState(false); // Default false on mobile
@@ -25,7 +25,11 @@ const HomePage = () => {
       year: 2023,
       mileage: 2500,
       location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.9,
       category: "Sport",
       brand: "Yamaha",
@@ -40,7 +44,11 @@ const HomePage = () => {
       year: 2022,
       mileage: 8200,
       location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.8,
       category: "Sport",
       brand: "BMW",
@@ -55,7 +63,11 @@ const HomePage = () => {
       year: 2023,
       mileage: 1200,
       location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 5.0,
       category: "Sport",
       brand: "Ducati",
@@ -70,7 +82,11 @@ const HomePage = () => {
       year: 2023,
       mileage: 3200,
       location: "Iași",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.9,
       category: "Adventure",
       brand: "BMW",
@@ -85,7 +101,11 @@ const HomePage = () => {
       year: 2022,
       mileage: 5600,
       location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.7,
       category: "Touring",
       brand: "Harley-Davidson",
@@ -100,7 +120,11 @@ const HomePage = () => {
       year: 2022,
       mileage: 7300,
       location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.6,
       category: "Naked",
       brand: "KTM",
@@ -115,7 +139,11 @@ const HomePage = () => {
       year: 2021,
       mileage: 4500,
       location: "Constanța",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.5,
       category: "Sport",
       brand: "Honda",
@@ -130,7 +158,11 @@ const HomePage = () => {
       year: 2021,
       mileage: 12000,
       location: "Brașov",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.5,
       category: "Sport",
       brand: "Suzuki",
@@ -199,76 +231,134 @@ const HomePage = () => {
     { name: "Adventure", count: "203 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
   ];
 
-  const ListingRow = ({ listing }: { listing: any }) => (
-    <Link
-      to={`/anunt/${listing.id}`}
-      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
-    >
-      <div className="flex flex-col sm:flex-row">
-        <div className="relative w-full sm:w-64 flex-shrink-0">
-          <img
-            src={listing.image}
-            alt={listing.title}
-            className="w-full h-48 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute top-3 left-3">
-            <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
-              {listing.category}
-            </span>
+  const ListingRow = ({ listing }: { listing: any }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const nextImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => 
+        prev === listing.images.length - 1 ? 0 : prev + 1
+      );
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images.length - 1 : prev - 1
+      );
+    };
+
+    return (
+      <Link
+        to={`/anunt/${listing.id}`}
+        className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
+      >
+        <div className="flex flex-col sm:flex-row">
+          <div className="relative w-full sm:w-64 flex-shrink-0">
+            <img
+              src={listing.images[currentImageIndex]}
+              alt={listing.title}
+              className="w-full h-48 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            
+            {/* Navigation Arrows - Only show if multiple images */}
+            {listing.images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft className="h-4 w-4 text-gray-600" />
+                </button>
+                
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight className="h-4 w-4 text-gray-600" />
+                </button>
+                
+                {/* Image indicators */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                  {listing.images.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            
+            <div className="absolute top-3 left-3">
+              <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
+                {listing.category}
+              </span>
+            </div>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
+            >
+              <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
+            </button>
           </div>
-          <button className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
-            <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
-          </button>
-        </div>
-        
-        <div className="flex-1 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
-            <div className="mb-3 sm:mb-0">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
-                {listing.title}
-              </h3>
-              <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
-              <div className="text-sm text-gray-500">
-                Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
-                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                  listing.sellerType === 'dealer' 
-                    ? 'bg-blue-100 text-blue-800' 
-                    : 'bg-green-100 text-green-800'
-                }`}>
-                  {listing.sellerType === 'dealer' ? 'Dealer' : 'Privat'}
-                </span>
+          
+          <div className="flex-1 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+              <div className="mb-3 sm:mb-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
+                  {listing.title}
+                </h3>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
+                <div className="text-sm text-gray-500">
+                  Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                    listing.sellerType === 'dealer' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {listing.sellerType === 'dealer' ? 'Dealer' : 'Privat'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
+                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                <span className="text-sm font-semibold">{listing.rating}</span>
               </div>
             </div>
             
-            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
-              <Star className="h-4 w-4 text-yellow-400 fill-current" />
-              <span className="text-sm font-semibold">{listing.rating}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mb-4">
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm font-medium">{listing.year}</span>
+              </div>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Gauge className="h-4 w-4" />
+                <span className="text-sm font-medium">{listing.mileage.toLocaleString()} km</span>
+              </div>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm font-medium">{listing.location}</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mb-4">
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span className="text-sm font-medium">{listing.year}</span>
+            
+            <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-start">
+              <span>Vezi Detalii</span>
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Gauge className="h-4 w-4" />
-              <span className="text-sm font-medium">{listing.mileage.toLocaleString()} km</span>
-            </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm font-medium">{listing.location}</span>
-            </div>
-          </div>
-          
-          <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-start">
-            <span>Vezi Detalii</span>
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
-      </div>
-    </Link>
-  );
+      </Link>
+    );
+  };
 
   return (
     <div className="animate-fade-in">

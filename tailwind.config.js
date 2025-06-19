@@ -7,8 +7,8 @@ export default {
         nexar: {
           primary: '#1f2937',    // Gray-800
           secondary: '#374151',  // Gray-700
-          accent: '#f59e0b',     // Amber-500 (golden yellow)
-          gold: '#fbbf24',       // Amber-400 (lighter golden)
+          accent: '#d73a30',     // Roșu nou #d73a30
+          gold: '#e53e3e',       // Roșu mai deschis pentru hover
           gray: '#6b7280',       // Gray-500
           light: '#f9fafb',      // Gray-50
           dark: '#111827',       // Gray-900
