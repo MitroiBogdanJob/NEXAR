@@ -30,14 +30,27 @@ const Header = () => {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo - Optimized for mobile */}
           <Link to="/" className="flex items-center space-x-2 group min-w-0">
+            {/* Try multiple logo sources */}
             <img 
-              src="/nexar-logo.jpg" 
+              src="/Nexar - logo_black & red.png" 
               alt="Nexar" 
               className="h-8 sm:h-10 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
-                // Fallback to text if image fails to load
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling!.style.display = 'block';
+                // Try nexar-logo.jpg if PNG fails
+                const target = e.currentTarget as HTMLImageElement;
+                if (target.src.includes('Nexar - logo_black & red.png')) {
+                  target.src = '/nexar-logo.jpg';
+                } else if (target.src.includes('nexar-logo.jpg')) {
+                  // If both fail, try the PNG version
+                  target.src = '/nexar-logo.png';
+                } else {
+                  // Final fallback - hide image and show text
+                  target.style.display = 'none';
+                  const textLogo = target.nextElementSibling?.nextElementSibling as HTMLElement;
+                  if (textLogo) {
+                    textLogo.style.display = 'block';
+                  }
+                }
               }}
             />
             <div className="hidden sm:flex flex-col">
