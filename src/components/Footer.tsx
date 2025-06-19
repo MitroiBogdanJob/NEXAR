@@ -41,9 +41,6 @@ const Footer = () => {
               <div className="hidden text-3xl font-bold text-nexar-accent">
                 NEXAR
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-400">Premium Motorcycles</span>
-              </div>
             </div>
             <p className="text-gray-300 leading-relaxed text-sm">
               Cel mai premium marketplace pentru motociclete din România. 
@@ -160,6 +157,21 @@ const Footer = () => {
               <Link to="/cookies" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
                 Cookies
               </Link>
+            </div>
+          </div>
+          
+          {/* NEXT SOFT Credit - Minimalist și frumos */}
+          <div className="mt-6 pt-6 border-t border-gray-800">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3">
+              <span className="text-gray-400 text-xs">Dezvoltat de</span>
+              <div className="flex items-center space-x-2">
+                <img 
+                  src="/unnamed2.png" 
+                  alt="NEXT SOFT" 
+                  className="h-6 w-6 object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+                <span className="text-gray-300 font-medium text-sm tracking-wide">NEXT SOFT</span>
+              </div>
             </div>
           </div>
         </div>

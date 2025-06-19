@@ -28,41 +28,33 @@ const Header = () => {
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-28 sm:h-32 lg:h-36">
-          {/* Logo - OPTIMIZAT PENTRU MOBIL */}
+          {/* Logo - FĂRĂ TEXTUL PREMIUM MOTORCYCLES */}
           <Link to="/" className="flex items-center group min-w-0">
-            {/* Logo container cu text sub logo pe mobil */}
-            <div className="flex flex-col items-center">
-              <img 
-                src="/nexar-logo.jpg" 
-                alt="Nexar" 
-                className="h-24 sm:h-28 md:h-32 lg:h-36 xl:h-40 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
-                onError={(e) => {
-                  // Try PNG if JPG fails
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (target.src.includes('nexar-logo.jpg')) {
-                    target.src = '/Nexar - logo_black & red.png';
-                  } else if (target.src.includes('Nexar - logo_black & red.png')) {
-                    // Try nexar-logo.png if the other fails
-                    target.src = '/nexar-logo.png';
-                  } else if (target.src.includes('nexar-logo.png')) {
-                    // Try image.png as fallback
-                    target.src = '/image.png';
-                  } else {
-                    // Final fallback - hide image and show text
-                    target.style.display = 'none';
-                    const textLogo = target.nextElementSibling?.nextElementSibling as HTMLElement;
-                    if (textLogo) {
-                      textLogo.style.display = 'block';
-                    }
+            <img 
+              src="/nexar-logo.jpg" 
+              alt="Nexar" 
+              className="h-24 sm:h-28 md:h-32 lg:h-36 xl:h-40 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              onError={(e) => {
+                // Try PNG if JPG fails
+                const target = e.currentTarget as HTMLImageElement;
+                if (target.src.includes('nexar-logo.jpg')) {
+                  target.src = '/Nexar - logo_black & red.png';
+                } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                  // Try nexar-logo.png if the other fails
+                  target.src = '/nexar-logo.png';
+                } else if (target.src.includes('nexar-logo.png')) {
+                  // Try image.png as fallback
+                  target.src = '/image.png';
+                } else {
+                  // Final fallback - hide image and show text
+                  target.style.display = 'none';
+                  const textLogo = target.nextElementSibling as HTMLElement;
+                  if (textLogo) {
+                    textLogo.style.display = 'block';
                   }
-                }}
-              />
-              
-              {/* Premium Motorcycles text - POZIȚIONAT DIRECT SUB LOGO PE MOBIL */}
-              <span className="text-xs sm:text-sm text-gray-500 text-center -mt-2 sm:-mt-1 block">
-                Premium Motorcycles
-              </span>
-            </div>
+                }
+              }}
+            />
             
             {/* Fallback text logo */}
             <div className="hidden text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-nexar-accent">

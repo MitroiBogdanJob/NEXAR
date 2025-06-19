@@ -235,6 +235,12 @@ const HomePage = () => {
     setCurrentPage(1);
   };
 
+  // Funcție pentru a merge la o pagină și a face scroll la top
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const categories = [
     { name: "Sport", count: "245 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
     { name: "Touring", count: "189 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
@@ -877,7 +883,7 @@ const HomePage = () => {
             <div className="mt-8 flex justify-center">
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={() => goToPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -909,7 +915,7 @@ const HomePage = () => {
                   return (
                     <button
                       key={page}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => goToPage(page)}
                       className={`px-3 py-2 rounded-lg transition-colors ${
                         currentPage === page
                           ? 'bg-nexar-accent text-white'
@@ -922,7 +928,7 @@ const HomePage = () => {
                 })}
                 
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
