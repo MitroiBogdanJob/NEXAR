@@ -6,6 +6,7 @@ const HomePage = () => {
   // On desktop, show filters by default. On mobile, hide them by default
   const [showFilters, setShowFilters] = useState(window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     priceMin: '',
     priceMax: '',
@@ -16,6 +17,7 @@ const HomePage = () => {
     location: ''
   });
   const navigate = useNavigate();
+  const itemsPerPage = 6; // Show 6 listings per page
 
   // Update showFilters state when window is resized
   React.useEffect(() => {
@@ -208,8 +210,15 @@ const HomePage = () => {
     });
   }, [searchQuery, filters, allListings]);
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentListings = filteredListings.slice(startIndex, endIndex);
+
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to first page when filtering
   };
 
   const clearFilters = () => {
@@ -223,6 +232,7 @@ const HomePage = () => {
       location: ''
     });
     setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const categories = [
@@ -828,7 +838,7 @@ const HomePage = () => {
 
               {/* Listings */}
               <div className="space-y-4">
-                {filteredListings.map((listing) => (
+                {currentListings.map((listing) => (
                   <ListingRow key={listing.id} listing={listing} />
                 ))}
               </div>
@@ -856,21 +866,72 @@ const HomePage = () => {
 
             {/* Mobile Listings */}
             <div className="space-y-4">
-              {filteredListings.map((listing) => (
+              {currentListings.map((listing) => (
                 <ListingRow key={listing.id} listing={listing} />
               ))}
             </div>
           </div>
 
-          <div className="text-center mt-10">
-            <Link
-              to="/anunturi"
-              className="inline-flex items-center space-x-2 bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
-            >
-              <span>Vezi Toate Anunțurile</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          {/* Pagination - Show on all devices */}
+          {filteredListings.length > 0 && totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </button>
+                
+                {/* Page numbers */}
+                {[...Array(totalPages)].map((_, index) => {
+                  const page = index + 1;
+                  // Show only a few pages around current page on mobile
+                  const showPage = totalPages <= 5 || 
+                    page === 1 || 
+                    page === totalPages || 
+                    (page >= currentPage - 1 && page <= currentPage + 1);
+                  
+                  if (!showPage) {
+                    // Show ellipsis
+                    if (page === currentPage - 2 || page === currentPage + 2) {
+                      return (
+                        <span key={page} className="px-2 py-2 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  }
+                  
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg transition-colors ${
+                        currentPage === page
+                          ? 'bg-nexar-accent text-white'
+                          : 'border border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+                
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="hidden sm:inline">Următorul</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
