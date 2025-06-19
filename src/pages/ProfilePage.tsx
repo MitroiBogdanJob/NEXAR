@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink } from 'lucide-react';
+import { User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X } from 'lucide-react';
 
 // Tipuri de utilizatori
 type UserType = 'privat' | 'dealer';
@@ -266,6 +266,8 @@ const ProfilePage = () => {
   const [userListingsData, setUserListingsData] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
 
   useEffect(() => {
     // Simulăm încărcarea datelor
@@ -298,6 +300,42 @@ const ProfilePage = () => {
       setIsLoading(false);
     }, 500);
   }, [id, navigate]);
+
+  const handleEditProfile = () => {
+    if (userProfile) {
+      setEditForm({
+        name: userProfile.name,
+        email: userProfile.email,
+        phone: userProfile.phone,
+        location: userProfile.location,
+        description: userProfile.description,
+        website: userProfile.website,
+        socialLinks: userProfile.socialLinks
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    if (userProfile) {
+      // Simulăm salvarea în baza de date
+      const updatedProfile = { ...userProfile, ...editForm };
+      setUserProfile(updatedProfile);
+      
+      // Actualizăm și în "baza de date" simulată
+      usersDatabase[userProfile.id] = updatedProfile;
+      
+      setIsEditing(false);
+      
+      // Simulăm un mesaj de succes
+      alert('Profilul a fost actualizat cu succes!');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({});
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -365,8 +403,26 @@ const ProfilePage = () => {
                       <Shield className="h-4 w-4" />
                     </div>
                   )}
+                  {isCurrentUser && (
+                    <button className="absolute bottom-0 left-0 bg-nexar-accent text-white p-1 rounded-full hover:bg-nexar-gold transition-colors">
+                      <Camera className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-                <h2 className="text-xl font-bold text-nexar-primary">{userProfile.name}</h2>
+                
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editForm.name || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full text-center text-xl font-bold border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                  </div>
+                ) : (
+                  <h2 className="text-xl font-bold text-nexar-primary">{userProfile.name}</h2>
+                )}
+                
                 <div className="flex items-center justify-center space-x-1 mt-1">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
                   <span className="font-semibold">{userProfile.rating}</span>
@@ -380,31 +436,68 @@ const ProfilePage = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex items-start space-x-3">
                   <MapPin className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{userProfile.location}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.location || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                  ) : (
+                    <span className="text-gray-700">{userProfile.location}</span>
+                  )}
                 </div>
                 <div className="flex items-start space-x-3">
                   <Phone className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{userProfile.phone}</span>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      value={editForm.phone || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                  ) : (
+                    <span className="text-gray-700">{userProfile.phone}</span>
+                  )}
                 </div>
                 <div className="flex items-start space-x-3">
                   <Mail className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{userProfile.email}</span>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      value={editForm.email || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                  ) : (
+                    <span className="text-gray-700">{userProfile.email}</span>
+                  )}
                 </div>
                 <div className="flex items-start space-x-3">
                   <Calendar className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700">Membru din {userProfile.memberSince}</span>
                 </div>
-                {userProfile.website && (
+                {(userProfile.website || isEditing) && (
                   <div className="flex items-start space-x-3">
                     <ExternalLink className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                    <a 
-                      href={userProfile.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-nexar-accent hover:text-nexar-gold transition-colors"
-                    >
-                      {userProfile.website.replace(/^https?:\/\//, '')}
-                    </a>
+                    {isEditing ? (
+                      <input
+                        type="url"
+                        value={editForm.website || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, website: e.target.value }))}
+                        placeholder="https://website.com"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                    ) : (
+                      <a 
+                        href={userProfile.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-nexar-accent hover:text-nexar-gold transition-colors"
+                      >
+                        {userProfile.website?.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
                   </div>
                 )}
               </div>
@@ -433,55 +526,114 @@ const ProfilePage = () => {
               </div>
 
               {/* Social Links */}
-              {userProfile.socialLinks && Object.values(userProfile.socialLinks).some(link => link) && (
+              {(userProfile.socialLinks && Object.values(userProfile.socialLinks).some(link => link)) || isEditing ? (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-900 mb-3 text-center">Social Media</h3>
-                  <div className="flex justify-center space-x-4">
-                    {userProfile.socialLinks.facebook && (
-                      <a 
-                        href={userProfile.socialLinks.facebook} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                      </a>
-                    )}
-                    {userProfile.socialLinks.instagram && (
-                      <a 
-                        href={userProfile.socialLinks.instagram} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-pink-600 hover:text-pink-800 transition-colors"
-                      >
-                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                        </svg>
-                      </a>
-                    )}
-                    {userProfile.socialLinks.youtube && (
-                      <a 
-                        href={userProfile.socialLinks.youtube} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
-                      </a>
-                    )}
-                  </div>
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <input
+                        type="url"
+                        value={editForm.socialLinks?.facebook || ''}
+                        onChange={(e) => setEditForm(prev => ({ 
+                          ...prev, 
+                          socialLinks: { ...prev.socialLinks, facebook: e.target.value }
+                        }))}
+                        placeholder="Facebook URL"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                      <input
+                        type="url"
+                        value={editForm.socialLinks?.instagram || ''}
+                        onChange={(e) => setEditForm(prev => ({ 
+                          ...prev, 
+                          socialLinks: { ...prev.socialLinks, instagram: e.target.value }
+                        }))}
+                        placeholder="Instagram URL"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                      <input
+                        type="url"
+                        value={editForm.socialLinks?.youtube || ''}
+                        onChange={(e) => setEditForm(prev => ({ 
+                          ...prev, 
+                          socialLinks: { ...prev.socialLinks, youtube: e.target.value }
+                        }))}
+                        placeholder="YouTube URL"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex justify-center space-x-4">
+                      {userProfile.socialLinks?.facebook && (
+                        <a 
+                          href={userProfile.socialLinks.facebook} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                          </svg>
+                        </a>
+                      )}
+                      {userProfile.socialLinks?.instagram && (
+                        <a 
+                          href={userProfile.socialLinks.instagram} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-pink-600 hover:text-pink-800 transition-colors"
+                        >
+                          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                          </svg>
+                        </a>
+                      )}
+                      {userProfile.socialLinks?.youtube && (
+                        <a 
+                          href={userProfile.socialLinks.youtube} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
+              ) : null}
 
               {isCurrentUser && (
-                <button className="w-full bg-nexar-primary text-white py-3 rounded-xl font-semibold hover:bg-nexar-secondary transition-colors flex items-center justify-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Editează Profilul</span>
-                </button>
+                <div className="space-y-3">
+                  {isEditing ? (
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        <span>Salvează</span>
+                      </button>
+                      <button 
+                        onClick={handleCancelEdit}
+                        className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <X className="h-4 w-4" />
+                        <span>Anulează</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleEditProfile}
+                      className="w-full bg-nexar-primary text-white py-3 rounded-xl font-semibold hover:bg-nexar-secondary transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Editează Profilul</span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -553,12 +705,20 @@ const ProfilePage = () => {
             )}
 
             {/* Descriere profil */}
-            {userProfile.description && (
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                <h2 className="text-xl font-bold text-nexar-primary mb-4">Despre {userProfile.type === 'dealer' ? 'Noi' : 'Mine'}</h2>
-                <p className="text-gray-700 leading-relaxed">{userProfile.description}</p>
-              </div>
-            )}
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+              <h2 className="text-xl font-bold text-nexar-primary mb-4">Despre {userProfile.type === 'dealer' ? 'Noi' : 'Mine'}</h2>
+              {isEditing ? (
+                <textarea
+                  value={editForm.description || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  placeholder="Descrie-te pe scurt..."
+                />
+              ) : (
+                <p className="text-gray-700 leading-relaxed">{userProfile.description || 'Nicio descriere adăugată încă.'}</p>
+              )}
+            </div>
 
             {/* Tabs */}
             <div className="bg-white rounded-2xl shadow-lg mb-8">
@@ -629,7 +789,7 @@ const ProfilePage = () => {
 
                     {userListingsData.length === 0 ? (
                       <div className="text-center py-12">
-                        <Car className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600">
                           {isCurrentUser 
                             ? 'Nu ai anunțuri active. Adaugă primul tău anunț!' 

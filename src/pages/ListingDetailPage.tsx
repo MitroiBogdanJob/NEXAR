@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Star, Heart, Share2, MapPin, Calendar, Gauge, Fuel, 
-  Settings, Shield, Phone, MessageCircle, 
+  Settings, Shield, Phone, Mail, MessageCircle, 
   ChevronLeft, ChevronRight, Check,
-  Car, Cog, Palette, Award, User, ExternalLink, Building
+  Car, Zap, Cog, Palette, Award, User, ExternalLink, Building
 } from 'lucide-react';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -21,17 +21,17 @@ const ListingDetailPage = () => {
 
   // Handle touch events for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
+    touchStartX.current = e.targetTouches[0].clientX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
+    touchEndX.current = e.targetTouches[0].clientX;
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX) return;
+    if (!touchStartX.current || !touchEndX.current) return;
     
-    const distance = touchStartX - touchEndX;
+    const distance = touchStartX.current - touchEndX.current;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
@@ -43,8 +43,8 @@ const ListingDetailPage = () => {
     }
 
     // Reset touch coordinates
-    setTouchStartX(null);
-    setTouchEndX(null);
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   const listing = {
