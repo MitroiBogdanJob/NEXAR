@@ -9,6 +9,9 @@ import CreateListingPage from './pages/CreateListingPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import CookiesPage from './pages/CookiesPage';
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -156,6 +159,9 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/despre" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/termeni" element={<TermsPage />} />
+            <Route path="/confidentialitate" element={<PrivacyPage />} />
+            <Route path="/cookies" element={<CookiesPage />} />
           </Routes>
         </main>
         <Footer />

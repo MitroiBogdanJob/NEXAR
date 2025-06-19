@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, Plus, Menu, X, Bell, Heart } from 'lucide-react';
 
 const Header = () => {
@@ -7,6 +7,7 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is logged in
@@ -22,6 +23,7 @@ const Header = () => {
     localStorage.removeItem('user');
     setUser(null);
     setIsUserMenuOpen(false);
+    navigate('/');
   };
 
   return (

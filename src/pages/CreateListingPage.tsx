@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { Upload, X, Plus, Check, Building, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Upload, X, Plus, Check, Building, User, AlertTriangle, Camera } from 'lucide-react';
 
 const CreateListingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -24,6 +29,25 @@ const CreateListingPage = () => {
     email: '',
     sellerType: 'privat'
   });
+
+  // Check if user is logged in
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    // Pre-fill user data if available
+    const userData = JSON.parse(user);
+    if (userData.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: userData.email,
+        sellerType: userData.sellerType || 'privat'
+      }));
+    }
+  }, [navigate]);
 
   const steps = [
     { id: 1, title: 'Informații de bază', description: 'Detalii despre motocicletă' },
@@ -49,8 +73,103 @@ const CreateListingPage = () => {
     'Scaun încălzit', 'Tempomat', 'Sistem anti-furt', 'Jante aliaj'
   ];
 
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    switch (step) {
+      case 1:
+        if (!formData.title.trim()) newErrors.title = 'Titlul este obligatoriu';
+        if (formData.title.length > 100) newErrors.title = 'Titlul nu poate depăși 100 de caractere';
+        
+        if (!formData.category) newErrors.category = 'Categoria este obligatorie';
+        if (!formData.brand) newErrors.brand = 'Marca este obligatorie';
+        if (!formData.model.trim()) newErrors.model = 'Modelul este obligatoriu';
+        
+        if (!formData.year) {
+          newErrors.year = 'Anul este obligatoriu';
+        } else {
+          const year = parseInt(formData.year);
+          const currentYear = new Date().getFullYear();
+          if (year < 1990 || year > currentYear + 1) {
+            newErrors.year = `Anul trebuie să fie între 1990 și ${currentYear + 1}`;
+          }
+        }
+        
+        if (!formData.mileage) {
+          newErrors.mileage = 'Kilometrajul este obligatoriu';
+        } else {
+          const mileage = parseInt(formData.mileage);
+          if (mileage < 0 || mileage > 500000) {
+            newErrors.mileage = 'Kilometrajul trebuie să fie între 0 și 500,000 km';
+          }
+        }
+        
+        if (!formData.engine) {
+          newErrors.engine = 'Capacitatea motorului este obligatorie';
+        } else {
+          const engine = parseInt(formData.engine);
+          if (engine < 50 || engine > 3000) {
+            newErrors.engine = 'Capacitatea motorului trebuie să fie între 50 și 3000 cc';
+          }
+        }
+        
+        if (!formData.fuel) newErrors.fuel = 'Tipul de combustibil este obligatoriu';
+        if (!formData.transmission) newErrors.transmission = 'Transmisia este obligatorie';
+        if (!formData.color.trim()) newErrors.color = 'Culoarea este obligatorie';
+        if (!formData.condition) newErrors.condition = 'Starea este obligatorie';
+        if (!formData.location.trim()) newErrors.location = 'Locația este obligatorie';
+        break;
+
+      case 2:
+        if (images.length === 0) {
+          newErrors.images = 'Trebuie să adaugi cel puțin o fotografie';
+        }
+        break;
+
+      case 3:
+        if (!formData.price) {
+          newErrors.price = 'Prețul este obligatoriu';
+        } else {
+          const price = parseFloat(formData.price);
+          if (price < 100 || price > 1000000) {
+            newErrors.price = 'Prețul trebuie să fie între 100 și 1,000,000 EUR';
+          }
+        }
+        
+        if (!formData.description.trim()) {
+          newErrors.description = 'Descrierea este obligatorie';
+        } else if (formData.description.length < 50) {
+          newErrors.description = 'Descrierea trebuie să aibă cel puțin 50 de caractere';
+        } else if (formData.description.length > 2000) {
+          newErrors.description = 'Descrierea nu poate depăși 2000 de caractere';
+        }
+        break;
+
+      case 4:
+        if (!formData.phone.trim()) {
+          newErrors.phone = 'Numărul de telefon este obligatoriu';
+        } else if (!/^[0-9+\-\s()]{10,15}$/.test(formData.phone.replace(/\s/g, ''))) {
+          newErrors.phone = 'Numărul de telefon nu este valid';
+        }
+        
+        if (!formData.email.trim()) {
+          newErrors.email = 'Email-ul este obligatoriu';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          newErrors.email = 'Email-ul nu este valid';
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleFeatureToggle = (feature: string) => {
@@ -67,10 +186,24 @@ const CreateListingPage = () => {
     if (files && images.length < 5) {
       const newImages = Array.from(files).slice(0, 5 - images.length);
       newImages.forEach(file => {
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          setErrors(prev => ({ ...prev, images: 'Fișierul nu poate depăși 5MB' }));
+          return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          setErrors(prev => ({ ...prev, images: 'Doar fișiere imagine sunt permise' }));
+          return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target?.result) {
             setImages(prev => [...prev, e.target!.result as string]);
+            // Clear image errors when successfully adding
+            setErrors(prev => ({ ...prev, images: '' }));
           }
         };
         reader.readAsDataURL(file);
@@ -83,16 +216,36 @@ const CreateListingPage = () => {
   };
 
   const nextStep = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < 4) setCurrentStep(currentStep + 1);
+    }
   };
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
-    console.log('Submitting listing:', formData, images);
-    alert('Anunțul a fost publicat cu succes!');
+  const handleSubmit = async () => {
+    if (!validateStep(4)) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log('Submitting listing:', formData, images);
+      
+      // Show success message
+      alert('Anunțul a fost publicat cu succes! Vei fi redirecționat către pagina principală.');
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      setErrors({ submit: 'A apărut o eroare la publicarea anunțului. Te rog încearcă din nou.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -196,9 +349,17 @@ const CreateListingPage = () => {
                     type="text"
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.title ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="ex: Yamaha YZF-R1 2023"
                   />
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.title}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -208,13 +369,21 @@ const CreateListingPage = () => {
                   <select
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.category ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selectează categoria</option>
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.category}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -224,13 +393,21 @@ const CreateListingPage = () => {
                   <select
                     value={formData.brand}
                     onChange={(e) => handleInputChange('brand', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.brand ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selectează marca</option>
                     {brands.map(brand => (
                       <option key={brand} value={brand}>{brand}</option>
                     ))}
                   </select>
+                  {errors.brand && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.brand}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -241,9 +418,17 @@ const CreateListingPage = () => {
                     type="text"
                     value={formData.model}
                     onChange={(e) => handleInputChange('model', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.model ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="ex: YZF-R1"
                   />
+                  {errors.model && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.model}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -254,11 +439,19 @@ const CreateListingPage = () => {
                     type="number"
                     value={formData.year}
                     onChange={(e) => handleInputChange('year', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.year ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="2023"
                     min="1990"
-                    max="2024"
+                    max="2025"
                   />
+                  {errors.year && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.year}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -269,9 +462,19 @@ const CreateListingPage = () => {
                     type="number"
                     value={formData.mileage}
                     onChange={(e) => handleInputChange('mileage', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.mileage ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="25000"
+                    min="0"
+                    max="500000"
                   />
+                  {errors.mileage && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.mileage}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -282,9 +485,19 @@ const CreateListingPage = () => {
                     type="number"
                     value={formData.engine}
                     onChange={(e) => handleInputChange('engine', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.engine ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="998"
+                    min="50"
+                    max="3000"
                   />
+                  {errors.engine && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.engine}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -294,13 +507,21 @@ const CreateListingPage = () => {
                   <select
                     value={formData.fuel}
                     onChange={(e) => handleInputChange('fuel', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.fuel ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selectează combustibilul</option>
                     {fuelTypes.map(fuel => (
                       <option key={fuel} value={fuel}>{fuel}</option>
                     ))}
                   </select>
+                  {errors.fuel && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.fuel}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -310,13 +531,21 @@ const CreateListingPage = () => {
                   <select
                     value={formData.transmission}
                     onChange={(e) => handleInputChange('transmission', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.transmission ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selectează transmisia</option>
                     {transmissionTypes.map(trans => (
                       <option key={trans} value={trans}>{trans}</option>
                     ))}
                   </select>
+                  {errors.transmission && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.transmission}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -327,9 +556,17 @@ const CreateListingPage = () => {
                     type="text"
                     value={formData.color}
                     onChange={(e) => handleInputChange('color', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.color ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="ex: Albastru Racing"
                   />
+                  {errors.color && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.color}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -339,13 +576,21 @@ const CreateListingPage = () => {
                   <select
                     value={formData.condition}
                     onChange={(e) => handleInputChange('condition', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.condition ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selectează starea</option>
                     {conditions.map(condition => (
                       <option key={condition} value={condition}>{condition}</option>
                     ))}
                   </select>
+                  {errors.condition && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.condition}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -356,9 +601,17 @@ const CreateListingPage = () => {
                     type="text"
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.location ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="ex: București, Sector 1"
                   />
+                  {errors.location && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.location}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -372,6 +625,15 @@ const CreateListingPage = () => {
                   Adaugă până la 5 fotografii de calitate pentru a atrage mai mulți cumpărători
                 </p>
               </div>
+              
+              {errors.images && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    {errors.images}
+                  </p>
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {images.map((image, index) => (
@@ -397,7 +659,7 @@ const CreateListingPage = () => {
                 
                 {images.length < 5 && (
                   <label className="border-2 border-dashed border-gray-300 rounded-lg h-48 flex flex-col items-center justify-center cursor-pointer hover:border-gray-900 transition-colors">
-                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                    <Camera className="h-8 w-8 text-gray-400 mb-2" />
                     <span className="text-gray-600">Adaugă fotografie</span>
                     <span className="text-sm text-gray-400">({images.length}/5)</span>
                     <input
@@ -418,6 +680,7 @@ const CreateListingPage = () => {
                   <li>• Include imagini din toate unghiurile</li>
                   <li>• Arată detaliile importante și eventualele defecte</li>
                   <li>• Prima fotografie va fi cea principală</li>
+                  <li>• Dimensiunea maximă: 5MB per fotografie</li>
                 </ul>
               </div>
             </div>
@@ -434,9 +697,19 @@ const CreateListingPage = () => {
                   type="number"
                   value={formData.price}
                   onChange={(e) => handleInputChange('price', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent text-2xl font-bold"
+                  className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent text-2xl font-bold ${
+                    errors.price ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="18500"
+                  min="100"
+                  max="1000000"
                 />
+                {errors.price && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    {errors.price}
+                  </p>
+                )}
               </div>
               
               <div>
@@ -447,9 +720,29 @@ const CreateListingPage = () => {
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={8}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                    errors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Descrie motocicleta în detaliu: starea tehnică, istoricul, modificările, etc."
                 />
+                <div className="flex justify-between items-center mt-1">
+                  {errors.description ? (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.description}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Minim 50 caractere, maxim 2000 caractere
+                    </p>
+                  )}
+                  <span className={`text-sm ${
+                    formData.description.length > 2000 ? 'text-red-600' : 
+                    formData.description.length < 50 ? 'text-orange-600' : 'text-green-600'
+                  }`}>
+                    {formData.description.length}/2000
+                  </span>
+                </div>
               </div>
               
               <div>
@@ -494,9 +787,17 @@ const CreateListingPage = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="0790 45 46 47"
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.phone}
+                    </p>
+                  )}
                 </div>
                 
                 <div>
@@ -507,9 +808,17 @@ const CreateListingPage = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="contact@exemplu.com"
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -534,6 +843,15 @@ const CreateListingPage = () => {
                   </div>
                 </div>
               </div>
+
+              {errors.submit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    {errors.submit}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -561,10 +879,20 @@ const CreateListingPage = () => {
             ) : (
               <button
                 onClick={handleSubmit}
-                className="px-8 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors flex items-center space-x-2"
+                disabled={isSubmitting}
+                className="px-8 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Publică Anunțul</span>
-                <Check className="h-5 w-5" />
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Se publică...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Publică Anunțul</span>
+                    <Check className="h-5 w-5" />
+                  </>
+                )}
               </button>
             )}
           </div>

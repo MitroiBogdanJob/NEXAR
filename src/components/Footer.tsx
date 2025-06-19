@@ -15,28 +15,30 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img 
-                src="/nexar-logo.jpg" 
-                alt="Nexar Logo" 
-                className="h-28 sm:h-32 md:h-36 w-auto"
-                onError={(e) => {
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (target.src.includes('nexar-logo.jpg')) {
-                    target.src = '/Nexar - logo_black & red.png';
-                  } else if (target.src.includes('Nexar - logo_black & red.png')) {
-                    target.src =  '/nexar-logo.png';
-                  } else if (target.src.includes('nexar-logo.png')) {
-                    target.src = '/image.png';
-                  } else {
-                    // Final fallback - hide image and show text
-                    target.style.display = 'none';
-                    const textLogo = target.nextElementSibling as HTMLElement;
-                    if (textLogo) {
-                      textLogo.style.display = 'block';
+              <Link to="/" onClick={handleLinkClick}>
+                <img 
+                  src="/nexar-logo.jpg" 
+                  alt="Nexar Logo" 
+                  className="h-28 sm:h-32 md:h-36 w-auto hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    if (target.src.includes('nexar-logo.jpg')) {
+                      target.src = '/Nexar - logo_black & red.png';
+                    } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                      target.src =  '/nexar-logo.png';
+                    } else if (target.src.includes('nexar-logo.png')) {
+                      target.src = '/image.png';
+                    } else {
+                      // Final fallback - hide image and show text
+                      target.style.display = 'none';
+                      const textLogo = target.nextElementSibling as HTMLElement;
+                      if (textLogo) {
+                        textLogo.style.display = 'block';
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              </Link>
               {/* Fallback text logo */}
               <div className="hidden text-3xl font-bold text-nexar-accent">
                 NEXAR
@@ -148,12 +150,12 @@ const Footer = () => {
               <p className="text-gray-300 text-sm">
                 © 2024 Nexar.ro. Toate drepturile rezervate.
               </p>
-              {/* NEXT SOFT Credit - Logo MULT MAI MARE cu text mai mic */}
+              {/* NEXT SOFT Credit - Spațiu redus între "Dezvoltat de" și "NEXT SOFT" */}
               <a 
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-4 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
+                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
                 style={{
                   filter: 'drop-shadow(0 0 0px transparent)',
                   transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
@@ -188,7 +190,7 @@ const Footer = () => {
                 <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold">
                   Dezvoltat de
                 </span>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <span className="text-gray-400 text-sm font-bold tracking-wide group-hover:text-nexar-accent transition-all duration-500 group-hover:tracking-wider relative">
                     NEXT SOFT
                     {/* Efect de underlining premium */}
@@ -197,7 +199,7 @@ const Footer = () => {
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-9 w-9 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
+                    className="h-10 w-10 sm:h-12 sm:w-12 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
                     style={{
                       filter: 'brightness(0.8) saturate(0.8)',
                       transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
