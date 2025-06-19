@@ -1,0 +1,211 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { User, Plus, Menu, X, Bell, Heart } from 'lucide-react';
+
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsUserMenuOpen(false);
+  };
+
+  return (
+    <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3 group">
+            <img src="/image.png" alt="Nexar Logo" className="h-8 w-auto transition-transform group-hover:scale-105" />
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 -mb-1">Premium Motorcycles</span>
+            </div>
+          </Link>
+
+          {/* Navigation - Desktop */}
+          <nav className="hidden md:flex items-center space-x-1">
+            <Link
+              to="/anunturi"
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                isActive('/anunturi')
+                  ? 'bg-nexar-accent text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Anunțuri
+            </Link>
+            <Link
+              to="/adauga-anunt"
+              className="flex items-center space-x-2 bg-nexar-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-nexar-gold transition-all duration-200 text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Adaugă Anunț</span>
+            </Link>
+            
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">Bună, {user.name}</span>
+                  </div>
+                ) : (
+                  <User className="h-5 w-5 text-gray-700" />
+                )}
+              </button>
+              
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-200 py-2 animate-scale-in">
+                  {user ? (
+                    <>
+                      <Link
+                        to="/profil"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Profilul Meu
+                      </Link>
+                      <Link
+                        to="/favorite"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Heart className="h-4 w-4" />
+                        <span>Favorite</span>
+                      </Link>
+                      <Link
+                        to="/notificari"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Bell className="h-4 w-4" />
+                        <span>Notificări</span>
+                      </Link>
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                      <hr className="my-2" />
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Deconectează-te
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      to="/auth"
+                      className="block px-4 py-2 text-sm text-gray-900 font-medium hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Conectează-te
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200 animate-slide-up bg-white/95 backdrop-blur-md">
+            <div className="space-y-4">
+              {/* Mobile Navigation */}
+              <div className="space-y-2">
+                <Link
+                  to="/anunturi"
+                  className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Anunțuri
+                </Link>
+                <Link
+                  to="/adauga-anunt"
+                  className="flex items-center space-x-2 px-4 py-3 bg-nexar-accent text-white rounded-lg font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Adaugă Anunț</span>
+                </Link>
+                
+                {user ? (
+                  <>
+                    <div className="px-4 py-3 text-gray-700 font-medium">
+                      Bună, {user.name}
+                    </div>
+                    <Link
+                      to="/profil"
+                      className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profilul Meu
+                    </Link>
+                    <Link
+                      to="/admin"
+                      className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Admin Panel
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Deconectează-te
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="block px-4 py-3 rounded-lg font-medium text-gray-900 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Conectează-te
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+export default Header;
