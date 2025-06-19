@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, Zap, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const HomePage = () => {
@@ -14,6 +14,7 @@ const HomePage = () => {
     yearMax: '',
     location: ''
   });
+  const navigate = useNavigate();
 
   const allListings = [
     {
@@ -273,7 +274,7 @@ const HomePage = () => {
       e.preventDefault();
       e.stopPropagation();
       // Navigate to seller profile
-      window.open(`/profil/${listing.sellerId}`, '_blank');
+      navigate(`/profil/${listing.sellerId}`);
     };
 
     return (

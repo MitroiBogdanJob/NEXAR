@@ -480,7 +480,7 @@ const ListingsPage = () => {
       e.preventDefault();
       e.stopPropagation();
       // Navigate to seller profile
-      window.open(`/profil/${listing.sellerId}`, '_blank');
+      navigate(`/profil/${listing.sellerId}`);
     };
 
     return (

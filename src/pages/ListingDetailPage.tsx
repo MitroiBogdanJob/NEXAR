@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, Heart, Share2, MapPin, Calendar, Gauge, Fuel, 
   Settings, Shield, Phone, Mail, MessageCircle, 
@@ -9,6 +9,7 @@ import {
 
 const ListingDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -141,6 +142,10 @@ const ListingDetailPage = () => {
     window.open(url, '_blank');
   };
 
+  const handleSellerClick = () => {
+    navigate(`/profil/${listing.seller.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -256,12 +261,12 @@ const ListingDetailPage = () => {
                     <Building className="h-6 w-6" />
                     <div>
                       <div className="font-bold text-lg">DEALER PREMIUM</div>
-                      <Link 
-                        to={`/profil/${listing.seller.id}`}
+                      <button 
+                        onClick={handleSellerClick}
                         className="text-white underline hover:text-emerald-100 transition-colors text-sm"
                       >
                         Vândut de {listing.seller.name}
-                      </Link>
+                      </button>
                     </div>
                   </div>
                   <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
@@ -363,12 +368,12 @@ const ListingDetailPage = () => {
                 />
                 <div>
                   <div className="flex items-center space-x-2">
-                    <Link 
-                      to={`/profil/${listing.seller.id}`}
+                    <button 
+                      onClick={handleSellerClick}
                       className="text-base sm:text-lg font-semibold text-nexar-accent hover:text-nexar-gold transition-colors"
                     >
                       {listing.seller.name}
-                    </Link>
+                    </button>
                     {listing.seller.verified && (
                       <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     )}

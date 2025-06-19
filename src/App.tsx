@@ -127,6 +127,7 @@ function App() {
             <Route path="/anunt/:id" element={<ListingDetailPage />} />
             <Route path="/adauga-anunt" element={<CreateListingPage />} />
             <Route path="/profil" element={<ProfilePage />} />
+            <Route path="/profil/:id" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/despre" element={<AboutPage />} />
