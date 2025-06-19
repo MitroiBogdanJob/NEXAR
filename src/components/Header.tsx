@@ -30,9 +30,22 @@ const Header = () => {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo - Optimized for mobile */}
           <Link to="/" className="flex items-center space-x-2 group min-w-0">
-            <img src="/nexar-logo.png" alt="Nexar Logo" className="h-8 sm:h-10 w-auto transition-transform group-hover:scale-105 flex-shrink-0" />
+            <img 
+              src="/nexar-logo.jpg" 
+              alt="Nexar" 
+              className="h-8 sm:h-10 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              onError={(e) => {
+                // Fallback to text if image fails to load
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling!.style.display = 'block';
+              }}
+            />
             <div className="hidden sm:flex flex-col">
               <span className="text-xs text-gray-500 -mb-1">Premium Motorcycles</span>
+            </div>
+            {/* Fallback text logo */}
+            <div className="hidden text-2xl font-bold text-nexar-accent">
+              NEXAR
             </div>
           </Link>
 

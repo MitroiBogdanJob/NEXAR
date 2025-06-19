@@ -410,9 +410,6 @@ const HomePage = () => {
       <section className="py-8 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6 sm:mb-10">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-              Motociclete Disponibile
-            </h2>
             <p className="text-lg text-gray-600 max-w-xl mx-auto">
               Descoperă cele mai noi și mai atractive motociclete disponibile pe platformă
             </p>
