@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
@@ -26,8 +26,13 @@ const ListingsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Extrage parametrii din URL
-  React.useEffect(() => {
+  useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get('categorie');
     
@@ -662,7 +667,7 @@ const ListingsPage = () => {
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors lg:hidden"
+                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 <span className="hidden sm:inline">Filtre</span>
@@ -671,24 +676,273 @@ const ListingsPage = () => {
           </form>
         </div>
 
+        {/* Mobile Filters - Shown when showFilters is true */}
+        {showFilters && (
+          <div className="lg:hidden bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <Filter className="h-5 w-5" />
+                <span>Filtrează</span>
+              </h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6 max-h-[70vh] overflow-y-auto">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => handleFilterChange('category', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate categoriile</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Touring">Touring</option>
+                  <option value="Cruiser">Cruiser</option>
+                  <option value="Adventure">Adventure</option>
+                  <option value="Naked">Naked</option>
+                  <option value="Scooter">Scooter</option>
+                  <option value="Enduro">Enduro</option>
+                  <option value="Chopper">Chopper</option>
+                  <option value="Cafe Racer">Cafe Racer</option>
+                  <option value="Supermoto">Supermoto</option>
+                  <option value="Motocross">Motocross</option>
+                  <option value="Trial">Trial</option>
+                </select>
+              </div>
+
+              {/* Brand */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
+                <select
+                  value={filters.brand}
+                  onChange={(e) => handleFilterChange('brand', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate mărcile</option>
+                  <option value="Yamaha">Yamaha</option>
+                  <option value="Honda">Honda</option>
+                  <option value="Suzuki">Suzuki</option>
+                  <option value="Kawasaki">Kawasaki</option>
+                  <option value="BMW">BMW</option>
+                  <option value="Ducati">Ducati</option>
+                  <option value="KTM">KTM</option>
+                  <option value="Aprilia">Aprilia</option>
+                  <option value="Triumph">Triumph</option>
+                  <option value="Harley-Davidson">Harley-Davidson</option>
+                  <option value="MV Agusta">MV Agusta</option>
+                  <option value="Benelli">Benelli</option>
+                  <option value="Moto Guzzi">Moto Guzzi</option>
+                  <option value="Indian">Indian</option>
+                  <option value="Zero">Zero</option>
+                  <option value="Energica">Energica</option>
+                  <option value="Husqvarna">Husqvarna</option>
+                  <option value="Beta">Beta</option>
+                  <option value="Sherco">Sherco</option>
+                  <option value="GasGas">GasGas</option>
+                  <option value="Royal Enfield">Royal Enfield</option>
+                  <option value="Bimota">Bimota</option>
+                  <option value="Buell">Buell</option>
+                  <option value="CCM">CCM</option>
+                  <option value="CF Moto">CF Moto</option>
+                  <option value="Daelim">Daelim</option>
+                  <option value="Derbi">Derbi</option>
+                  <option value="Hyosung">Hyosung</option>
+                  <option value="Kymco">Kymco</option>
+                  <option value="Mash">Mash</option>
+                </select>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={filters.priceMin}
+                    onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.priceMax}
+                    onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Year Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    placeholder="De la"
+                    value={filters.yearMin}
+                    onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Până la"
+                    value={filters.yearMax}
+                    onChange={(e) => handleFilterChange('yearMax', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Engine Capacity */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Capacitate motor (cc)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={filters.engineMin}
+                    onChange={(e) => handleFilterChange('engineMin', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.engineMax}
+                    onChange={(e) => handleFilterChange('engineMax', e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Mileage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Kilometraj maxim</label>
+                <input
+                  type="number"
+                  placeholder="ex: 50000"
+                  value={filters.mileageMax}
+                  onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                />
+              </div>
+
+              {/* Fuel Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
+                <select
+                  value={filters.fuel}
+                  onChange={(e) => handleFilterChange('fuel', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate tipurile</option>
+                  <option value="Benzină">Benzină</option>
+                  <option value="Electric">Electric</option>
+                  <option value="Hibrid">Hibrid</option>
+                </select>
+              </div>
+
+              {/* Transmission */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
+                <select
+                  value={filters.transmission}
+                  onChange={(e) => handleFilterChange('transmission', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate tipurile</option>
+                  <option value="Manuală">Manuală</option>
+                  <option value="Automată">Automată</option>
+                  <option value="Semi-automată">Semi-automată</option>
+                </select>
+              </div>
+
+              {/* Condition */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
+                <select
+                  value={filters.condition}
+                  onChange={(e) => handleFilterChange('condition', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate stările</option>
+                  <option value="La comandă">La comandă</option>
+                  <option value="Excelentă">Excelentă</option>
+                  <option value="Foarte bună">Foarte bună</option>
+                  <option value="Bună">Bună</option>
+                  <option value="Satisfăcătoare">Satisfăcătoare</option>
+                </select>
+              </div>
+
+              {/* Seller Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Tip vânzător</label>
+                <select
+                  value={filters.sellerType}
+                  onChange={(e) => handleFilterChange('sellerType', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toți vânzătorii</option>
+                  <option value="individual">Vânzător Individual</option>
+                  <option value="dealer">Dealer Autorizat</option>
+                </select>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
+                <select
+                  value={filters.location}
+                  onChange={(e) => handleFilterChange('location', e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                >
+                  <option value="">Toate locațiile</option>
+                  <option value="București">București</option>
+                  <option value="Cluj-Napoca">Cluj-Napoca</option>
+                  <option value="Timișoara">Timișoara</option>
+                  <option value="Iași">Iași</option>
+                  <option value="Constanța">Constanța</option>
+                  <option value="Brașov">Brașov</option>
+                  <option value="Craiova">Craiova</option>
+                  <option value="Galați">Galați</option>
+                  <option value="Oradea">Oradea</option>
+                  <option value="Ploiești">Ploiești</option>
+                  <option value="Sibiu">Sibiu</option>
+                  <option value="Bacău">Bacău</option>
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              <button
+                onClick={clearFilters}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+              >
+                <X className="h-4 w-4" />
+                <span>Șterge Toate Filtrele</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Filters Sidebar - Mobile Optimized */}
-          <div className={`${showFilters ? 'block' : 'hidden'} lg:block lg:w-80 order-2 lg:order-1`}>
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:sticky lg:top-24 border border-gray-100">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
+          {/* Filters Sidebar - Desktop Only */}
+          <div className="hidden lg:block lg:w-80">
+            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                   <Filter className="h-5 w-5" />
                   <span>Filtrează</span>
                 </h3>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
 
-              <div className="space-y-4 sm:space-y-6 max-h-[70vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                 {/* Category */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
@@ -928,7 +1182,7 @@ const ListingsPage = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 order-1 lg:order-2">
+          <div className="flex-1">
             {/* Results - Mobile Optimized */}
             <div className="mb-4 sm:mb-5">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
