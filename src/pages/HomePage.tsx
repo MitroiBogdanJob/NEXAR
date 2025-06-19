@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight, Building } from 'lucide-react';
 
 const HomePage = () => {
   const [showFilters, setShowFilters] = useState(false); // Default false on mobile
@@ -316,16 +316,26 @@ const HomePage = () => {
                 <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
                   {listing.title}
                 </h3>
-                <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
-                <div className="text-sm text-gray-500">
-                  Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                    listing.sellerType === 'dealer' 
-                      ? 'bg-blue-100 text-blue-800' 
-                      : 'bg-green-100 text-green-800'
-                  }`}>
-                    {listing.sellerType === 'dealer' ? 'Dealer' : 'Privat'}
-                  </span>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
+                
+                {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <div className="text-sm text-gray-500">
+                    Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+                  </div>
+                  
+                  {/* BADGE DEALER MULT MAI VIZIBIL */}
+                  {listing.sellerType === 'dealer' ? (
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full shadow-lg border-2 border-blue-500">
+                      <Building className="h-4 w-4" />
+                      <span className="font-bold text-sm">DEALER AUTORIZAT</span>
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1.5 rounded-full shadow-md">
+                      <span className="font-semibold text-xs">PRIVAT</span>
+                    </div>
+                  )}
                 </div>
               </div>
               

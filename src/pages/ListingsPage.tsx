@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
 const ListingsPage = () => {
   const [showFilters, setShowFilters] = useState(false); // Default false on mobile
@@ -32,7 +32,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 2500,
       location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.9,
       seller: "Vânzător Individual",
       sellerType: "individual",
@@ -52,7 +56,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 8200,
       location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.8,
       seller: "BMW Moto Center",
       sellerType: "dealer",
@@ -72,7 +80,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1200,
       location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 5.0,
       seller: "Ducati Premium",
       sellerType: "dealer",
@@ -92,7 +104,11 @@ const ListingsPage = () => {
       year: 2007,
       mileage: 11000,
       location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.3,
       seller: "Vânzător Individual",
       sellerType: "individual",
@@ -112,7 +128,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 6500,
       location: "Constanța",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.6,
       seller: "Kawasaki Pro",
       sellerType: "dealer",
@@ -132,7 +152,11 @@ const ListingsPage = () => {
       year: 2021,
       mileage: 12000,
       location: "Brașov",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.5,
       seller: "Suzuki Center",
       sellerType: "dealer",
@@ -152,7 +176,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1800,
       location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.9,
       seller: "Aprilia Racing",
       sellerType: "dealer",
@@ -172,7 +200,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 7300,
       location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.7,
       seller: "KTM Center",
       sellerType: "dealer",
@@ -192,7 +224,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 2100,
       location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.8,
       seller: "Triumph Dealer",
       sellerType: "dealer",
@@ -212,7 +248,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 5600,
       location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.6,
       seller: "Harley Center",
       sellerType: "dealer",
@@ -232,7 +272,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 3200,
       location: "Iași",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 4.9,
       seller: "BMW Adventure",
       sellerType: "dealer",
@@ -252,7 +296,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1500,
       location: "Constanța",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      images: [
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      ],
       rating: 5.0,
       seller: "Ducati Adventure",
       sellerType: "dealer",
@@ -349,92 +397,150 @@ const ListingsPage = () => {
     setCurrentPage(1);
   };
 
-  const ListingRow = ({ listing }: { listing: any }) => (
-    <Link
-      to={`/anunt/${listing.id}`}
-      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
-    >
-      <div className="flex flex-col sm:flex-row">
-        <div className="relative w-full sm:w-64 flex-shrink-0">
-          <img
-            src={listing.image}
-            alt={listing.title}
-            className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute top-3 left-3">
-            <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
-              {listing.category}
-            </span>
-          </div>
-          <button className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors">
-            <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
-          </button>
-        </div>
-        
-        <div className="flex-1 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
-            <div className="mb-3 sm:mb-0">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
-                {listing.title}
-              </h3>
-              <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
-            </div>
+  const ListingRow = ({ listing }: { listing: any }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const nextImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => 
+        prev === listing.images.length - 1 ? 0 : prev + 1
+      );
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images.length - 1 : prev - 1
+      );
+    };
+
+    return (
+      <Link
+        to={`/anunt/${listing.id}`}
+        className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
+      >
+        <div className="flex flex-col sm:flex-row">
+          <div className="relative w-full sm:w-64 flex-shrink-0">
+            <img
+              src={listing.images[currentImageIndex]}
+              alt={listing.title}
+              className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
             
-            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
-              <Star className="h-4 w-4 text-yellow-400 fill-current" />
-              <span className="text-sm font-semibold">{listing.rating}</span>
+            {/* Navigation Arrows - Only show if multiple images */}
+            {listing.images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft className="h-4 w-4 text-gray-600" />
+                </button>
+                
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight className="h-4 w-4 text-gray-600" />
+                </button>
+                
+                {/* Image indicators */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                  {listing.images.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            
+            <div className="absolute top-3 left-3">
+              <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
+                {listing.category}
+              </span>
             </div>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
+            >
+              <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
+            </button>
           </div>
           
-          {/* Detailed Information Grid - Mobile Optimized */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Locație:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.location}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Stare:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.condition}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Vânzător:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.sellerType === 'individual' ? 'Individual' : 'Dealer'}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Kilometraj:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.mileage.toLocaleString()} km</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Transmisie:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.transmission}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Combustibil:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.fuel}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">Motor:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.engine} cc</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-gray-600 text-xs sm:text-sm">An:</span>
-              <span className="font-semibold text-gray-900 text-sm">{listing.year}</span>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="text-sm text-gray-600">
-              Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+          <div className="flex-1 p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
+              <div className="mb-3 sm:mb-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
+                  {listing.title}
+                </h3>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
+                
+                {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <div className="text-sm text-gray-600">
+                    Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+                  </div>
+                  
+                  {/* BADGE DEALER MULT MAI VIZIBIL */}
+                  {listing.sellerType === 'dealer' ? (
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full shadow-lg border-2 border-blue-500">
+                      <Building className="h-4 w-4" />
+                      <span className="font-bold text-sm">DEALER AUTORIZAT</span>
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1.5 rounded-full shadow-md">
+                      <span className="font-semibold text-xs">PRIVAT</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
+                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                <span className="text-sm font-semibold">{listing.rating}</span>
+              </div>
             </div>
             
-            <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 justify-center sm:justify-start">
-              <span>Vezi Detalii</span>
+            {/* Detailed Information Grid - Mobile Optimized */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-gray-600 text-xs sm:text-sm">Locație:</span>
+                <span className="font-semibold text-gray-900 text-sm">{listing.location}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-gray-600 text-xs sm:text-sm">Stare:</span>
+                <span className="font-semibold text-gray-900 text-sm">{listing.condition}</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-gray-600 text-xs sm:text-sm">Kilometraj:</span>
+                <span className="font-semibold text-gray-900 text-sm">{listing.mileage.toLocaleString()} km</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-gray-600 text-xs sm:text-sm">An:</span>
+                <span className="font-semibold text-gray-900 text-sm">{listing.year}</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 justify-center sm:justify-start">
+                <span>Vezi Detalii</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Link>
-  );
+      </Link>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6">

@@ -4,7 +4,7 @@ import {
   Star, Heart, Share2, MapPin, Calendar, Gauge, Fuel, 
   Settings, Shield, Phone, MessageCircle, 
   ChevronLeft, ChevronRight, Check,
-  Car, Cog, Palette, Award, User, ExternalLink
+  Car, Cog, Palette, Award, User, ExternalLink, Building
 } from 'lucide-react';
 
 const ListingDetailPage = () => {
@@ -40,7 +40,8 @@ const ListingDetailPage = () => {
       verified: true,
       phone: "0790 454 647",
       email: "contact@motoexpert.ro",
-      avatar: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
+      avatar: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+      type: "dealer" // dealer sau privat
     },
     category: "Sport",
     engine: "998cc",
@@ -212,6 +213,20 @@ const ListingDetailPage = () => {
                 </div>
               </div>
 
+              {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
+              {listing.seller.type === 'dealer' && (
+                <div className="mb-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl shadow-lg border-2 border-blue-500 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Building className="h-6 w-6" />
+                    <div>
+                      <div className="font-bold text-lg">DEALER AUTORIZAT</div>
+                      <div className="text-blue-100 text-sm">Vândut de {listing.seller.name}</div>
+                    </div>
+                  </div>
+                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                </div>
+              )}
+
               {/* Specifications - Mobile Optimized */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
                 <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-xl">
@@ -319,6 +334,17 @@ const ListingDetailPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ - PENTRU MOBILE */}
+              {listing.seller.type === 'dealer' && (
+                <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg flex items-center justify-between lg:hidden">
+                  <div className="flex items-center space-x-2">
+                    <Building className="h-5 w-5" />
+                    <span className="font-bold">DEALER AUTORIZAT</span>
+                  </div>
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                </div>
+              )}
 
               <div className="space-y-2 sm:space-y-3">
                 <button
