@@ -13,7 +13,7 @@ const Footer = () => {
               <img 
                 src="/nexar-logo.jpg" 
                 alt="Nexar Logo" 
-                className="h-12 sm:h-16 md:h-20 w-auto"
+                className="h-24 sm:h-28 md:h-32 w-auto"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   if (target.src.includes('nexar-logo.jpg')) {
