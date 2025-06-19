@@ -148,28 +148,58 @@ const Footer = () => {
               <p className="text-gray-300 text-sm">
                 © 2024 Nexar.ro. Toate drepturile rezervate.
               </p>
-              {/* NEXT SOFT Credit - Text mai mare și hover roșu */}
+              {/* NEXT SOFT Credit - Logo după text cu efecte spectaculoase */}
               <a 
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-2 group transition-all duration-200 hover:scale-105"
+                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-2 group transition-all duration-300 hover:scale-110 transform-gpu"
+                style={{
+                  filter: 'drop-shadow(0 0 0px transparent)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'drop-shadow(0 0 8px rgba(215, 58, 48, 0.6))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'drop-shadow(0 0 0px transparent)';
+                }}
+                onClick={(e) => {
+                  // Efect de click spectaculos
+                  const element = e.currentTarget;
+                  element.style.transform = 'scale(0.95)';
+                  element.style.filter = 'drop-shadow(0 0 15px rgba(215, 58, 48, 0.8))';
+                  
+                  setTimeout(() => {
+                    element.style.transform = 'scale(1.1)';
+                    element.style.filter = 'drop-shadow(0 0 12px rgba(215, 58, 48, 0.7))';
+                  }, 100);
+                  
+                  setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                    element.style.filter = 'drop-shadow(0 0 0px transparent)';
+                  }, 200);
+                }}
               >
-                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-colors">
+                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-300 group-hover:font-medium">
                   Dezvoltat de
                 </span>
                 <div className="flex items-center space-x-1.5">
+                  <span className="text-gray-400 text-sm font-semibold tracking-wide group-hover:text-nexar-accent transition-all duration-300 group-hover:font-bold group-hover:tracking-wider">
+                    NEXT SOFT
+                  </span>
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-5 w-5 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                    className="h-5 w-5 object-contain opacity-70 group-hover:opacity-100 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12 transform-gpu"
+                    style={{
+                      filter: 'brightness(0.8)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
-                  <span className="text-gray-400 text-sm font-semibold tracking-wide group-hover:text-nexar-accent transition-colors">
-                    NEXT SOFT
-                  </span>
                 </div>
               </a>
             </div>
