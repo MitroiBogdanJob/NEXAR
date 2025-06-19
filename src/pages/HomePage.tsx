@@ -329,23 +329,17 @@ const HomePage = () => {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Filters Sidebar - Mobile Optimized */}
-            <div className={`${showFilters ? 'block' : 'hidden'} lg:block lg:w-80 order-2 lg:order-1`}>
-              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:sticky lg:top-24 border border-gray-100">
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
+            {/* Filters Sidebar - Mobile Optimized - DOAR PENTRU DESKTOP */}
+            <div className="hidden lg:block lg:w-80">
+              <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                     <Filter className="h-5 w-5" />
                     <span>Filtrează</span>
                   </h3>
-                  <button
-                    onClick={() => setShowFilters(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
                 </div>
 
-                <div className="space-y-4 sm:space-y-6 max-h-[70vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto">
+                <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Brand */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
@@ -479,12 +473,110 @@ const HomePage = () => {
               </div>
             </div>
 
+            {/* Mobile Filters Modal */}
+            {showFilters && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden">
+                <div className="fixed inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                        <Filter className="h-5 w-5" />
+                        <span>Filtrează Rezultatele</span>
+                      </h3>
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      {/* Brand */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
+                        <select
+                          value={filters.brand}
+                          onChange={(e) => handleFilterChange('brand', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate mărcile</option>
+                          <option value="Yamaha">Yamaha</option>
+                          <option value="Honda">Honda</option>
+                          <option value="Suzuki">Suzuki</option>
+                          <option value="Kawasaki">Kawasaki</option>
+                          <option value="BMW">BMW</option>
+                          <option value="Ducati">Ducati</option>
+                          <option value="KTM">KTM</option>
+                          <option value="Aprilia">Aprilia</option>
+                          <option value="Triumph">Triumph</option>
+                          <option value="Harley-Davidson">Harley-Davidson</option>
+                        </select>
+                      </div>
+
+                      {/* Seller Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Tip Vânzător</label>
+                        <select
+                          value={filters.sellerType}
+                          onChange={(e) => handleFilterChange('sellerType', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toți vânzătorii</option>
+                          <option value="privat">Privat</option>
+                          <option value="dealer">Dealer</option>
+                        </select>
+                      </div>
+
+                      {/* Price Range */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="Min"
+                            value={filters.priceMin}
+                            onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Max"
+                            value={filters.priceMax}
+                            onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Clear Filters */}
+                      <button
+                        onClick={clearFilters}
+                        className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <X className="h-4 w-4" />
+                        <span>Șterge Filtrele</span>
+                      </button>
+
+                      {/* Apply Filters Button */}
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="w-full bg-nexar-accent text-white py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                      >
+                        Aplică Filtrele
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Main Content */}
-            <div className="flex-1 order-1 lg:order-2">
-              {/* Toggle Filters Button */}
+            <div className="flex-1">
+              {/* Toggle Filters Button - DOAR PE MOBILE */}
               <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
+                  onClick={() => setShowFilters(true)}
                   className="flex items-center space-x-2 bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors border border-gray-200 lg:hidden"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
