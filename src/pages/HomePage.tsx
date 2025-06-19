@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal } from 'lucide-react';
 
 const HomePage = () => {
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false); // Default false on mobile
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     priceMin: '',
@@ -204,12 +204,12 @@ const HomePage = () => {
       to={`/anunt/${listing.id}`}
       className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
     >
-      <div className="flex">
-        <div className="relative w-64 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row">
+        <div className="relative w-full sm:w-64 flex-shrink-0">
           <img
             src={listing.image}
             alt={listing.title}
-            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-48 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3">
             <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
@@ -221,13 +221,13 @@ const HomePage = () => {
           </button>
         </div>
         
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
+        <div className="flex-1 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+            <div className="mb-3 sm:mb-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
                 {listing.title}
               </h3>
-              <div className="text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
               <div className="text-sm text-gray-500">
                 Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
                 <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
@@ -240,13 +240,13 @@ const HomePage = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1">
+            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
               <Star className="h-4 w-4 text-yellow-400 fill-current" />
               <span className="text-sm font-semibold">{listing.rating}</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-6 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 mb-4">
             <div className="flex items-center space-x-2 text-gray-600">
               <Calendar className="h-4 w-4" />
               <span className="text-sm font-medium">{listing.year}</span>
@@ -261,7 +261,7 @@ const HomePage = () => {
             </div>
           </div>
           
-          <div className="bg-nexar-accent text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2">
+          <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-start">
             <span>Vezi Detalii</span>
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -272,33 +272,33 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section */}
+      {/* Hero Section - Mobile Optimized */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
           <div className="text-center text-white">
-            <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
               Găsește Motocicleta
               <span className="block text-nexar-accent">Perfectă</span>
             </h1>
             
-            {/* Hero Search */}
-            <div className="max-w-xl mx-auto mb-8">
+            {/* Hero Search - Mobile Optimized */}
+            <div className="max-w-xl mx-auto mb-6 sm:mb-8">
               <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Caută după marcă, model sau tip..."
-                  className="w-full pl-4 pr-24 py-3 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
+                  placeholder="Caută după marcă, model..."
+                  className="w-full pl-4 pr-20 sm:pr-24 py-3 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
                 />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-sm shadow-lg">
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-sm shadow-lg">
                   Caută
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
               <Link
                 to="/anunturi"
                 className="bg-nexar-accent/90 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30"
@@ -316,23 +316,23 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Listings with Filters */}
-      <section className="py-16 bg-gray-50">
+      {/* Featured Listings with Filters - Mobile Optimized */}
+      <section className="py-8 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 sm:mb-10">
             <p className="text-lg text-gray-600 max-w-xl mx-auto">
               Descoperă cele mai noi și mai atractive motociclete disponibile pe platformă
             </p>
           </div>
 
-          <div className="flex gap-6">
-            {/* Filters Sidebar */}
-            <div className={`${showFilters ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
-              <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Filters Sidebar - Mobile Optimized */}
+            <div className={`${showFilters ? 'block' : 'hidden'} lg:block lg:w-80 order-2 lg:order-1`}>
+              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:sticky lg:top-24 border border-gray-100">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                     <Filter className="h-5 w-5" />
-                    <span>Filtrează Rezultatele</span>
+                    <span>Filtrează</span>
                   </h3>
                   <button
                     onClick={() => setShowFilters(false)}
@@ -342,7 +342,7 @@ const HomePage = () => {
                   </button>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6 max-h-[70vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto">
                   {/* Brand */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
@@ -477,21 +477,21 @@ const HomePage = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 order-1 lg:order-2">
               {/* Toggle Filters Button */}
-              <div className="mb-6 flex justify-between items-center">
+              <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2 bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                  className="flex items-center space-x-2 bg-white text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors border border-gray-200 lg:hidden"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
-                  <span>{showFilters ? 'Ascunde' : 'Arată'} Filtrele</span>
+                  <span>Filtre</span>
                 </button>
                 
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm sm:text-base">
                   {filteredListings.length} rezultate găsite
                   {searchQuery && (
-                    <span className="ml-2 text-nexar-accent">
+                    <span className="block sm:inline sm:ml-2 text-nexar-accent">
                       pentru "{searchQuery}"
                     </span>
                   )}
@@ -500,10 +500,10 @@ const HomePage = () => {
 
               {/* No Results */}
               {filteredListings.length === 0 && (
-                <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
-                  <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
-                  <p className="text-gray-600 mb-6">
+                <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center border border-gray-100">
+                  <Search className="h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                  <p className="text-gray-600 mb-6 text-sm sm:text-base">
                     Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
                   </p>
                   <button
@@ -522,7 +522,7 @@ const HomePage = () => {
                 ))}
               </div>
 
-              <div className="text-center mt-10">
+              <div className="text-center mt-6 sm:mt-10">
                 <Link
                   to="/anunturi"
                   className="inline-flex items-center space-x-2 bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
@@ -536,19 +536,19 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-16 bg-white">
+      {/* Categories - Mobile Optimized */}
+      <section className="py-8 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-6 sm:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               Categorii Populare
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-base sm:text-lg text-gray-600">
               Găsește exact tipul de motocicletă pe care îl cauți
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {categories.map((category, index) => (
               <Link
                 key={index}
@@ -558,11 +558,11 @@ const HomePage = () => {
                 <img
                   src={category.image}
                   alt={category.name}
-                  className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-24 sm:h-32 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                  <h3 className="font-bold mb-1">{category.name}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 text-white">
+                  <h3 className="font-bold text-sm sm:text-base mb-1">{category.name}</h3>
                   <p className="text-xs text-gray-200">{category.count}</p>
                 </div>
               </Link>
@@ -571,44 +571,44 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-16 bg-gray-50">
+      {/* Why Choose Us - Mobile Optimized */}
+      <section className="py-8 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-6 sm:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               De Ce Să Alegi Nexar?
             </h2>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto">
               Oferim cea mai sigură și eficientă platformă pentru cumpărarea și vânzarea motocicletelor
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-nexar-accent/10 rounded-lg mb-4">
                 <Shield className="h-6 w-6 text-nexar-accent" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Siguranță Garantată</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3">Siguranță Garantată</h3>
               <p className="text-gray-600 leading-relaxed text-sm">
                 Toate anunțurile sunt verificate manual. Sistem de rating și recenzii pentru fiecare vânzător.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-nexar-accent/10 rounded-lg mb-4">
                 <CheckCircle className="h-6 w-6 text-nexar-accent" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Proces Simplificat</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3">Proces Simplificat</h3>
               <p className="text-gray-600 leading-relaxed text-sm">
                 Interfață intuitivă și proces de listare simplu. Publică anunțul tău în doar câteva minute.
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200">
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow border border-gray-200 md:col-span-2 lg:col-span-1">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-nexar-accent/10 rounded-lg mb-4">
                 <Users className="h-6 w-6 text-nexar-accent" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Comunitate Activă</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3">Comunitate Activă</h3>
               <p className="text-gray-600 leading-relaxed text-sm">
                 Peste 15,000 de pasionați de motociclete. Găsește sfaturi și recomandări de la experți.
               </p>
@@ -617,13 +617,13 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-gray-900 to-black">
+      {/* CTA Section - Mobile Optimized */}
+      <section className="py-8 sm:py-16 bg-gradient-to-r from-gray-900 to-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4">
             Gata să Începi?
           </h2>
-          <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+          <p className="text-base sm:text-lg text-gray-300 mb-6 leading-relaxed">
             Alătură-te comunității Nexar și descoperă cea mai bună experiență de cumpărare și vânzare de motociclete
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal } from 'lucide-react';
 
 const ListingsPage = () => {
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false); // Default false on mobile
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -354,12 +354,12 @@ const ListingsPage = () => {
       to={`/anunt/${listing.id}`}
       className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
     >
-      <div className="flex">
-        <div className="relative w-64 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row">
+        <div className="relative w-full sm:w-64 flex-shrink-0">
           <img
             src={listing.image}
             alt={listing.title}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-3 left-3">
             <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
@@ -371,63 +371,63 @@ const ListingsPage = () => {
           </button>
         </div>
         
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
+        <div className="flex-1 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
+            <div className="mb-3 sm:mb-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
                 {listing.title}
               </h3>
-              <div className="text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
             </div>
             
-            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1">
+            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
               <Star className="h-4 w-4 text-yellow-400 fill-current" />
               <span className="text-sm font-semibold">{listing.rating}</span>
             </div>
           </div>
           
-          {/* Detailed Information Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Locație:</span>
-              <span className="font-semibold text-gray-900">{listing.location}</span>
+          {/* Detailed Information Grid - Mobile Optimized */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Locație:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.location}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Stare:</span>
-              <span className="font-semibold text-gray-900">{listing.condition}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Stare:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.condition}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Vânzător:</span>
-              <span className="font-semibold text-gray-900">{listing.sellerType === 'individual' ? 'Individual' : 'Dealer'}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Vânzător:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.sellerType === 'individual' ? 'Individual' : 'Dealer'}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Kilometraj:</span>
-              <span className="font-semibold text-gray-900">{listing.mileage.toLocaleString()} km</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Kilometraj:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.mileage.toLocaleString()} km</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Transmisie:</span>
-              <span className="font-semibold text-gray-900">{listing.transmission}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Transmisie:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.transmission}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Combustibil:</span>
-              <span className="font-semibold text-gray-900">{listing.fuel}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Combustibil:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.fuel}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Motor:</span>
-              <span className="font-semibold text-gray-900">{listing.engine} cc</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">Motor:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.engine} cc</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">An:</span>
-              <span className="font-semibold text-gray-900">{listing.year}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-gray-600 text-xs sm:text-sm">An:</span>
+              <span className="font-semibold text-gray-900 text-sm">{listing.year}</span>
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="text-sm text-gray-600">
               Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
             </div>
             
-            <div className="bg-nexar-accent text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2">
+            <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 justify-center sm:justify-start">
               <span>Vezi Detalii</span>
             </div>
           </div>
@@ -437,38 +437,38 @@ const ListingsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+        {/* Header - Mobile Optimized */}
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
             Toate Anunțurile
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm sm:text-base">
             Descoperă {filteredListings.length} motociclete disponibile pentru vânzare
           </p>
         </div>
 
-        {/* Search Bar - Single, prominent */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
-          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-4">
+        {/* Search Bar - Mobile Optimized */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
+          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Caută după marcă, model, categorie, locație sau vânzător..."
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-base"
+                  placeholder="Caută după marcă, model, categorie..."
+                  className="w-full pl-10 sm:pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-sm sm:text-base"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
               </div>
             </div>
             
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center space-x-2"
+                className="flex-1 sm:flex-none bg-nexar-accent text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center justify-center space-x-2"
               >
                 <Search className="h-4 w-4" />
                 <span>Caută</span>
@@ -477,23 +477,23 @@ const ListingsPage = () => {
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors lg:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                <span>{showFilters ? 'Ascunde' : 'Arată'} Filtrele</span>
+                <span className="hidden sm:inline">Filtre</span>
               </button>
             </div>
           </form>
         </div>
 
-        <div className="flex gap-6">
-          {/* Filters Sidebar */}
-          <div className={`${showFilters ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filters Sidebar - Mobile Optimized */}
+          <div className={`${showFilters ? 'block' : 'hidden'} lg:block lg:w-80 order-2 lg:order-1`}>
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:sticky lg:top-24 border border-gray-100">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
                   <Filter className="h-5 w-5" />
-                  <span>Filtrează Rezultatele</span>
+                  <span>Filtrează</span>
                 </h3>
                 <button
                   onClick={() => setShowFilters(false)}
@@ -503,10 +503,10 @@ const ListingsPage = () => {
                 </button>
               </div>
 
-              <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div className="space-y-4 sm:space-y-6 max-h-[70vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto">
                 {/* Price Range */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">💰 Preț (EUR)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
@@ -527,7 +527,7 @@ const ListingsPage = () => {
 
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">🏍️ Categorie</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
                   <select
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -545,7 +545,7 @@ const ListingsPage = () => {
 
                 {/* Brand */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">🏭 Marcă</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
                   <select
                     value={filters.brand}
                     onChange={(e) => handleFilterChange('brand', e.target.value)}
@@ -567,7 +567,7 @@ const ListingsPage = () => {
 
                 {/* Year Range */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">📅 An fabricație</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
@@ -588,7 +588,7 @@ const ListingsPage = () => {
 
                 {/* Engine Capacity */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">⚙️ Capacitate motor (cc)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Capacitate motor (cc)</label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
@@ -609,7 +609,7 @@ const ListingsPage = () => {
 
                 {/* Mileage */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">🛣️ Kilometraj maxim</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Kilometraj maxim</label>
                   <input
                     type="number"
                     placeholder="ex: 50000"
@@ -621,7 +621,7 @@ const ListingsPage = () => {
 
                 {/* Fuel Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">⛽ Combustibil</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
                   <select
                     value={filters.fuel}
                     onChange={(e) => handleFilterChange('fuel', e.target.value)}
@@ -636,7 +636,7 @@ const ListingsPage = () => {
 
                 {/* Transmission */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">🔧 Transmisie</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
                   <select
                     value={filters.transmission}
                     onChange={(e) => handleFilterChange('transmission', e.target.value)}
@@ -651,7 +651,7 @@ const ListingsPage = () => {
 
                 {/* Condition */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">✨ Starea</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
                   <select
                     value={filters.condition}
                     onChange={(e) => handleFilterChange('condition', e.target.value)}
@@ -668,7 +668,7 @@ const ListingsPage = () => {
 
                 {/* Seller Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">👤 Tip vânzător</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Tip vânzător</label>
                   <select
                     value={filters.sellerType}
                     onChange={(e) => handleFilterChange('sellerType', e.target.value)}
@@ -682,7 +682,7 @@ const ListingsPage = () => {
 
                 {/* Location */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">📍 Locația</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
                   <select
                     value={filters.location}
                     onChange={(e) => handleFilterChange('location', e.target.value)}
@@ -711,19 +711,19 @@ const ListingsPage = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
-            {/* Results */}
-            <div className="mb-5">
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">
+          <div className="flex-1 order-1 lg:order-2">
+            {/* Results - Mobile Optimized */}
+            <div className="mb-4 sm:mb-5">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Afișez <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, filteredListings.length)}</span> din <span className="font-semibold">{filteredListings.length}</span> rezultate
                   {searchQuery && (
-                    <span className="ml-2 text-nexar-accent">
+                    <span className="block sm:inline sm:ml-2 text-nexar-accent">
                       pentru "{searchQuery}"
                     </span>
                   )}
                 </p>
-                <select className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent">
+                <select className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-sm">
                   <option>Sortează după: Cel mai recent</option>
                   <option>Preț: Crescător</option>
                   <option>Preț: Descrescător</option>
@@ -736,10 +736,10 @@ const ListingsPage = () => {
 
             {/* No Results */}
             {filteredListings.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
-                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
-                <p className="text-gray-600 mb-6">
+              <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center border border-gray-100">
+                <Search className="h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                <p className="text-gray-600 mb-6 text-sm sm:text-base">
                   Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
                 </p>
                 <button
@@ -760,26 +760,26 @@ const ListingsPage = () => {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Pagination - Mobile Optimized */}
             {filteredListings.length > 0 && totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
-                <div className="flex items-center space-x-2">
+              <div className="mt-6 sm:mt-8 flex justify-center">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-1 px-2 sm:px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    <span>Anterior</span>
+                    <span className="hidden sm:inline">Anterior</span>
                   </button>
                   
-                  {[...Array(totalPages)].map((_, index) => {
+                  {[...Array(Math.min(5, totalPages))].map((_, index) => {
                     const page = index + 1;
                     return (
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-2 rounded-lg transition-colors ${
+                        className={`px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${
                           currentPage === page
                             ? 'bg-nexar-accent text-white'
                             : 'border border-gray-200 hover:bg-gray-50'
@@ -793,9 +793,9 @@ const ListingsPage = () => {
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-1 px-2 sm:px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    <span>Următorul</span>
+                    <span className="hidden sm:inline">Următorul</span>
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>

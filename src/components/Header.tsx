@@ -26,21 +26,21 @@ const Header = () => {
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <img src="/image.png" alt="Nexar Logo" className="h-8 w-auto transition-transform group-hover:scale-105" />
-            <div className="flex flex-col">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          {/* Logo - Optimized for mobile */}
+          <Link to="/" className="flex items-center space-x-2 group min-w-0">
+            <img src="/image.png" alt="Nexar Logo" className="h-6 sm:h-8 w-auto transition-transform group-hover:scale-105 flex-shrink-0" />
+            <div className="hidden sm:flex flex-col">
               <span className="text-xs text-gray-500 -mb-1">Premium Motorcycles</span>
             </div>
           </Link>
 
           {/* Navigation - Desktop */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             <Link
               to="/anunturi"
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+              className={`px-3 xl:px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
                 isActive('/anunturi')
                   ? 'bg-nexar-accent text-white'
                   : 'text-gray-700 hover:bg-gray-100'
@@ -50,10 +50,11 @@ const Header = () => {
             </Link>
             <Link
               to="/adauga-anunt"
-              className="flex items-center space-x-2 bg-nexar-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-nexar-gold transition-all duration-200 text-sm"
+              className="flex items-center space-x-2 bg-nexar-accent text-white px-3 xl:px-4 py-2 rounded-lg font-medium hover:bg-nexar-gold transition-all duration-200 text-sm"
             >
               <Plus className="h-4 w-4" />
-              <span>Adaugă Anunț</span>
+              <span className="hidden xl:inline">Adaugă Anunț</span>
+              <span className="xl:hidden">Adaugă</span>
             </Link>
             
             {/* User Menu */}
@@ -64,10 +65,10 @@ const Header = () => {
               >
                 {user ? (
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    <div className="w-7 h-7 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Bună, {user.name}</span>
+                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">Bună, {user.name}</span>
                   </div>
                 ) : (
                   <User className="h-5 w-5 text-gray-700" />
@@ -133,73 +134,70 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 animate-slide-up bg-white/95 backdrop-blur-md">
-            <div className="space-y-4">
-              {/* Mobile Navigation */}
-              <div className="space-y-2">
-                <Link
-                  to="/anunturi"
-                  className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Anunțuri
-                </Link>
-                <Link
-                  to="/adauga-anunt"
-                  className="flex items-center space-x-2 px-4 py-3 bg-nexar-accent text-white rounded-lg font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Adaugă Anunț</span>
-                </Link>
-                
-                {user ? (
-                  <>
-                    <div className="px-4 py-3 text-gray-700 font-medium">
-                      Bună, {user.name}
-                    </div>
-                    <Link
-                      to="/profil"
-                      className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Profilul Meu
-                    </Link>
-                    <Link
-                      to="/admin"
-                      className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Admin Panel
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-4 py-3 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      Deconectează-te
-                    </button>
-                  </>
-                ) : (
+          <div className="lg:hidden py-4 border-t border-gray-200 animate-slide-up bg-white/95 backdrop-blur-md">
+            <div className="space-y-2">
+              <Link
+                to="/anunturi"
+                className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Anunțuri
+              </Link>
+              <Link
+                to="/adauga-anunt"
+                className="flex items-center space-x-2 px-4 py-3 bg-nexar-accent text-white rounded-lg font-medium mx-0"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Adaugă Anunț</span>
+              </Link>
+              
+              {user ? (
+                <>
+                  <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
+                    Bună, {user.name}
+                  </div>
                   <Link
-                    to="/auth"
-                    className="block px-4 py-3 rounded-lg font-medium text-gray-900 hover:bg-gray-100 transition-colors"
+                    to="/profil"
+                    className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Conectează-te
+                    Profilul Meu
                   </Link>
-                )}
-              </div>
+                  <Link
+                    to="/admin"
+                    className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Admin Panel
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Deconectează-te
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="block px-4 py-3 rounded-lg font-medium text-gray-900 hover:bg-gray-100 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Conectează-te
+                </Link>
+              )}
             </div>
           </div>
         )}
