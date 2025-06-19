@@ -13,13 +13,13 @@ const Footer = () => {
               <img 
                 src="/nexar-logo.jpg" 
                 alt="Nexar Logo" 
-                className="h-8 sm:h-10 w-auto"
+                className="h-12 sm:h-16 md:h-20 w-auto"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   if (target.src.includes('nexar-logo.jpg')) {
                     target.src = '/Nexar - logo_black & red.png';
                   } else if (target.src.includes('Nexar - logo_black & red.png')) {
-                    target.src = '/nexar-logo.png';
+                    target.src =  '/nexar-logo.png';
                   } else if (target.src.includes('nexar-logo.png')) {
                     target.src = '/image.png';
                   } else {
@@ -33,7 +33,7 @@ const Footer = () => {
                 }}
               />
               {/* Fallback text logo */}
-              <div className="hidden text-2xl font-bold text-nexar-accent">
+              <div className="hidden text-3xl font-bold text-nexar-accent">
                 NEXAR
               </div>
               <div className="flex flex-col">

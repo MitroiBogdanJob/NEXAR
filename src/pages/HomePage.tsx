@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, ChevronLeft, ChevronRight, Building } from 'lucide-react';
 
@@ -35,6 +35,7 @@ const HomePage = () => {
       brand: "Yamaha",
       seller: "Moto Expert SRL",
       sellerType: "dealer",
+      sellerId: "dealer-1",
       engine: 998
     },
     {
@@ -54,6 +55,7 @@ const HomePage = () => {
       brand: "BMW",
       seller: "BMW Moto Center",
       sellerType: "dealer",
+      sellerId: "dealer-2",
       engine: 999
     },
     {
@@ -73,6 +75,7 @@ const HomePage = () => {
       brand: "Ducati",
       seller: "Ducati Premium",
       sellerType: "dealer",
+      sellerId: "dealer-3",
       engine: 1103
     },
     {
@@ -92,6 +95,7 @@ const HomePage = () => {
       brand: "BMW",
       seller: "BMW Adventure",
       sellerType: "dealer",
+      sellerId: "dealer-4",
       engine: 1254
     },
     {
@@ -111,6 +115,7 @@ const HomePage = () => {
       brand: "Harley-Davidson",
       seller: "Harley Center",
       sellerType: "dealer",
+      sellerId: "dealer-5",
       engine: 1868
     },
     {
@@ -128,8 +133,9 @@ const HomePage = () => {
       rating: 4.6,
       category: "Naked",
       brand: "KTM",
-      seller: "Vânzător Individual",
+      seller: "Alexandru Popescu",
       sellerType: "privat",
+      sellerId: "privat-1",
       engine: 1301
     },
     {
@@ -149,6 +155,7 @@ const HomePage = () => {
       brand: "Honda",
       seller: "Honda Center",
       sellerType: "dealer",
+      sellerId: "dealer-6",
       engine: 599
     },
     {
@@ -166,8 +173,9 @@ const HomePage = () => {
       rating: 4.5,
       category: "Sport",
       brand: "Suzuki",
-      seller: "Vânzător Individual",
+      seller: "Maria Ionescu",
       sellerType: "privat",
+      sellerId: "privat-2",
       engine: 999
     }
   ];
@@ -233,6 +241,36 @@ const HomePage = () => {
 
   const ListingRow = ({ listing }: { listing: any }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const touchStartX = useRef<number>(0);
+    const touchEndX = useRef<number>(0);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+
+    // Handle touch events for mobile swipe
+    const handleTouchStart = (e: React.TouchEvent) => {
+      touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!touchStartX.current || !touchEndX.current) return;
+      
+      const distance = touchStartX.current - touchEndX.current;
+      const isLeftSwipe = distance > 50;
+      const isRightSwipe = distance < -50;
+
+      if (isLeftSwipe && currentImageIndex < listing.images.length - 1) {
+        setCurrentImageIndex(prev => prev + 1);
+      }
+      if (isRightSwipe && currentImageIndex > 0) {
+        setCurrentImageIndex(prev => prev - 1);
+      }
+    };
 
     const nextImage = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -250,13 +288,26 @@ const HomePage = () => {
       );
     };
 
+    const handleSellerClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Navigate to seller profile
+      window.open(`/profil/${listing.sellerId}`, '_blank');
+    };
+
     return (
       <Link
         to={`/anunt/${listing.id}`}
         className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
       >
         <div className="flex flex-col sm:flex-row">
-          <div className="relative w-full sm:w-64 flex-shrink-0">
+          <div 
+            ref={imageContainerRef}
+            className="relative w-full sm:w-64 flex-shrink-0"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <img
               src={listing.images[currentImageIndex]}
               alt={listing.title}
@@ -268,14 +319,14 @@ const HomePage = () => {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100 hidden sm:block"
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-600" />
                 </button>
                 
                 <button
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-70 group-hover:opacity-100 hidden sm:block"
                 >
                   <ChevronRight className="h-4 w-4 text-gray-600" />
                 </button>
@@ -290,6 +341,13 @@ const HomePage = () => {
                       }`}
                     />
                   ))}
+                </div>
+
+                {/* Mobile swipe hint */}
+                <div className="absolute top-2 left-2 sm:hidden">
+                  <div className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                    Swipe pentru poze
+                  </div>
                 </div>
               </>
             )}
@@ -321,7 +379,13 @@ const HomePage = () => {
                 {/* BADGE DEALER PREMIUM - MULT MAI ELEGANT */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                   <div className="text-sm text-gray-500">
-                    Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+                    Vândut de: 
+                    <button 
+                      onClick={handleSellerClick}
+                      className="font-semibold text-nexar-accent hover:text-nexar-gold transition-colors ml-1 underline"
+                    >
+                      {listing.seller}
+                    </button>
                   </div>
                   
                   {/* BADGE DEALER PREMIUM - DESIGN ELEGANT */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { 
   Star, Heart, Share2, MapPin, Calendar, Gauge, Fuel, 
   Settings, Shield, Phone, MessageCircle, 
@@ -11,11 +11,41 @@ const ListingDetailPage = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  // Handle touch events for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentImageIndex < listing.images.length - 1) {
+      setCurrentImageIndex(prev => prev + 1);
+    }
+    if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex(prev => prev - 1);
+    }
+
+    // Reset touch coordinates
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
 
   const listing = {
     id: 1,
@@ -34,6 +64,7 @@ const ListingDetailPage = () => {
     ],
     rating: 4.9,
     seller: {
+      id: "dealer-1",
       name: "Moto Expert SRL",
       rating: 4.8,
       reviews: 127,
@@ -118,7 +149,12 @@ const ListingDetailPage = () => {
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             {/* Image Gallery - Mobile Optimized */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="relative">
+              <div 
+                className="relative"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
                 <img
                   src={listing.images[currentImageIndex]}
                   alt={listing.title}
@@ -166,6 +202,13 @@ const ListingDetailPage = () => {
                       }`}
                     />
                   ))}
+                </div>
+
+                {/* Mobile swipe hint */}
+                <div className="absolute top-2 left-2 sm:hidden">
+                  <div className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                    Swipe pentru poze
+                  </div>
                 </div>
               </div>
               
@@ -215,12 +258,17 @@ const ListingDetailPage = () => {
 
               {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
               {listing.seller.type === 'dealer' && (
-                <div className="mb-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl shadow-lg border-2 border-blue-500 flex items-center justify-between">
+                <div className="mb-6 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl shadow-lg border border-emerald-400 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Building className="h-6 w-6" />
                     <div>
-                      <div className="font-bold text-lg">DEALER AUTORIZAT</div>
-                      <div className="text-blue-100 text-sm">Vândut de {listing.seller.name}</div>
+                      <div className="font-bold text-lg">DEALER PREMIUM</div>
+                      <Link 
+                        to={`/profil/${listing.seller.id}`}
+                        className="text-white underline hover:text-emerald-100 transition-colors text-sm"
+                      >
+                        Vândut de {listing.seller.name}
+                      </Link>
                     </div>
                   </div>
                   <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
@@ -322,7 +370,12 @@ const ListingDetailPage = () => {
                 />
                 <div>
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">{listing.seller.name}</h3>
+                    <Link 
+                      to={`/profil/${listing.seller.id}`}
+                      className="text-base sm:text-lg font-semibold text-nexar-accent hover:text-nexar-gold transition-colors"
+                    >
+                      {listing.seller.name}
+                    </Link>
                     {listing.seller.verified && (
                       <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     )}
@@ -337,12 +390,12 @@ const ListingDetailPage = () => {
 
               {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ - PENTRU MOBILE */}
               {listing.seller.type === 'dealer' && (
-                <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg flex items-center justify-between lg:hidden">
+                <div className="mb-4 p-3 bg-emerald-100 text-emerald-800 rounded-lg flex items-center justify-between lg:hidden">
                   <div className="flex items-center space-x-2">
                     <Building className="h-5 w-5" />
-                    <span className="font-bold">DEALER AUTORIZAT</span>
+                    <span className="font-bold">DEALER PREMIUM</span>
                   </div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-emerald-600 rounded-full animate-pulse"></div>
                 </div>
               )}
 

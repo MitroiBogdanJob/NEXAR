@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
@@ -40,6 +40,7 @@ const ListingsPage = () => {
       rating: 4.9,
       seller: "Vânzător Individual",
       sellerType: "individual",
+      sellerId: "privat-1",
       category: "Sport",
       brand: "Yamaha",
       model: "YZF-R1",
@@ -64,6 +65,7 @@ const ListingsPage = () => {
       rating: 4.8,
       seller: "BMW Moto Center",
       sellerType: "dealer",
+      sellerId: "dealer-1",
       category: "Sport",
       brand: "BMW",
       model: "S1000RR",
@@ -88,6 +90,7 @@ const ListingsPage = () => {
       rating: 5.0,
       seller: "Ducati Premium",
       sellerType: "dealer",
+      sellerId: "dealer-2",
       category: "Sport",
       brand: "Ducati",
       model: "Panigale V4",
@@ -112,6 +115,7 @@ const ListingsPage = () => {
       rating: 4.3,
       seller: "Vânzător Individual",
       sellerType: "individual",
+      sellerId: "privat-2",
       category: "Sport",
       brand: "Honda",
       model: "CBR600RR",
@@ -136,6 +140,7 @@ const ListingsPage = () => {
       rating: 4.6,
       seller: "Kawasaki Pro",
       sellerType: "dealer",
+      sellerId: "dealer-3",
       category: "Sport",
       brand: "Kawasaki",
       model: "Ninja ZX-10R",
@@ -160,6 +165,7 @@ const ListingsPage = () => {
       rating: 4.5,
       seller: "Suzuki Center",
       sellerType: "dealer",
+      sellerId: "dealer-4",
       category: "Sport",
       brand: "Suzuki",
       model: "GSX-R1000R",
@@ -184,6 +190,7 @@ const ListingsPage = () => {
       rating: 4.9,
       seller: "Aprilia Racing",
       sellerType: "dealer",
+      sellerId: "dealer-5",
       category: "Sport",
       brand: "Aprilia",
       model: "RSV4 1100 Factory",
@@ -208,6 +215,7 @@ const ListingsPage = () => {
       rating: 4.7,
       seller: "KTM Center",
       sellerType: "dealer",
+      sellerId: "dealer-6",
       category: "Naked",
       brand: "KTM",
       model: "1290 Super Duke R",
@@ -232,6 +240,7 @@ const ListingsPage = () => {
       rating: 4.8,
       seller: "Triumph Dealer",
       sellerType: "dealer",
+      sellerId: "dealer-7",
       category: "Naked",
       brand: "Triumph",
       model: "Speed Triple 1200 RS",
@@ -256,6 +265,7 @@ const ListingsPage = () => {
       rating: 4.6,
       seller: "Harley Center",
       sellerType: "dealer",
+      sellerId: "dealer-8",
       category: "Cruiser",
       brand: "Harley-Davidson",
       model: "Sportster S",
@@ -280,6 +290,7 @@ const ListingsPage = () => {
       rating: 4.9,
       seller: "BMW Adventure",
       sellerType: "dealer",
+      sellerId: "dealer-9",
       category: "Adventure",
       brand: "BMW",
       model: "R1250GS Adventure",
@@ -304,6 +315,7 @@ const ListingsPage = () => {
       rating: 5.0,
       seller: "Ducati Adventure",
       sellerType: "dealer",
+      sellerId: "dealer-10",
       category: "Adventure",
       brand: "Ducati",
       model: "Multistrada V4 S",
@@ -399,6 +411,36 @@ const ListingsPage = () => {
 
   const ListingRow = ({ listing }: { listing: any }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const touchStartX = useRef<number>(0);
+    const touchEndX = useRef<number>(0);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+
+    // Handle touch events for mobile swipe
+    const handleTouchStart = (e: React.TouchEvent) => {
+      touchStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      touchEndX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!touchStartX.current || !touchEndX.current) return;
+      
+      const distance = touchStartX.current - touchEndX.current;
+      const isLeftSwipe = distance > 50;
+      const isRightSwipe = distance < -50;
+
+      if (isLeftSwipe && currentImageIndex < listing.images.length - 1) {
+        setCurrentImageIndex(prev => prev + 1);
+      }
+      if (isRightSwipe && currentImageIndex > 0) {
+        setCurrentImageIndex(prev => prev - 1);
+      }
+    };
 
     const nextImage = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -416,13 +458,26 @@ const ListingsPage = () => {
       );
     };
 
+    const handleSellerClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Navigate to seller profile
+      window.open(`/profil/${listing.sellerId}`, '_blank');
+    };
+
     return (
       <Link
         to={`/anunt/${listing.id}`}
         className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
       >
         <div className="flex flex-col sm:flex-row">
-          <div className="relative w-full sm:w-64 flex-shrink-0">
+          <div 
+            ref={imageContainerRef}
+            className="relative w-full sm:w-64 flex-shrink-0"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <img
               src={listing.images[currentImageIndex]}
               alt={listing.title}
@@ -434,14 +489,14 @@ const ListingsPage = () => {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100 hidden sm:block"
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-600" />
                 </button>
                 
                 <button
                   onClick={nextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100 hidden sm:block"
                 >
                   <ChevronRight className="h-4 w-4 text-gray-600" />
                 </button>
@@ -456,6 +511,13 @@ const ListingsPage = () => {
                       }`}
                     />
                   ))}
+                </div>
+
+                {/* Mobile swipe hint */}
+                <div className="absolute top-2 left-2 sm:hidden">
+                  <div className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                    Swipe pentru poze
+                  </div>
                 </div>
               </>
             )}
@@ -487,18 +549,24 @@ const ListingsPage = () => {
                 {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                   <div className="text-sm text-gray-600">
-                    Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
+                    Vândut de: 
+                    <button 
+                      onClick={handleSellerClick}
+                      className="font-semibold text-nexar-accent hover:text-nexar-gold transition-colors ml-1 underline"
+                    >
+                      {listing.seller}
+                    </button>
                   </div>
                   
                   {/* BADGE DEALER MULT MAI VIZIBIL */}
                   {listing.sellerType === 'dealer' ? (
-                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full shadow-lg border-2 border-blue-500">
+                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full shadow-lg border border-emerald-400">
                       <Building className="h-4 w-4" />
-                      <span className="font-bold text-sm">DEALER AUTORIZAT</span>
+                      <span className="font-bold text-sm tracking-wide">DEALER PREMIUM</span>
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1.5 rounded-full shadow-md">
+                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-3 py-1.5 rounded-full shadow-md">
                       <span className="font-semibold text-xs">PRIVAT</span>
                     </div>
                   )}
