@@ -8,13 +8,18 @@ const HomePage = () => {
   const [filters, setFilters] = useState({
     priceMin: '',
     priceMax: '',
+    category: '',
     brand: '',
-    sellerType: '',
-    engineMin: '',
-    engineMax: '',
     yearMin: '',
     yearMax: '',
-    mileageMax: ''
+    mileageMax: '',
+    location: '',
+    fuel: '',
+    transmission: '',
+    engineMin: '',
+    engineMax: '',
+    condition: '',
+    sellerType: ''
   });
 
   const allListings = [
@@ -196,20 +201,31 @@ const HomePage = () => {
       const matchesPrice = (!filters.priceMin || listing.price >= parseInt(filters.priceMin)) &&
                           (!filters.priceMax || listing.price <= parseInt(filters.priceMax));
       
+      const matchesCategory = !filters.category || listing.category.toLowerCase() === filters.category.toLowerCase();
+      
       const matchesBrand = !filters.brand || listing.brand.toLowerCase() === filters.brand.toLowerCase();
-      
-      const matchesSellerType = !filters.sellerType || listing.sellerType === filters.sellerType;
-      
-      const matchesEngine = (!filters.engineMin || listing.engine >= parseInt(filters.engineMin)) &&
-                           (!filters.engineMax || listing.engine <= parseInt(filters.engineMax));
       
       const matchesYear = (!filters.yearMin || listing.year >= parseInt(filters.yearMin)) &&
                          (!filters.yearMax || listing.year <= parseInt(filters.yearMax));
       
       const matchesMileage = !filters.mileageMax || listing.mileage <= parseInt(filters.mileageMax);
+      
+      const matchesLocation = !filters.location || listing.location.toLowerCase().includes(filters.location.toLowerCase());
+      
+      const matchesFuel = !filters.fuel || listing.fuel.toLowerCase() === filters.fuel.toLowerCase();
+      
+      const matchesTransmission = !filters.transmission || listing.transmission.toLowerCase() === filters.transmission.toLowerCase();
+      
+      const matchesEngine = (!filters.engineMin || listing.engine >= parseInt(filters.engineMin)) &&
+                           (!filters.engineMax || listing.engine <= parseInt(filters.engineMax));
+      
+      const matchesCondition = !filters.condition || listing.condition.toLowerCase() === filters.condition.toLowerCase();
+      
+      const matchesSellerType = !filters.sellerType || listing.sellerType === filters.sellerType;
 
-      return matchesSearch && matchesPrice && matchesBrand && matchesSellerType && 
-             matchesEngine && matchesYear && matchesMileage;
+      return matchesSearch && matchesPrice && matchesCategory && matchesBrand && 
+             matchesYear && matchesMileage && matchesLocation && matchesFuel && 
+             matchesTransmission && matchesEngine && matchesCondition && matchesSellerType;
     });
   }, [searchQuery, filters, allListings]);
 
@@ -221,13 +237,18 @@ const HomePage = () => {
     setFilters({
       priceMin: '',
       priceMax: '',
+      category: '',
       brand: '',
-      sellerType: '',
-      engineMin: '',
-      engineMax: '',
       yearMin: '',
       yearMax: '',
-      mileageMax: ''
+      mileageMax: '',
+      location: '',
+      fuel: '',
+      transmission: '',
+      engineMin: '',
+      engineMax: '',
+      condition: '',
+      sellerType: ''
     });
     setSearchQuery('');
   };
@@ -237,6 +258,14 @@ const HomePage = () => {
     { name: "Touring", count: "189 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
     { name: "Cruiser", count: "156 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
     { name: "Adventure", count: "203 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Naked", count: "178 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Scooter", count: "134 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Enduro", count: "112 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Chopper", count: "98 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Cafe Racer", count: "87 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Supermoto", count: "76 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Motocross", count: "65 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Trial", count: "54 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" }
   ];
 
   const ListingRow = ({ listing }: { listing: any }) => {
@@ -477,6 +506,9 @@ const HomePage = () => {
       <section className="py-8 sm:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6 sm:mb-10">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              Anunțuri Premium
+            </h2>
             <p className="text-lg text-gray-600 max-w-xl mx-auto">
               Descoperă cele mai noi și mai atractive motociclete disponibile pe platformă
             </p>
@@ -494,6 +526,30 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
+                    <select
+                      value={filters.category}
+                      onChange={(e) => handleFilterChange('category', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate categoriile</option>
+                      <option value="Sport">Sport</option>
+                      <option value="Touring">Touring</option>
+                      <option value="Cruiser">Cruiser</option>
+                      <option value="Adventure">Adventure</option>
+                      <option value="Naked">Naked</option>
+                      <option value="Scooter">Scooter</option>
+                      <option value="Enduro">Enduro</option>
+                      <option value="Chopper">Chopper</option>
+                      <option value="Cafe Racer">Cafe Racer</option>
+                      <option value="Supermoto">Supermoto</option>
+                      <option value="Motocross">Motocross</option>
+                      <option value="Trial">Trial</option>
+                    </select>
+                  </div>
+
                   {/* Brand */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
@@ -523,6 +579,16 @@ const HomePage = () => {
                       <option value="Beta">Beta</option>
                       <option value="Sherco">Sherco</option>
                       <option value="GasGas">GasGas</option>
+                      <option value="Royal Enfield">Royal Enfield</option>
+                      <option value="Bimota">Bimota</option>
+                      <option value="Buell">Buell</option>
+                      <option value="CCM">CCM</option>
+                      <option value="CF Moto">CF Moto</option>
+                      <option value="Daelim">Daelim</option>
+                      <option value="Derbi">Derbi</option>
+                      <option value="Hyosung">Hyosung</option>
+                      <option value="Kymco">Kymco</option>
+                      <option value="Mash">Mash</option>
                     </select>
                   </div>
 
@@ -615,6 +681,77 @@ const HomePage = () => {
                     </div>
                   </div>
 
+                  {/* Fuel Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
+                    <select
+                      value={filters.fuel}
+                      onChange={(e) => handleFilterChange('fuel', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate tipurile</option>
+                      <option value="Benzină">Benzină</option>
+                      <option value="Electric">Electric</option>
+                      <option value="Hibrid">Hibrid</option>
+                    </select>
+                  </div>
+
+                  {/* Transmission */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
+                    <select
+                      value={filters.transmission}
+                      onChange={(e) => handleFilterChange('transmission', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate tipurile</option>
+                      <option value="Manuală">Manuală</option>
+                      <option value="Automată">Automată</option>
+                      <option value="Semi-automată">Semi-automată</option>
+                    </select>
+                  </div>
+
+                  {/* Condition */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
+                    <select
+                      value={filters.condition}
+                      onChange={(e) => handleFilterChange('condition', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate stările</option>
+                      <option value="La comandă">La comandă</option>
+                      <option value="Excelentă">Excelentă</option>
+                      <option value="Foarte bună">Foarte bună</option>
+                      <option value="Bună">Bună</option>
+                      <option value="Satisfăcătoare">Satisfăcătoare</option>
+                    </select>
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
+                    <select
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate locațiile</option>
+                      <option value="București">București</option>
+                      <option value="Cluj-Napoca">Cluj-Napoca</option>
+                      <option value="Timișoara">Timișoara</option>
+                      <option value="Iași">Iași</option>
+                      <option value="Constanța">Constanța</option>
+                      <option value="Brașov">Brașov</option>
+                      <option value="Craiova">Craiova</option>
+                      <option value="Galați">Galați</option>
+                      <option value="Oradea">Oradea</option>
+                      <option value="Ploiești">Ploiești</option>
+                      <option value="Sibiu">Sibiu</option>
+                      <option value="Bacău">Bacău</option>
+                    </select>
+                  </div>
+
                   {/* Clear Filters */}
                   <button
                     onClick={clearFilters}
@@ -645,7 +782,31 @@ const HomePage = () => {
                       </button>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-6 pb-20">
+                      {/* Category */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
+                        <select
+                          value={filters.category}
+                          onChange={(e) => handleFilterChange('category', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate categoriile</option>
+                          <option value="Sport">Sport</option>
+                          <option value="Touring">Touring</option>
+                          <option value="Cruiser">Cruiser</option>
+                          <option value="Adventure">Adventure</option>
+                          <option value="Naked">Naked</option>
+                          <option value="Scooter">Scooter</option>
+                          <option value="Enduro">Enduro</option>
+                          <option value="Chopper">Chopper</option>
+                          <option value="Cafe Racer">Cafe Racer</option>
+                          <option value="Supermoto">Supermoto</option>
+                          <option value="Motocross">Motocross</option>
+                          <option value="Trial">Trial</option>
+                        </select>
+                      </div>
+
                       {/* Brand */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
@@ -665,6 +826,21 @@ const HomePage = () => {
                           <option value="Aprilia">Aprilia</option>
                           <option value="Triumph">Triumph</option>
                           <option value="Harley-Davidson">Harley-Davidson</option>
+                          <option value="MV Agusta">MV Agusta</option>
+                          <option value="Benelli">Benelli</option>
+                          <option value="Moto Guzzi">Moto Guzzi</option>
+                          <option value="Indian">Indian</option>
+                          <option value="Zero">Zero</option>
+                          <option value="Energica">Energica</option>
+                          <option value="Husqvarna">Husqvarna</option>
+                          <option value="Beta">Beta</option>
+                          <option value="Sherco">Sherco</option>
+                          <option value="GasGas">GasGas</option>
+                          <option value="Royal Enfield">Royal Enfield</option>
+                          <option value="Bimota">Bimota</option>
+                          <option value="Buell">Buell</option>
+                          <option value="CCM">CCM</option>
+                          <option value="CF Moto">CF Moto</option>
                         </select>
                       </div>
 
@@ -703,6 +879,131 @@ const HomePage = () => {
                         </div>
                       </div>
 
+                      {/* Engine Size */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Capacitate Motor (cc)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="Min"
+                            value={filters.engineMin}
+                            onChange={(e) => handleFilterChange('engineMin', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Max"
+                            value={filters.engineMax}
+                            onChange={(e) => handleFilterChange('engineMax', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Year Range */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">An Fabricație</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="De la"
+                            value={filters.yearMin}
+                            onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Până la"
+                            value={filters.yearMax}
+                            onChange={(e) => handleFilterChange('yearMax', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Mileage */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Kilometraj Maxim</label>
+                        <input
+                          type="number"
+                          placeholder="ex: 50000"
+                          value={filters.mileageMax}
+                          onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        />
+                      </div>
+
+                      {/* Fuel Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
+                        <select
+                          value={filters.fuel}
+                          onChange={(e) => handleFilterChange('fuel', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate tipurile</option>
+                          <option value="Benzină">Benzină</option>
+                          <option value="Electric">Electric</option>
+                          <option value="Hibrid">Hibrid</option>
+                        </select>
+                      </div>
+
+                      {/* Transmission */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
+                        <select
+                          value={filters.transmission}
+                          onChange={(e) => handleFilterChange('transmission', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate tipurile</option>
+                          <option value="Manuală">Manuală</option>
+                          <option value="Automată">Automată</option>
+                          <option value="Semi-automată">Semi-automată</option>
+                        </select>
+                      </div>
+
+                      {/* Condition */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
+                        <select
+                          value={filters.condition}
+                          onChange={(e) => handleFilterChange('condition', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate stările</option>
+                          <option value="La comandă">La comandă</option>
+                          <option value="Excelentă">Excelentă</option>
+                          <option value="Foarte bună">Foarte bună</option>
+                          <option value="Bună">Bună</option>
+                          <option value="Satisfăcătoare">Satisfăcătoare</option>
+                        </select>
+                      </div>
+
+                      {/* Location */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
+                        <select
+                          value={filters.location}
+                          onChange={(e) => handleFilterChange('location', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        >
+                          <option value="">Toate locațiile</option>
+                          <option value="București">București</option>
+                          <option value="Cluj-Napoca">Cluj-Napoca</option>
+                          <option value="Timișoara">Timișoara</option>
+                          <option value="Iași">Iași</option>
+                          <option value="Constanța">Constanța</option>
+                          <option value="Brașov">Brașov</option>
+                          <option value="Craiova">Craiova</option>
+                          <option value="Galați">Galați</option>
+                          <option value="Oradea">Oradea</option>
+                          <option value="Ploiești">Ploiești</option>
+                          <option value="Sibiu">Sibiu</option>
+                          <option value="Bacău">Bacău</option>
+                        </select>
+                      </div>
+
                       {/* Clear Filters */}
                       <button
                         onClick={clearFilters}
@@ -712,13 +1013,15 @@ const HomePage = () => {
                         <span>Șterge Filtrele</span>
                       </button>
 
-                      {/* Apply Filters Button */}
-                      <button
-                        onClick={() => setShowFilters(false)}
-                        className="w-full bg-nexar-accent text-white py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
-                      >
-                        Aplică Filtrele
-                      </button>
+                      {/* Apply Filters Button - Fixed at bottom */}
+                      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+                        <button
+                          onClick={() => setShowFilters(false)}
+                          className="w-full bg-nexar-accent text-white py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                        >
+                          Aplică Filtrele
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -797,8 +1100,8 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {categories.map((category, index) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {categories.slice(0, 8).map((category, index) => (
               <Link
                 key={index}
                 to={`/anunturi?categorie=${category.name.toLowerCase()}`}

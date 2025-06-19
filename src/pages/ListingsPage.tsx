@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
 const ListingsPage = () => {
@@ -23,6 +23,21 @@ const ListingsPage = () => {
     sellerType: ''
   });
   const itemsPerPage = 10;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Extrage parametrii din URL
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('categorie');
+    
+    if (categoryParam) {
+      setFilters(prev => ({
+        ...prev,
+        category: categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)
+      }));
+    }
+  }, [location]);
 
   const allListings = [
     {
@@ -402,6 +417,9 @@ const ListingsPage = () => {
     });
     setSearchQuery('');
     setCurrentPage(1);
+    
+    // Resetăm și URL-ul
+    navigate('/anunturi');
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -609,7 +627,7 @@ const ListingsPage = () => {
         {/* Header - Mobile Optimized */}
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-            Toate Anunțurile
+            {filters.category ? `Motociclete ${filters.category}` : 'Toate Anunțurile'}
           </h1>
           <p className="text-gray-600 text-sm sm:text-base">
             Descoperă {filteredListings.length} motociclete disponibile pentru vânzare
@@ -671,27 +689,6 @@ const ListingsPage = () => {
               </div>
 
               <div className="space-y-4 sm:space-y-6 max-h-[70vh] lg:max-h-[calc(100vh-200px)] overflow-y-auto">
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.priceMin}
-                      onChange={(e) => handleFilterChange('priceMin', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.priceMax}
-                      onChange={(e) => handleFilterChange('priceMax', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
                 {/* Category */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
@@ -706,7 +703,13 @@ const ListingsPage = () => {
                     <option value="Cruiser">Cruiser</option>
                     <option value="Adventure">Adventure</option>
                     <option value="Naked">Naked</option>
+                    <option value="Scooter">Scooter</option>
                     <option value="Enduro">Enduro</option>
+                    <option value="Chopper">Chopper</option>
+                    <option value="Cafe Racer">Cafe Racer</option>
+                    <option value="Supermoto">Supermoto</option>
+                    <option value="Motocross">Motocross</option>
+                    <option value="Trial">Trial</option>
                   </select>
                 </div>
 
@@ -729,7 +732,48 @@ const ListingsPage = () => {
                     <option value="Aprilia">Aprilia</option>
                     <option value="Triumph">Triumph</option>
                     <option value="Harley-Davidson">Harley-Davidson</option>
+                    <option value="MV Agusta">MV Agusta</option>
+                    <option value="Benelli">Benelli</option>
+                    <option value="Moto Guzzi">Moto Guzzi</option>
+                    <option value="Indian">Indian</option>
+                    <option value="Zero">Zero</option>
+                    <option value="Energica">Energica</option>
+                    <option value="Husqvarna">Husqvarna</option>
+                    <option value="Beta">Beta</option>
+                    <option value="Sherco">Sherco</option>
+                    <option value="GasGas">GasGas</option>
+                    <option value="Royal Enfield">Royal Enfield</option>
+                    <option value="Bimota">Bimota</option>
+                    <option value="Buell">Buell</option>
+                    <option value="CCM">CCM</option>
+                    <option value="CF Moto">CF Moto</option>
+                    <option value="Daelim">Daelim</option>
+                    <option value="Derbi">Derbi</option>
+                    <option value="Hyosung">Hyosung</option>
+                    <option value="Kymco">Kymco</option>
+                    <option value="Mash">Mash</option>
                   </select>
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.priceMin}
+                      onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.priceMax}
+                      onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    />
+                  </div>
                 </div>
 
                 {/* Year Range */}
@@ -862,6 +906,12 @@ const ListingsPage = () => {
                     <option value="Iași">Iași</option>
                     <option value="Constanța">Constanța</option>
                     <option value="Brașov">Brașov</option>
+                    <option value="Craiova">Craiova</option>
+                    <option value="Galați">Galați</option>
+                    <option value="Oradea">Oradea</option>
+                    <option value="Ploiești">Ploiești</option>
+                    <option value="Sibiu">Sibiu</option>
+                    <option value="Bacău">Bacău</option>
                   </select>
                 </div>
 

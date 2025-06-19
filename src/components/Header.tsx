@@ -27,14 +27,14 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-24 sm:h-28 lg:h-32">
+        <div className="flex justify-between items-center h-28 sm:h-32 lg:h-36">
           {/* Logo - MULT MAI MARE PENTRU MOBILE ȘI DESKTOP */}
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0">
             {/* Try multiple logo sources with much larger sizes */}
             <img 
               src="/nexar-logo.jpg" 
               alt="Nexar" 
-              className="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-24 sm:h-28 md:h-32 lg:h-36 xl:h-40 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
