@@ -630,160 +630,162 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* Desktop layout */}
-          <div className="hidden lg:flex gap-6">
+          {/* Desktop layout - FIXED SPACING ISSUE */}
+          <div className="lg:flex gap-6">
             {/* Filters Sidebar */}
-            <div className={`${showFilters ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
-              <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                    <Filter className="h-5 w-5" />
-                    <span>Filtrează Rezultatele</span>
-                  </h3>
-                  <button
-                    onClick={() => setShowFilters(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+            {showFilters && (
+              <div className="w-80 transition-all duration-300">
+                <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                      <Filter className="h-5 w-5" />
+                      <span>Filtrează Rezultatele</span>
+                    </h3>
+                    <button
+                      onClick={() => setShowFilters(false)}
+                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
 
-                <div className="space-y-6">
-                  {/* Price Range */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.priceMin}
-                        onChange={(e) => handleFilterChange('priceMin', e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.priceMax}
-                        onChange={(e) => handleFilterChange('priceMax', e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      />
+                  <div className="space-y-6">
+                    {/* Price Range */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.priceMin}
+                          onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={filters.priceMax}
+                          onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Category */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    >
-                      <option value="">Toate categoriile</option>
-                      <option value="Sport">Sport</option>
-                      <option value="Touring">Touring</option>
-                      <option value="Cruiser">Cruiser</option>
-                      <option value="Adventure">Adventure</option>
-                      <option value="Naked">Naked</option>
-                      <option value="Scooter">Scooter</option>
-                      <option value="Enduro">Enduro</option>
-                      <option value="Chopper">Chopper</option>
-                      <option value="Cafe Racer">Cafe Racer</option>
-                      <option value="Supermoto">Supermoto</option>
-                      <option value="Motocross">Motocross</option>
-                      <option value="Trial">Trial</option>
-                    </select>
-                  </div>
-
-                  {/* Brand */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
-                    <select
-                      value={filters.brand}
-                      onChange={(e) => handleFilterChange('brand', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    >
-                      <option value="">Toate mărcile</option>
-                      <option value="Yamaha">Yamaha</option>
-                      <option value="Honda">Honda</option>
-                      <option value="BMW">BMW</option>
-                      <option value="Ducati">Ducati</option>
-                      <option value="KTM">KTM</option>
-                      <option value="Suzuki">Suzuki</option>
-                      <option value="Harley-Davidson">Harley-Davidson</option>
-                      <option value="Kawasaki">Kawasaki</option>
-                      <option value="Triumph">Triumph</option>
-                      <option value="Aprilia">Aprilia</option>
-                      <option value="MV Agusta">MV Agusta</option>
-                      <option value="Benelli">Benelli</option>
-                      <option value="Moto Guzzi">Moto Guzzi</option>
-                      <option value="Indian">Indian</option>
-                      <option value="Zero">Zero</option>
-                      <option value="Husqvarna">Husqvarna</option>
-                      <option value="Royal Enfield">Royal Enfield</option>
-                      <option value="Bimota">Bimota</option>
-                      <option value="Buell">Buell</option>
-                      <option value="CF Moto">CF Moto</option>
-                      <option value="Hyosung">Hyosung</option>
-                      <option value="Kymco">Kymco</option>
-                    </select>
-                  </div>
-
-                  {/* Year Range */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        placeholder="De la"
-                        value={filters.yearMin}
-                        onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                    {/* Category */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
+                      <select
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Până la"
-                        value={filters.yearMax}
-                        onChange={(e) => handleFilterChange('yearMax', e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      />
+                      >
+                        <option value="">Toate categoriile</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Touring">Touring</option>
+                        <option value="Cruiser">Cruiser</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="Naked">Naked</option>
+                        <option value="Scooter">Scooter</option>
+                        <option value="Enduro">Enduro</option>
+                        <option value="Chopper">Chopper</option>
+                        <option value="Cafe Racer">Cafe Racer</option>
+                        <option value="Supermoto">Supermoto</option>
+                        <option value="Motocross">Motocross</option>
+                        <option value="Trial">Trial</option>
+                      </select>
                     </div>
-                  </div>
 
-                  {/* Location */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
-                    <select
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange('location', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    {/* Brand */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
+                      <select
+                        value={filters.brand}
+                        onChange={(e) => handleFilterChange('brand', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      >
+                        <option value="">Toate mărcile</option>
+                        <option value="Yamaha">Yamaha</option>
+                        <option value="Honda">Honda</option>
+                        <option value="BMW">BMW</option>
+                        <option value="Ducati">Ducati</option>
+                        <option value="KTM">KTM</option>
+                        <option value="Suzuki">Suzuki</option>
+                        <option value="Harley-Davidson">Harley-Davidson</option>
+                        <option value="Kawasaki">Kawasaki</option>
+                        <option value="Triumph">Triumph</option>
+                        <option value="Aprilia">Aprilia</option>
+                        <option value="MV Agusta">MV Agusta</option>
+                        <option value="Benelli">Benelli</option>
+                        <option value="Moto Guzzi">Moto Guzzi</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Zero">Zero</option>
+                        <option value="Husqvarna">Husqvarna</option>
+                        <option value="Royal Enfield">Royal Enfield</option>
+                        <option value="Bimota">Bimota</option>
+                        <option value="Buell">Buell</option>
+                        <option value="CF Moto">CF Moto</option>
+                        <option value="Hyosung">Hyosung</option>
+                        <option value="Kymco">Kymco</option>
+                      </select>
+                    </div>
+
+                    {/* Year Range */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          placeholder="De la"
+                          value={filters.yearMin}
+                          onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Până la"
+                          value={filters.yearMax}
+                          onChange={(e) => handleFilterChange('yearMax', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
+                      <select
+                        value={filters.location}
+                        onChange={(e) => handleFilterChange('location', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      >
+                        <option value="">Toate locațiile</option>
+                        <option value="București">București</option>
+                        <option value="Cluj-Napoca">Cluj-Napoca</option>
+                        <option value="Timișoara">Timișoara</option>
+                        <option value="Iași">Iași</option>
+                        <option value="Constanța">Constanța</option>
+                        <option value="Brașov">Brașov</option>
+                        <option value="Craiova">Craiova</option>
+                        <option value="Galați">Galați</option>
+                        <option value="Oradea">Oradea</option>
+                        <option value="Ploiești">Ploiești</option>
+                        <option value="Sibiu">Sibiu</option>
+                        <option value="Bacău">Bacău</option>
+                      </select>
+                    </div>
+
+                    {/* Clear Filters */}
+                    <button
+                      onClick={clearFilters}
+                      className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
                     >
-                      <option value="">Toate locațiile</option>
-                      <option value="București">București</option>
-                      <option value="Cluj-Napoca">Cluj-Napoca</option>
-                      <option value="Timișoara">Timișoara</option>
-                      <option value="Iași">Iași</option>
-                      <option value="Constanța">Constanța</option>
-                      <option value="Brașov">Brașov</option>
-                      <option value="Craiova">Craiova</option>
-                      <option value="Galați">Galați</option>
-                      <option value="Oradea">Oradea</option>
-                      <option value="Ploiești">Ploiești</option>
-                      <option value="Sibiu">Sibiu</option>
-                      <option value="Bacău">Bacău</option>
-                    </select>
+                      <X className="h-4 w-4" />
+                      <span>Șterge Filtrele</span>
+                    </button>
                   </div>
-
-                  {/* Clear Filters */}
-                  <button
-                    onClick={clearFilters}
-                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Șterge Filtrele</span>
-                  </button>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Main Content */}
             <div className="flex-1">
@@ -823,14 +825,14 @@ const HomePage = () => {
                   </button>
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Listings - Common for both mobile and desktop */}
-          <div className="space-y-4">
-            {filteredListings.map((listing) => (
-              <ListingRow key={listing.id} listing={listing} />
-            ))}
+              {/* Listings */}
+              <div className="space-y-4">
+                {filteredListings.map((listing) => (
+                  <ListingRow key={listing.id} listing={listing} />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="text-center mt-10">
@@ -863,6 +865,7 @@ const HomePage = () => {
                 key={index}
                 to={`/anunturi?categorie=${category.name.toLowerCase()}`}
                 className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 border border-gray-200"
+                onClick={() => window.scrollTo(0, 0)}
               >
                 <img
                   src={category.image}
@@ -939,12 +942,14 @@ const HomePage = () => {
             <Link
               to="/auth"
               className="bg-nexar-accent/90 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30"
+              onClick={() => window.scrollTo(0, 0)}
             >
               Creează Cont Gratuit
             </Link>
             <Link
               to="/anunturi"
               className="bg-white/90 backdrop-blur-sm text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30"
+              onClick={() => window.scrollTo(0, 0)}
             >
               Explorează Anunțurile
             </Link>
