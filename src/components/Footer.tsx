@@ -148,59 +148,76 @@ const Footer = () => {
               <p className="text-gray-300 text-sm">
                 © 2024 Nexar.ro. Toate drepturile rezervate.
               </p>
-              {/* NEXT SOFT Credit - Logo după text cu efecte spectaculoase */}
+              {/* NEXT SOFT Credit - Logo mai mare cu efecte premium luxoase */}
               <a 
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-2 group transition-all duration-300 hover:scale-110 transform-gpu"
+                className="inline-flex items-center justify-center md:justify-start space-x-3 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
                 style={{
                   filter: 'drop-shadow(0 0 0px transparent)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease'
+                  transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.filter = 'drop-shadow(0 0 8px rgba(215, 58, 48, 0.6))';
+                  const element = e.currentTarget;
+                  element.style.filter = 'drop-shadow(0 4px 20px rgba(215, 58, 48, 0.4))';
+                  element.style.transform = 'translateY(-2px) scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.filter = 'drop-shadow(0 0 0px transparent)';
+                  const element = e.currentTarget;
+                  element.style.filter = 'drop-shadow(0 0 0px transparent)';
+                  element.style.transform = 'translateY(0px) scale(1)';
                 }}
                 onClick={(e) => {
-                  // Efect de click spectaculos
+                  // Efect de click premium cu pulsare elegantă
                   const element = e.currentTarget;
-                  element.style.transform = 'scale(0.95)';
-                  element.style.filter = 'drop-shadow(0 0 15px rgba(215, 58, 48, 0.8))';
+                  element.style.transform = 'translateY(0px) scale(0.98)';
+                  element.style.filter = 'drop-shadow(0 2px 15px rgba(215, 58, 48, 0.6))';
                   
                   setTimeout(() => {
-                    element.style.transform = 'scale(1.1)';
-                    element.style.filter = 'drop-shadow(0 0 12px rgba(215, 58, 48, 0.7))';
-                  }, 100);
+                    element.style.transform = 'translateY(-3px) scale(1.08)';
+                    element.style.filter = 'drop-shadow(0 6px 25px rgba(215, 58, 48, 0.5))';
+                  }, 150);
                   
                   setTimeout(() => {
-                    element.style.transform = 'scale(1)';
+                    element.style.transform = 'translateY(0px) scale(1)';
                     element.style.filter = 'drop-shadow(0 0 0px transparent)';
-                  }, 200);
+                  }, 300);
                 }}
               >
-                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-300 group-hover:font-medium">
+                <span className="text-gray-400 text-base group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold">
                   Dezvoltat de
                 </span>
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-gray-400 text-sm font-semibold tracking-wide group-hover:text-nexar-accent transition-all duration-300 group-hover:font-bold group-hover:tracking-wider">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400 text-base font-bold tracking-wide group-hover:text-nexar-accent transition-all duration-500 group-hover:tracking-wider relative">
                     NEXT SOFT
+                    {/* Efect de underlining premium */}
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-nexar-accent group-hover:w-full transition-all duration-500 ease-out"></span>
                   </span>
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-5 w-5 object-contain opacity-70 group-hover:opacity-100 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12 transform-gpu"
+                    className="h-7 w-7 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
                     style={{
-                      filter: 'brightness(0.8)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      filter: 'brightness(0.8) saturate(0.8)',
+                      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.filter = 'brightness(1.2) saturate(1.2)';
+                      e.currentTarget.style.transform = 'scale(1.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.filter = 'brightness(0.8) saturate(0.8)';
+                      e.currentTarget.style.transform = 'scale(1)';
                     }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
                 </div>
+                
+                {/* Efect de glow subtil în fundal */}
+                <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-gradient-to-r from-nexar-accent/20 to-transparent blur-xl -z-10"></div>
               </a>
             </div>
             
