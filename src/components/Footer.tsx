@@ -144,9 +144,34 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-300 text-sm">
-              © 2024 Nexar.ro. Toate drepturile rezervate.
-            </p>
+            <div className="text-center md:text-left">
+              <p className="text-gray-300 text-sm">
+                © 2024 Nexar.ro. Toate drepturile rezervate.
+              </p>
+              {/* NEXT SOFT Credit - Integrat elegant sub copyright */}
+              <div className="flex items-center justify-center md:justify-start space-x-2 mt-1">
+                <span className="text-gray-400 text-xs">Dezvoltat de</span>
+                <a 
+                  href="https://nextsoft-it.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1.5 hover:opacity-80 transition-opacity group"
+                >
+                  <img 
+                    src="/unnamed2.png" 
+                    alt="NEXT SOFT" 
+                    className="h-4 w-4 object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <span className="text-gray-400 text-xs font-medium tracking-wide group-hover:text-gray-300 transition-colors">
+                    NEXT SOFT
+                  </span>
+                </a>
+              </div>
+            </div>
+            
             <div className="flex space-x-4 sm:space-x-6 text-sm">
               <Link to="/termeni" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
                 Termeni și Condiții
@@ -157,21 +182,6 @@ const Footer = () => {
               <Link to="/cookies" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
                 Cookies
               </Link>
-            </div>
-          </div>
-          
-          {/* NEXT SOFT Credit - Minimalist și frumos */}
-          <div className="mt-6 pt-6 border-t border-gray-800">
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3">
-              <span className="text-gray-400 text-xs">Dezvoltat de</span>
-              <div className="flex items-center space-x-2">
-                <img 
-                  src="/unnamed2.png" 
-                  alt="NEXT SOFT" 
-                  className="h-6 w-6 object-contain opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <span className="text-gray-300 font-medium text-sm tracking-wide">NEXT SOFT</span>
-              </div>
             </div>
           </div>
         </div>
