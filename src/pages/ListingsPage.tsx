@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
 
 const ListingsPage = () => {
-  const [showFilters, setShowFilters] = useState(false); // Default false on mobile
+  const [showFilters, setShowFilters] = useState(true); // Default true on desktop
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -23,26 +23,12 @@ const ListingsPage = () => {
     sellerType: ''
   });
   const itemsPerPage = 10;
-  const location = useLocation();
   const navigate = useNavigate();
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // Extrage parametrii din URL
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const categoryParam = searchParams.get('categorie');
-    
-    if (categoryParam) {
-      setFilters(prev => ({
-        ...prev,
-        category: categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)
-      }));
-    }
-  }, [location]);
 
   const allListings = [
     {
@@ -52,15 +38,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 2500,
       location: "Timișoara",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.9,
-      seller: "Vânzător Individual",
-      sellerType: "individual",
-      sellerId: "privat-1",
+      seller: "Moto Expert SRL",
+      sellerId: "dealer-1",
+      sellerType: "dealer",
       category: "Sport",
       brand: "Yamaha",
       model: "YZF-R1",
@@ -77,15 +59,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 8200,
       location: "Cluj-Napoca",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.8,
       seller: "BMW Moto Center",
+      sellerId: "dealer-2",
       sellerType: "dealer",
-      sellerId: "dealer-1",
       category: "Sport",
       brand: "BMW",
       model: "S1000RR",
@@ -102,15 +80,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1200,
       location: "Timișoara",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 5.0,
       seller: "Ducati Premium",
+      sellerId: "dealer-3",
       sellerType: "dealer",
-      sellerId: "dealer-2",
       category: "Sport",
       brand: "Ducati",
       model: "Panigale V4",
@@ -127,15 +101,11 @@ const ListingsPage = () => {
       year: 2007,
       mileage: 11000,
       location: "București",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.3,
-      seller: "Vânzător Individual",
+      seller: "Alexandru Popescu",
+      sellerId: "privat-1",
       sellerType: "individual",
-      sellerId: "privat-2",
       category: "Sport",
       brand: "Honda",
       model: "CBR600RR",
@@ -152,15 +122,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 6500,
       location: "Constanța",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.6,
       seller: "Kawasaki Pro",
+      sellerId: "dealer-5",
       sellerType: "dealer",
-      sellerId: "dealer-3",
       category: "Sport",
       brand: "Kawasaki",
       model: "Ninja ZX-10R",
@@ -177,15 +143,11 @@ const ListingsPage = () => {
       year: 2021,
       mileage: 12000,
       location: "Brașov",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.5,
       seller: "Suzuki Center",
+      sellerId: "dealer-6",
       sellerType: "dealer",
-      sellerId: "dealer-4",
       category: "Sport",
       brand: "Suzuki",
       model: "GSX-R1000R",
@@ -202,15 +164,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1800,
       location: "București",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.9,
       seller: "Aprilia Racing",
+      sellerId: "dealer-7",
       sellerType: "dealer",
-      sellerId: "dealer-5",
       category: "Sport",
       brand: "Aprilia",
       model: "RSV4 1100 Factory",
@@ -227,15 +185,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 7300,
       location: "Cluj-Napoca",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.7,
       seller: "KTM Center",
+      sellerId: "dealer-8",
       sellerType: "dealer",
-      sellerId: "dealer-6",
       category: "Naked",
       brand: "KTM",
       model: "1290 Super Duke R",
@@ -252,15 +206,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 2100,
       location: "Timișoara",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.8,
       seller: "Triumph Dealer",
+      sellerId: "dealer-9",
       sellerType: "dealer",
-      sellerId: "dealer-7",
       category: "Naked",
       brand: "Triumph",
       model: "Speed Triple 1200 RS",
@@ -277,15 +227,11 @@ const ListingsPage = () => {
       year: 2022,
       mileage: 5600,
       location: "București",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.6,
       seller: "Harley Center",
+      sellerId: "dealer-10",
       sellerType: "dealer",
-      sellerId: "dealer-8",
       category: "Cruiser",
       brand: "Harley-Davidson",
       model: "Sportster S",
@@ -302,15 +248,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 3200,
       location: "Iași",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 4.9,
       seller: "BMW Adventure",
+      sellerId: "dealer-11",
       sellerType: "dealer",
-      sellerId: "dealer-9",
       category: "Adventure",
       brand: "BMW",
       model: "R1250GS Adventure",
@@ -327,15 +269,11 @@ const ListingsPage = () => {
       year: 2023,
       mileage: 1500,
       location: "Constanța",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
+      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
       rating: 5.0,
       seller: "Ducati Adventure",
+      sellerId: "dealer-12",
       sellerType: "dealer",
-      sellerId: "dealer-10",
       category: "Adventure",
       brand: "Ducati",
       model: "Multistrada V4 S",
@@ -384,7 +322,9 @@ const ListingsPage = () => {
       
       const matchesCondition = !filters.condition || listing.condition.toLowerCase() === filters.condition.toLowerCase();
       
-      const matchesSellerType = !filters.sellerType || listing.sellerType === filters.sellerType;
+      const matchesSellerType = !filters.sellerType || 
+                               (filters.sellerType === 'individual' && listing.sellerType === 'individual') ||
+                               (filters.sellerType === 'dealer' && listing.sellerType === 'dealer');
 
       return matchesSearch && matchesPrice && matchesCategory && matchesBrand && 
              matchesYear && matchesMileage && matchesLocation && matchesFuel && 
@@ -422,9 +362,6 @@ const ListingsPage = () => {
     });
     setSearchQuery('');
     setCurrentPage(1);
-    
-    // Resetăm și URL-ul
-    navigate('/anunturi');
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -432,233 +369,166 @@ const ListingsPage = () => {
     setCurrentPage(1);
   };
 
-  const ListingRow = ({ listing }: { listing: any }) => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const touchStartX = useRef<number>(0);
-    const touchEndX = useRef<number>(0);
-    const imageContainerRef = useRef<HTMLDivElement>(null);
+  const handleSellerClick = (e: React.MouseEvent, sellerId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/profil/${sellerId}`);
+    window.scrollTo(0, 0);
+  };
 
-    // Handle touch events for mobile swipe
-    const handleTouchStart = (e: React.TouchEvent) => {
-      touchStartX.current = e.targetTouches[0].clientX;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-      touchEndX.current = e.targetTouches[0].clientX;
-    };
-
-    const handleTouchEnd = (e: React.TouchEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      if (!touchStartX.current || !touchEndX.current) return;
-      
-      const distance = touchStartX.current - touchEndX.current;
-      const isLeftSwipe = distance > 50;
-      const isRightSwipe = distance < -50;
-
-      if (isLeftSwipe && currentImageIndex < listing.images.length - 1) {
-        setCurrentImageIndex(prev => prev + 1);
-      }
-      if (isRightSwipe && currentImageIndex > 0) {
-        setCurrentImageIndex(prev => prev - 1);
-      }
-    };
-
-    const nextImage = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setCurrentImageIndex((prev) => 
-        prev === listing.images.length - 1 ? 0 : prev + 1
-      );
-    };
-
-    const prevImage = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? listing.images.length - 1 : prev - 1
-      );
-    };
-
-    const handleSellerClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      // Navigate to seller profile
-      navigate(`/profil/${listing.sellerId}`);
-    };
-
-    return (
-      <Link
-        to={`/anunt/${listing.id}`}
-        className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
-      >
-        <div className="flex flex-col sm:flex-row">
-          <div 
-            ref={imageContainerRef}
-            className="relative w-full sm:w-64 flex-shrink-0"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+  const ListingRow = ({ listing }: { listing: any }) => (
+    <Link
+      to={`/anunt/${listing.id}`}
+      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 group border border-gray-100 block"
+    >
+      <div className="flex flex-col sm:flex-row">
+        <div className="relative w-full sm:w-64 flex-shrink-0">
+          <img
+            src={listing.image}
+            alt={listing.title}
+            className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute top-3 left-3">
+            <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
+              {listing.category}
+            </span>
+          </div>
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
           >
-            <img
-              src={listing.images[currentImageIndex]}
-              alt={listing.title}
-              className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            
-            {/* Navigation Arrows - Only show if multiple images */}
-            {listing.images.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100 hidden sm:block"
-                >
-                  <ChevronLeft className="h-4 w-4 text-gray-600" />
-                </button>
-                
-                <button
-                  onClick={nextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-white transition-colors opacity-0 group-hover:opacity-100 hidden sm:block"
-                >
-                  <ChevronRight className="h-4 w-4 text-gray-600" />
-                </button>
-                
-                {/* Image indicators */}
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                  {listing.images.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                        index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                      }`}
-                    />
-                  ))}
+            <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
+          </button>
+        </div>
+        
+        <div className="flex-1 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
+                {listing.title}
+              </h3>
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">€{listing.price.toLocaleString()}</div>
+              
+              {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                <div className="text-sm text-gray-600">
+                  Vândut de: 
+                  <button 
+                    onClick={(e) => handleSellerClick(e, listing.sellerId)}
+                    className="font-semibold text-nexar-accent hover:text-nexar-gold transition-colors ml-1 underline"
+                  >
+                    {listing.seller}
+                  </button>
                 </div>
-              </>
-            )}
-            
-            <div className="absolute top-3 left-3">
-              <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
-                {listing.category}
-              </span>
+                
+                {/* BADGE DEALER MULT MAI VIZIBIL */}
+                {listing.sellerType === 'dealer' ? (
+                  <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 rounded-full shadow-md border border-emerald-400">
+                    <Building className="h-3 w-3" />
+                    <span className="font-bold text-xs tracking-wide">DEALER PREMIUM</span>
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-3 py-1.5 rounded-full shadow-md">
+                    <User className="h-3 w-3" />
+                    <span className="font-semibold text-xs">PRIVAT</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
-            >
-              <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
-            </button>
+            
+            <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
+              <Star className="h-4 w-4 text-yellow-400 fill-current" />
+              <span className="text-sm font-semibold">{listing.rating}</span>
+            </div>
           </div>
           
-          <div className="flex-1 p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
-              <div className="mb-3 sm:mb-0">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-nexar-accent transition-colors mb-2">
-                  {listing.title}
-                </h3>
-                <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">€{listing.price.toLocaleString()}</div>
-                
-                {/* EVIDENȚIERE DEALER MULT MAI PRONUNȚATĂ */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                  <div className="text-sm text-gray-600">
-                    Vândut de: 
-                    <button 
-                      onClick={handleSellerClick}
-                      className="font-semibold text-nexar-accent hover:text-nexar-gold transition-colors ml-1 underline"
-                    >
-                      {listing.seller}
-                    </button>
-                  </div>
-                  
-                  {/* BADGE DEALER MULT MAI VIZIBIL */}
-                  {listing.sellerType === 'dealer' ? (
-                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full shadow-lg border border-emerald-400">
-                      <Building className="h-4 w-4" />
-                      <span className="font-bold text-sm tracking-wide">DEALER PREMIUM</span>
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                    </div>
-                  ) : (
-                    <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-3 py-1.5 rounded-full shadow-md">
-                      <span className="font-semibold text-xs">PRIVAT</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-3 py-1 self-start">
-                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span className="text-sm font-semibold">{listing.rating}</span>
-              </div>
+          {/* Detailed Information Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Locație:</span>
+              <span className="font-semibold text-gray-900">{listing.location}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Stare:</span>
+              <span className="font-semibold text-gray-900">{listing.condition}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Vânzător:</span>
+              <span className="font-semibold text-gray-900">{listing.sellerType === 'individual' ? 'Individual' : 'Dealer'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Kilometraj:</span>
+              <span className="font-semibold text-gray-900">{listing.mileage.toLocaleString()} km</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Transmisie:</span>
+              <span className="font-semibold text-gray-900">{listing.transmission}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Combustibil:</span>
+              <span className="font-semibold text-gray-900">{listing.fuel}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Motor:</span>
+              <span className="font-semibold text-gray-900">{listing.engine} cc</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">An:</span>
+              <span className="font-semibold text-gray-900">{listing.year}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Vândut de: <span className="font-semibold text-gray-700">{listing.seller}</span>
             </div>
             
-            {/* Detailed Information Grid - Mobile Optimized */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-gray-600 text-xs sm:text-sm">Locație:</span>
-                <span className="font-semibold text-gray-900 text-sm">{listing.location}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-gray-600 text-xs sm:text-sm">Stare:</span>
-                <span className="font-semibold text-gray-900 text-sm">{listing.condition}</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-gray-600 text-xs sm:text-sm">Kilometraj:</span>
-                <span className="font-semibold text-gray-900 text-sm">{listing.mileage.toLocaleString()} km</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-gray-600 text-xs sm:text-sm">An:</span>
-                <span className="font-semibold text-gray-900 text-sm">{listing.year}</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="bg-nexar-accent text-white px-4 sm:px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2 justify-center sm:justify-start">
-                <span>Vezi Detalii</span>
-              </div>
+            <div className="bg-nexar-accent text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors inline-flex items-center space-x-2">
+              <span>Vezi Detalii</span>
             </div>
           </div>
         </div>
-      </Link>
-    );
-  };
+      </div>
+    </Link>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6">
+    <div className="min-h-screen bg-gray-50 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Mobile Optimized */}
-        <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-            {filters.category ? `Motociclete ${filters.category}` : 'Toate Anunțurile'}
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+            Toate Anunțurile
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-gray-600">
             Descoperă {filteredListings.length} motociclete disponibile pentru vânzare
           </p>
         </div>
 
-        {/* Search Bar - Mobile Optimized */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-3 sm:gap-4">
+        {/* Search Bar - Single, prominent */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Caută după marcă, model, categorie..."
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-sm sm:text-base"
+                  placeholder="Caută după marcă, model, categorie, locație sau vânzător..."
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-base"
                 />
-                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               </div>
             </div>
             
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="flex-1 sm:flex-none bg-nexar-accent text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center justify-center space-x-2"
+                className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center space-x-2"
               >
                 <Search className="h-4 w-4" />
                 <span>Caută</span>
@@ -667,534 +537,279 @@ const ListingsPage = () => {
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                <span className="hidden sm:inline">Filtre</span>
+                <span>{showFilters ? 'Ascunde' : 'Arată'} Filtrele</span>
               </button>
             </div>
           </form>
         </div>
 
-        {/* Mobile Filters - Shown when showFilters is true */}
-        {showFilters && (
-          <div className="lg:hidden bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                <Filter className="h-5 w-5" />
-                <span>Filtrează</span>
-              </h3>
-              <button
-                onClick={() => setShowFilters(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4 sm:space-y-6 max-h-[70vh] overflow-y-auto">
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => handleFilterChange('category', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate categoriile</option>
-                  <option value="Sport">Sport</option>
-                  <option value="Touring">Touring</option>
-                  <option value="Cruiser">Cruiser</option>
-                  <option value="Adventure">Adventure</option>
-                  <option value="Naked">Naked</option>
-                  <option value="Scooter">Scooter</option>
-                  <option value="Enduro">Enduro</option>
-                  <option value="Chopper">Chopper</option>
-                  <option value="Cafe Racer">Cafe Racer</option>
-                  <option value="Supermoto">Supermoto</option>
-                  <option value="Motocross">Motocross</option>
-                  <option value="Trial">Trial</option>
-                </select>
-              </div>
-
-              {/* Brand */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
-                <select
-                  value={filters.brand}
-                  onChange={(e) => handleFilterChange('brand', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate mărcile</option>
-                  <option value="Yamaha">Yamaha</option>
-                  <option value="Honda">Honda</option>
-                  <option value="Suzuki">Suzuki</option>
-                  <option value="Kawasaki">Kawasaki</option>
-                  <option value="BMW">BMW</option>
-                  <option value="Ducati">Ducati</option>
-                  <option value="KTM">KTM</option>
-                  <option value="Aprilia">Aprilia</option>
-                  <option value="Triumph">Triumph</option>
-                  <option value="Harley-Davidson">Harley-Davidson</option>
-                  <option value="MV Agusta">MV Agusta</option>
-                  <option value="Benelli">Benelli</option>
-                  <option value="Moto Guzzi">Moto Guzzi</option>
-                  <option value="Indian">Indian</option>
-                  <option value="Zero">Zero</option>
-                  <option value="Energica">Energica</option>
-                  <option value="Husqvarna">Husqvarna</option>
-                  <option value="Beta">Beta</option>
-                  <option value="Sherco">Sherco</option>
-                  <option value="GasGas">GasGas</option>
-                  <option value="Royal Enfield">Royal Enfield</option>
-                  <option value="Bimota">Bimota</option>
-                  <option value="Buell">Buell</option>
-                  <option value="CCM">CCM</option>
-                  <option value="CF Moto">CF Moto</option>
-                  <option value="Daelim">Daelim</option>
-                  <option value="Derbi">Derbi</option>
-                  <option value="Hyosung">Hyosung</option>
-                  <option value="Kymco">Kymco</option>
-                  <option value="Mash">Mash</option>
-                </select>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.priceMin}
-                    onChange={(e) => handleFilterChange('priceMin', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.priceMax}
-                    onChange={(e) => handleFilterChange('priceMax', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Year Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    placeholder="De la"
-                    value={filters.yearMin}
-                    onChange={(e) => handleFilterChange('yearMin', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Până la"
-                    value={filters.yearMax}
-                    onChange={(e) => handleFilterChange('yearMax', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Engine Capacity */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Capacitate motor (cc)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.engineMin}
-                    onChange={(e) => handleFilterChange('engineMin', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.engineMax}
-                    onChange={(e) => handleFilterChange('engineMax', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Mileage */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Kilometraj maxim</label>
-                <input
-                  type="number"
-                  placeholder="ex: 50000"
-                  value={filters.mileageMax}
-                  onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                />
-              </div>
-
-              {/* Fuel Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
-                <select
-                  value={filters.fuel}
-                  onChange={(e) => handleFilterChange('fuel', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate tipurile</option>
-                  <option value="Benzină">Benzină</option>
-                  <option value="Electric">Electric</option>
-                  <option value="Hibrid">Hibrid</option>
-                </select>
-              </div>
-
-              {/* Transmission */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
-                <select
-                  value={filters.transmission}
-                  onChange={(e) => handleFilterChange('transmission', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate tipurile</option>
-                  <option value="Manuală">Manuală</option>
-                  <option value="Automată">Automată</option>
-                  <option value="Semi-automată">Semi-automată</option>
-                </select>
-              </div>
-
-              {/* Condition */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
-                <select
-                  value={filters.condition}
-                  onChange={(e) => handleFilterChange('condition', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate stările</option>
-                  <option value="La comandă">La comandă</option>
-                  <option value="Excelentă">Excelentă</option>
-                  <option value="Foarte bună">Foarte bună</option>
-                  <option value="Bună">Bună</option>
-                  <option value="Satisfăcătoare">Satisfăcătoare</option>
-                </select>
-              </div>
-
-              {/* Seller Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Tip vânzător</label>
-                <select
-                  value={filters.sellerType}
-                  onChange={(e) => handleFilterChange('sellerType', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toți vânzătorii</option>
-                  <option value="individual">Vânzător Individual</option>
-                  <option value="dealer">Dealer Autorizat</option>
-                </select>
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
-                <select
-                  value={filters.location}
-                  onChange={(e) => handleFilterChange('location', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                >
-                  <option value="">Toate locațiile</option>
-                  <option value="București">București</option>
-                  <option value="Cluj-Napoca">Cluj-Napoca</option>
-                  <option value="Timișoara">Timișoara</option>
-                  <option value="Iași">Iași</option>
-                  <option value="Constanța">Constanța</option>
-                  <option value="Brașov">Brașov</option>
-                  <option value="Craiova">Craiova</option>
-                  <option value="Galați">Galați</option>
-                  <option value="Oradea">Oradea</option>
-                  <option value="Ploiești">Ploiești</option>
-                  <option value="Sibiu">Sibiu</option>
-                  <option value="Bacău">Bacău</option>
-                </select>
-              </div>
-
-              {/* Clear Filters */}
-              <button
-                onClick={clearFilters}
-                className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
-              >
-                <X className="h-4 w-4" />
-                <span>Șterge Toate Filtrele</span>
-              </button>
-            </div>
-          </div>
-        )}
-
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Filters Sidebar - Desktop Only */}
-          <div className="hidden lg:block lg:w-80">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-                  <Filter className="h-5 w-5" />
-                  <span>Filtrează</span>
-                </h3>
-              </div>
-
-              <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Categorie</label>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+          {/* Filters Sidebar */}
+          {showFilters && (
+            <div className="w-full lg:w-80 transition-all duration-300">
+              <div className="bg-white rounded-xl shadow-sm p-6 lg:sticky lg:top-24 border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <Filter className="h-5 w-5" />
+                    <span>Filtrează Rezultatele</span>
+                  </h3>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <option value="">Toate categoriile</option>
-                    <option value="Sport">Sport</option>
-                    <option value="Touring">Touring</option>
-                    <option value="Cruiser">Cruiser</option>
-                    <option value="Adventure">Adventure</option>
-                    <option value="Naked">Naked</option>
-                    <option value="Scooter">Scooter</option>
-                    <option value="Enduro">Enduro</option>
-                    <option value="Chopper">Chopper</option>
-                    <option value="Cafe Racer">Cafe Racer</option>
-                    <option value="Supermoto">Supermoto</option>
-                    <option value="Motocross">Motocross</option>
-                    <option value="Trial">Trial</option>
-                  </select>
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
 
-                {/* Brand */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Marcă</label>
-                  <select
-                    value={filters.brand}
-                    onChange={(e) => handleFilterChange('brand', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  >
-                    <option value="">Toate mărcile</option>
-                    <option value="Yamaha">Yamaha</option>
-                    <option value="Honda">Honda</option>
-                    <option value="Suzuki">Suzuki</option>
-                    <option value="Kawasaki">Kawasaki</option>
-                    <option value="BMW">BMW</option>
-                    <option value="Ducati">Ducati</option>
-                    <option value="KTM">KTM</option>
-                    <option value="Aprilia">Aprilia</option>
-                    <option value="Triumph">Triumph</option>
-                    <option value="Harley-Davidson">Harley-Davidson</option>
-                    <option value="MV Agusta">MV Agusta</option>
-                    <option value="Benelli">Benelli</option>
-                    <option value="Moto Guzzi">Moto Guzzi</option>
-                    <option value="Indian">Indian</option>
-                    <option value="Zero">Zero</option>
-                    <option value="Energica">Energica</option>
-                    <option value="Husqvarna">Husqvarna</option>
-                    <option value="Beta">Beta</option>
-                    <option value="Sherco">Sherco</option>
-                    <option value="GasGas">GasGas</option>
-                    <option value="Royal Enfield">Royal Enfield</option>
-                    <option value="Bimota">Bimota</option>
-                    <option value="Buell">Buell</option>
-                    <option value="CCM">CCM</option>
-                    <option value="CF Moto">CF Moto</option>
-                    <option value="Daelim">Daelim</option>
-                    <option value="Derbi">Derbi</option>
-                    <option value="Hyosung">Hyosung</option>
-                    <option value="Kymco">Kymco</option>
-                    <option value="Mash">Mash</option>
-                  </select>
-                </div>
+                <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">💰 Preț (EUR)</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.priceMin}
+                        onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.priceMax}
+                        onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                    </div>
+                  </div>
 
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Preț (EUR)</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.priceMin}
-                      onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">🏍️ Categorie</label>
+                    <select
+                      value={filters.category}
+                      onChange={(e) => handleFilterChange('category', e.target.value)}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
+                    >
+                      <option value="">Toate categoriile</option>
+                      <option value="Sport">Sport</option>
+                      <option value="Touring">Touring</option>
+                      <option value="Cruiser">Cruiser</option>
+                      <option value="Adventure">Adventure</option>
+                      <option value="Naked">Naked</option>
+                      <option value="Enduro">Enduro</option>
+                      <option value="Scooter">Scooter</option>
+                      <option value="Chopper">Chopper</option>
+                      <option value="Cafe Racer">Cafe Racer</option>
+                      <option value="Supermoto">Supermoto</option>
+                      <option value="Motocross">Motocross</option>
+                      <option value="Trial">Trial</option>
+                    </select>
+                  </div>
+
+                  {/* Brand */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">🏭 Marcă</label>
+                    <select
+                      value={filters.brand}
+                      onChange={(e) => handleFilterChange('brand', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate mărcile</option>
+                      <option value="Yamaha">Yamaha</option>
+                      <option value="Honda">Honda</option>
+                      <option value="Suzuki">Suzuki</option>
+                      <option value="Kawasaki">Kawasaki</option>
+                      <option value="BMW">BMW</option>
+                      <option value="Ducati">Ducati</option>
+                      <option value="KTM">KTM</option>
+                      <option value="Aprilia">Aprilia</option>
+                      <option value="Triumph">Triumph</option>
+                      <option value="Harley-Davidson">Harley-Davidson</option>
+                      <option value="MV Agusta">MV Agusta</option>
+                      <option value="Benelli">Benelli</option>
+                      <option value="Moto Guzzi">Moto Guzzi</option>
+                      <option value="Indian">Indian</option>
+                      <option value="Zero">Zero</option>
+                      <option value="Husqvarna">Husqvarna</option>
+                      <option value="Royal Enfield">Royal Enfield</option>
+                      <option value="Bimota">Bimota</option>
+                      <option value="Buell">Buell</option>
+                      <option value="CF Moto">CF Moto</option>
+                      <option value="Hyosung">Hyosung</option>
+                      <option value="Kymco">Kymco</option>
+                    </select>
+                  </div>
+
+                  {/* Year Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">📅 An fabricație</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        placeholder="De la"
+                        value={filters.yearMin}
+                        onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Până la"
+                        value={filters.yearMax}
+                        onChange={(e) => handleFilterChange('yearMax', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Engine Capacity */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">⚙️ Capacitate motor (cc)</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.engineMin}
+                        onChange={(e) => handleFilterChange('engineMin', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.engineMax}
+                        onChange={(e) => handleFilterChange('engineMax', e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mileage */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">🛣️ Kilometraj maxim</label>
                     <input
                       type="number"
-                      placeholder="Max"
-                      value={filters.priceMax}
-                      onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                      placeholder="ex: 50000"
+                      value={filters.mileageMax}
+                      onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
                     />
                   </div>
-                </div>
 
-                {/* Year Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">An fabricație</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      placeholder="De la"
-                      value={filters.yearMin}
-                      onChange={(e) => handleFilterChange('yearMin', e.target.value)}
+                  {/* Fuel Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">⛽ Combustibil</label>
+                    <select
+                      value={filters.fuel}
+                      onChange={(e) => handleFilterChange('fuel', e.target.value)}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Până la"
-                      value={filters.yearMax}
-                      onChange={(e) => handleFilterChange('yearMax', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
+                    >
+                      <option value="">Toate tipurile</option>
+                      <option value="Benzină">Benzină</option>
+                      <option value="Electric">Electric</option>
+                      <option value="Hibrid">Hibrid</option>
+                    </select>
                   </div>
-                </div>
 
-                {/* Engine Capacity */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Capacitate motor (cc)</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.engineMin}
-                      onChange={(e) => handleFilterChange('engineMin', e.target.value)}
+                  {/* Transmission */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">🔧 Transmisie</label>
+                    <select
+                      value={filters.transmission}
+                      onChange={(e) => handleFilterChange('transmission', e.target.value)}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.engineMax}
-                      onChange={(e) => handleFilterChange('engineMax', e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                    />
+                    >
+                      <option value="">Toate tipurile</option>
+                      <option value="Manuală">Manuală</option>
+                      <option value="Automată">Automată</option>
+                      <option value="Semi-automată">Semi-automată</option>
+                    </select>
                   </div>
-                </div>
 
-                {/* Mileage */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Kilometraj maxim</label>
-                  <input
-                    type="number"
-                    placeholder="ex: 50000"
-                    value={filters.mileageMax}
-                    onChange={(e) => handleFilterChange('mileageMax', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  />
-                </div>
+                  {/* Condition */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">✨ Starea</label>
+                    <select
+                      value={filters.condition}
+                      onChange={(e) => handleFilterChange('condition', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate stările</option>
+                      <option value="La comandă">La comandă</option>
+                      <option value="Excelentă">Excelentă</option>
+                      <option value="Foarte bună">Foarte bună</option>
+                      <option value="Bună">Bună</option>
+                      <option value="Satisfăcătoare">Satisfăcătoare</option>
+                    </select>
+                  </div>
 
-                {/* Fuel Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Combustibil</label>
-                  <select
-                    value={filters.fuel}
-                    onChange={(e) => handleFilterChange('fuel', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                  {/* Seller Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">👤 Tip vânzător</label>
+                    <select
+                      value={filters.sellerType}
+                      onChange={(e) => handleFilterChange('sellerType', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toți vânzătorii</option>
+                      <option value="individual">Vânzător Individual</option>
+                      <option value="dealer">Dealer Autorizat</option>
+                    </select>
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">📍 Locația</label>
+                    <select
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                    >
+                      <option value="">Toate locațiile</option>
+                      <option value="București">București</option>
+                      <option value="Cluj-Napoca">Cluj-Napoca</option>
+                      <option value="Timișoara">Timișoara</option>
+                      <option value="Iași">Iași</option>
+                      <option value="Constanța">Constanța</option>
+                      <option value="Brașov">Brașov</option>
+                      <option value="Craiova">Craiova</option>
+                      <option value="Galați">Galați</option>
+                      <option value="Oradea">Oradea</option>
+                      <option value="Ploiești">Ploiești</option>
+                      <option value="Sibiu">Sibiu</option>
+                      <option value="Bacău">Bacău</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Filters */}
+                  <button
+                    onClick={clearFilters}
+                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
                   >
-                    <option value="">Toate tipurile</option>
-                    <option value="Benzină">Benzină</option>
-                    <option value="Electric">Electric</option>
-                    <option value="Hibrid">Hibrid</option>
-                  </select>
+                    <X className="h-4 w-4" />
+                    <span>Șterge Toate Filtrele</span>
+                  </button>
                 </div>
-
-                {/* Transmission */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Transmisie</label>
-                  <select
-                    value={filters.transmission}
-                    onChange={(e) => handleFilterChange('transmission', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  >
-                    <option value="">Toate tipurile</option>
-                    <option value="Manuală">Manuală</option>
-                    <option value="Automată">Automată</option>
-                    <option value="Semi-automată">Semi-automată</option>
-                  </select>
-                </div>
-
-                {/* Condition */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Starea</label>
-                  <select
-                    value={filters.condition}
-                    onChange={(e) => handleFilterChange('condition', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  >
-                    <option value="">Toate stările</option>
-                    <option value="La comandă">La comandă</option>
-                    <option value="Excelentă">Excelentă</option>
-                    <option value="Foarte bună">Foarte bună</option>
-                    <option value="Bună">Bună</option>
-                    <option value="Satisfăcătoare">Satisfăcătoare</option>
-                  </select>
-                </div>
-
-                {/* Seller Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Tip vânzător</label>
-                  <select
-                    value={filters.sellerType}
-                    onChange={(e) => handleFilterChange('sellerType', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  >
-                    <option value="">Toți vânzătorii</option>
-                    <option value="individual">Vânzător Individual</option>
-                    <option value="dealer">Dealer Autorizat</option>
-                  </select>
-                </div>
-
-                {/* Location */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Locația</label>
-                  <select
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  >
-                    <option value="">Toate locațiile</option>
-                    <option value="București">București</option>
-                    <option value="Cluj-Napoca">Cluj-Napoca</option>
-                    <option value="Timișoara">Timișoara</option>
-                    <option value="Iași">Iași</option>
-                    <option value="Constanța">Constanța</option>
-                    <option value="Brașov">Brașov</option>
-                    <option value="Craiova">Craiova</option>
-                    <option value="Galați">Galați</option>
-                    <option value="Oradea">Oradea</option>
-                    <option value="Ploiești">Ploiești</option>
-                    <option value="Sibiu">Sibiu</option>
-                    <option value="Bacău">Bacău</option>
-                  </select>
-                </div>
-
-                {/* Clear Filters */}
-                <button
-                  onClick={clearFilters}
-                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <X className="h-4 w-4" />
-                  <span>Șterge Toate Filtrele</span>
-                </button>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Results - Mobile Optimized */}
-            <div className="mb-4 sm:mb-5">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                <p className="text-gray-600 text-sm sm:text-base">
+            {/* Results */}
+            <div className="mb-5">
+              <div className="flex justify-between items-center">
+                <p className="text-gray-600">
                   Afișez <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, filteredListings.length)}</span> din <span className="font-semibold">{filteredListings.length}</span> rezultate
                   {searchQuery && (
-                    <span className="block sm:inline sm:ml-2 text-nexar-accent">
+                    <span className="ml-2 text-nexar-accent">
                       pentru "{searchQuery}"
                     </span>
                   )}
                 </p>
-                <select className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent text-sm">
+                <select className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent">
                   <option>Sortează după: Cel mai recent</option>
                   <option>Preț: Crescător</option>
                   <option>Preț: Descrescător</option>
@@ -1207,10 +822,10 @@ const ListingsPage = () => {
 
             {/* No Results */}
             {filteredListings.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 text-center border border-gray-100">
-                <Search className="h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
-                <p className="text-gray-600 mb-6 text-sm sm:text-base">
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                <p className="text-gray-600 mb-6">
                   Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
                 </p>
                 <button
@@ -1231,26 +846,26 @@ const ListingsPage = () => {
               </div>
             )}
 
-            {/* Pagination - Mobile Optimized */}
+            {/* Pagination */}
             {filteredListings.length > 0 && totalPages > 1 && (
-              <div className="mt-6 sm:mt-8 flex justify-center">
-                <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="mt-8 flex justify-center">
+                <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="flex items-center space-x-1 px-2 sm:px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Anterior</span>
+                    <span>Anterior</span>
                   </button>
                   
-                  {[...Array(Math.min(5, totalPages))].map((_, index) => {
+                  {[...Array(totalPages)].map((_, index) => {
                     const page = index + 1;
                     return (
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${
+                        className={`px-3 py-2 rounded-lg transition-colors ${
                           currentPage === page
                             ? 'bg-nexar-accent text-white'
                             : 'border border-gray-200 hover:bg-gray-50'
@@ -1264,9 +879,9 @@ const ListingsPage = () => {
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex items-center space-x-1 px-2 sm:px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    className="flex items-center space-x-1 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="hidden sm:inline">Următorul</span>
+                    <span>Următorul</span>
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
