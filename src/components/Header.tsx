@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, Plus, Menu, X, Bell, Heart } from 'lucide-react';
+import { auth } from '../lib/supabase';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,7 +20,8 @@ const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await auth.signOut();
     localStorage.removeItem('user');
     setUser(null);
     setIsUserMenuOpen(false);
@@ -29,19 +31,19 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-28 sm:h-32 lg:h-36">
+        <div className="flex justify-between items-center h-20 sm:h-24">
           {/* Logo - FĂRĂ TEXTUL PREMIUM MOTORCYCLES */}
           <Link to="/" className="flex items-center group min-w-0">
             <img 
-              src="/nexar-logo.jpg" 
+              src="/Nexar - logo_white & red.png" 
               alt="Nexar" 
-              className="h-24 sm:h-28 md:h-32 lg:h-36 xl:h-40 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-16 sm:h-20 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
-                if (target.src.includes('nexar-logo.jpg')) {
-                  target.src = '/Nexar - logo_black & red.png';
-                } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                if (target.src.includes('Nexar - logo_white & red.png')) {
+                  target.src = '/nexar-logo.jpg';
+                } else if (target.src.includes('nexar-logo.jpg')) {
                   // Try nexar-logo.png if the other fails
                   target.src = '/nexar-logo.png';
                 } else if (target.src.includes('nexar-logo.png')) {
@@ -94,9 +96,9 @@ const Header = () => {
                 {user ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-7 h-7 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">Bună, {user.name}</span>
+                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">Bună, {user.name || 'Utilizator'}</span>
                   </div>
                 ) : (
                   <User className="h-5 w-5 text-gray-700" />
@@ -191,7 +193,7 @@ const Header = () => {
               {user ? (
                 <>
                   <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
-                    Bună, {user.name}
+                    Bună, {user.name || 'Utilizator'}
                   </div>
                   <Link
                     to="/profil"

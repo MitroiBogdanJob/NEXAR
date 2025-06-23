@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, X, Plus, Check, Building, User, AlertTriangle, Camera } from 'lucide-react';
+import { listings, isAuthenticated } from '../lib/supabase';
 
 const CreateListingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -32,21 +34,28 @@ const CreateListingPage = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+    const checkAuth = async () => {
+      const isLoggedIn = await isAuthenticated();
+      if (!isLoggedIn) {
+        navigate('/auth');
+        return;
+      }
+      
+      // Pre-fill user data if available
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        if (parsedUser.email) {
+          setFormData(prev => ({
+            ...prev,
+            email: parsedUser.email,
+            sellerType: parsedUser.sellerType || 'privat'
+          }));
+        }
+      }
+    };
     
-    // Pre-fill user data if available
-    const userData = JSON.parse(user);
-    if (userData.email) {
-      setFormData(prev => ({
-        ...prev,
-        email: userData.email,
-        sellerType: userData.sellerType || 'privat'
-      }));
-    }
+    checkAuth();
   }, [navigate]);
 
   const steps = [
@@ -121,7 +130,7 @@ const CreateListingPage = () => {
         break;
 
       case 2:
-        if (images.length === 0) {
+        if (imageFiles.length === 0) {
           newErrors.images = 'Trebuie să adaugi cel puțin o fotografie';
         }
         break;
@@ -183,21 +192,29 @@ const CreateListingPage = () => {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files && images.length < 5) {
-      const newImages = Array.from(files).slice(0, 5 - images.length);
-      newImages.forEach(file => {
-        // Validate file size (max 5MB)
+    if (files && imageFiles.length < 5) {
+      const newImageFiles = Array.from(files).slice(0, 5 - imageFiles.length);
+      
+      // Verificăm fiecare fișier
+      for (const file of newImageFiles) {
+        // Validare dimensiune (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
           setErrors(prev => ({ ...prev, images: 'Fișierul nu poate depăși 5MB' }));
           return;
         }
         
-        // Validate file type
+        // Validare tip fișier
         if (!file.type.startsWith('image/')) {
           setErrors(prev => ({ ...prev, images: 'Doar fișiere imagine sunt permise' }));
           return;
         }
-        
+      }
+      
+      // Adăugăm fișierele valide
+      setImageFiles(prev => [...prev, ...newImageFiles]);
+      
+      // Generăm URL-uri pentru previzualizare
+      newImageFiles.forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target?.result) {
@@ -213,6 +230,7 @@ const CreateListingPage = () => {
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const nextStep = () => {
@@ -231,17 +249,46 @@ const CreateListingPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Obținem datele utilizatorului
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
       
-      console.log('Submitting listing:', formData, images);
+      // Pregătim datele pentru anunț
+      const listingData = {
+        title: formData.title,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        year: parseInt(formData.year),
+        mileage: parseInt(formData.mileage),
+        location: formData.location,
+        category: formData.category.toLowerCase(),
+        brand: formData.brand,
+        model: formData.model,
+        engine_capacity: parseInt(formData.engine),
+        fuel_type: formData.fuel.toLowerCase(),
+        transmission: formData.transmission.toLowerCase(),
+        condition: formData.condition.toLowerCase(),
+        color: formData.color,
+        features: formData.features,
+        seller_id: userData.id,
+        seller_name: userData.name || 'Utilizator',
+        seller_type: formData.sellerType,
+        status: 'active'
+      };
       
-      // Show success message
+      // Trimitem anunțul și imaginile la server
+      const { data, error } = await listings.create(listingData, imageFiles);
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Afișăm mesaj de succes
       alert('Anunțul a fost publicat cu succes! Vei fi redirecționat către pagina principală.');
       
-      // Redirect to home page
+      // Redirecționăm la pagina principală
       navigate('/');
     } catch (error) {
+      console.error('Error creating listing:', error);
       setErrors({ submit: 'A apărut o eroare la publicarea anunțului. Te rog încearcă din nou.' });
     } finally {
       setIsSubmitting(false);

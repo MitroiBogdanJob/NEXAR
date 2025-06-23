@@ -36,65 +36,61 @@
 
 ## 🗄️ Pasul 3: Configurarea Bazei de Date
 
-### 3.1 Rulează migrația automată
-Aplicația va rula automat migrația pentru a crea tabelele necesare:
-- `profiles` - Profiluri utilizatori
-- `listings` - Anunțuri motociclete
-- `favorites` - Anunțuri favorite
-- `messages` - Mesaje între utilizatori
-- `reviews` - Recenzii și rating-uri
+### 3.1 Rulează migrația SQL
+1. În Supabase dashboard, mergi la **SQL Editor**
+2. Copiază și rulează conținutul din fișierul `supabase/migrations/20250618171235_throbbing_field.sql` din proiect
+3. Click pe **Run** pentru a executa migrația
 
 ### 3.2 Verifică tabelele create
 1. În Supabase dashboard, mergi la **Table Editor**
 2. Verifică că există următoarele tabele:
-   - ✅ `profiles`
-   - ✅ `listings`
-   - ✅ `favorites`
-   - ✅ `messages`
-   - ✅ `reviews`
+   - ✅ `profiles` - Profiluri utilizatori
+   - ✅ `listings` - Anunțuri motociclete
+   - ✅ `favorites` - Anunțuri favorite
+   - ✅ `messages` - Mesaje între utilizatori
+   - ✅ `reviews` - Recenzii și rating-uri
 
 ## 🔐 Pasul 4: Configurarea Autentificării
 
-### 4.1 Activează providerii de autentificare
+### 4.1 Activează Email Auth
 1. Mergi la **Authentication** → **Providers**
-2. Activează:
-   - ✅ **Email** (deja activat)
-   - ✅ **Google** (opțional)
-   - ✅ **Facebook** (opțional)
+2. Asigură-te că **Email** este activat
+3. Dezactivează **Phone Auth** dacă este activat
 
-### 4.2 Configurează URL-urile de redirect
+### 4.2 Configurează Email Confirmation
+1. În **Authentication** → **Email Templates**
+2. Personalizează template-ul pentru **Confirmation**:
+   - **Subject**: "Confirmă-ți contul Nexar"
+   - **Content**: Personalizează mesajul pentru utilizatorii tăi
+
+### 4.3 Configurează URL-urile de redirect
 1. În **Authentication** → **URL Configuration**
 2. Adaugă:
-   - **Site URL**: `http://localhost:5173` (pentru dezvoltare)
-   - **Redirect URLs**: `http://localhost:5173/auth/callback`
+   - **Site URL**: `http://localhost:5173` (pentru dezvoltare) sau URL-ul tău de producție
+   - **Redirect URLs**: `http://localhost:5173/auth/callback` (pentru dezvoltare) sau URL-ul tău de producție
 
-## 📊 Pasul 5: Configurarea Row Level Security (RLS)
+## 📦 Pasul 5: Configurarea Storage
 
-### 5.1 Verifică politicile RLS
-Migrația a configurat automat politicile de securitate:
+### 5.1 Creează buckets pentru imagini
+1. Mergi la **Storage**
+2. Creează două bucket-uri noi:
+   - `listing-images` - pentru imaginile anunțurilor
+   - `profile-images` - pentru avatarele utilizatorilor
 
-**Profiles:**
-- Toată lumea poate vedea profilurile
-- Utilizatorii pot edita doar propriul profil
-
-**Listings:**
-- Toată lumea poate vedea anunțurile active
-- Utilizatorii pot crea/edita doar propriile anunțuri
-
-**Favorites & Messages:**
-- Utilizatorii văd doar propriile favorite/mesaje
-
-### 5.2 Testează securitatea
-1. Mergi la **Authentication** → **Users**
-2. Creează un utilizator test
-3. Testează că politicile funcționează corect
+### 5.2 Configurează politicile de securitate pentru Storage
+1. Pentru fiecare bucket, mergi la tab-ul **Policies**
+2. Adaugă următoarele politici:
+   - **Citire publică**: Toată lumea poate vedea imaginile
+   - **Scriere autentificată**: Doar utilizatorii autentificați pot încărca imagini
+   - **Ștergere proprie**: Utilizatorii pot șterge doar propriile imagini
 
 ## 🚀 Pasul 6: Testarea Integrării
 
 ### 6.1 Testează autentificarea
 1. În aplicația Nexar, mergi la `/auth`
 2. Înregistrează un cont nou
-3. Verifică că utilizatorul apare în **Authentication** → **Users**
+3. Verifică email-ul pentru confirmarea contului
+4. Conectează-te cu contul nou
 
 ### 6.2 Testează funcționalitățile
 1. **Creează un anunț** - Mergi la `/adauga-anunt`
@@ -102,64 +98,39 @@ Migrația a configurat automat politicile de securitate:
 3. **Adaugă la favorite** - Click pe inimă la un anunț
 4. **Trimite mesaj** - Contactează un vânzător
 
-## 🔧 Pasul 7: Configurări Avansate (Opțional)
+## 🔧 Configurări Avansate (Opțional)
 
-### 7.1 Configurează Storage pentru imagini
-1. Mergi la **Storage** → **Buckets**
-2. Creează un bucket nou: `listing-images`
-3. Configurează politicile pentru upload-ul imaginilor
+### Configurează Email Provider pentru Email-uri Reale
+1. Mergi la **Authentication** → **Email Templates**
+2. Click pe **Email Provider Settings**
+3. Configurează un provider SMTP (ex: SendGrid, Mailgun)
 
-### 7.2 Configurează Realtime (pentru mesaje live)
-1. Mergi la **Database** → **Replication**
-2. Activează replicarea pentru tabelul `messages`
-
-### 7.3 Configurează Edge Functions (pentru logică avansată)
-1. Mergi la **Edge Functions**
-2. Creează funcții pentru:
-   - Procesarea imaginilor
-   - Trimiterea email-urilor de notificare
-   - Calcularea rating-urilor
-
-## 📈 Pasul 8: Monitorizare și Optimizare
-
-### 8.1 Monitorizează utilizarea
-1. **Dashboard** → **Usage** - Vezi statisticile
-2. **Logs** → **Database** - Monitorizează query-urile
-3. **Auth** → **Users** - Urmărește înregistrările
-
-### 8.2 Optimizează performanța
-1. Adaugă indexuri pentru query-uri frecvente
-2. Optimizează politicile RLS
-3. Configurează cache-ul pentru query-uri
+### Configurează Limitele de Stocare
+1. Mergi la **Storage** → **Policies**
+2. Adaugă o politică pentru a limita dimensiunea fișierelor la 5MB
 
 ## 🆘 Depanare Probleme Comune
 
-### Problema: "Invalid API key"
-**Soluție**: Verifică că ai copiat corect anon key-ul din Settings → API
+### "Invalid API key"
+Verifică că ai copiat corect anon key-ul din Settings → API
 
-### Problema: "Row Level Security policy violation"
-**Soluție**: Verifică că utilizatorul este autentificat și politicile RLS sunt configurate corect
+### "Row Level Security policy violation"
+Verifică că utilizatorul este autentificat și politicile RLS sunt configurate corect
 
-### Problema: "Table doesn't exist"
-**Soluție**: Rulează din nou migrația sau creează manual tabelele
+### "Table doesn't exist"
+Rulează din nou migrația din SQL Editor
 
-### Problema: "CORS error"
-**Soluție**: Adaugă domeniul tău în Settings → API → CORS
-
-## 📞 Suport și Resurse
-
-- **Documentație Supabase**: [docs.supabase.com](https://docs.supabase.com)
-- **Discord Supabase**: [discord.supabase.com](https://discord.supabase.com)
-- **GitHub Issues**: Pentru probleme specifice aplicației
+### "CORS error"
+Adaugă domeniul tău în Settings → API → CORS
 
 ## ✅ Checklist Final
 
 - [ ] Cont Supabase creat
 - [ ] Proiect configurat
-- [ ] Credențiale obținute și introduse în aplicație
+- [ ] Credențiale adăugate în aplicație
 - [ ] Tabele create prin migrație
 - [ ] Autentificare configurată
-- [ ] RLS activat și testat
+- [ ] Storage configurat
 - [ ] Funcționalități de bază testate
 - [ ] Aplicația funcționează complet cu Supabase
 

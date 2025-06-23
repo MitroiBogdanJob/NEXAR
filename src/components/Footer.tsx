@@ -17,14 +17,14 @@ const Footer = () => {
             <div className="flex items-center space-x-3">
               <Link to="/" onClick={handleLinkClick}>
                 <img 
-                  src="/nexar-logo.jpg" 
+                  src="/Nexar - logo_white & red.png" 
                   alt="Nexar Logo" 
                   className="h-28 sm:h-32 md:h-36 w-auto hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
-                    if (target.src.includes('nexar-logo.jpg')) {
-                      target.src = '/Nexar - logo_black & red.png';
-                    } else if (target.src.includes('Nexar - logo_black & red.png')) {
+                    if (target.src.includes('Nexar - logo_white & red.png')) {
+                      target.src = '/nexar-logo.jpg';
+                    } else if (target.src.includes('nexar-logo.jpg')) {
                       target.src =  '/nexar-logo.png';
                     } else if (target.src.includes('nexar-logo.png')) {
                       target.src = '/image.png';
@@ -155,7 +155,7 @@ const Footer = () => {
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-2 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
+                className="inline-flex items-center justify-center md:justify-start space-x-1 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
                 style={{
                   filter: 'drop-shadow(0 0 0px transparent)',
                   transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
@@ -199,7 +199,7 @@ const Footer = () => {
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-10 w-10 sm:h-12 sm:w-12 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
+                    className="h-12 w-12 sm:h-14 sm:w-14 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
                     style={{
                       filter: 'brightness(0.8) saturate(0.8)',
                       transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'

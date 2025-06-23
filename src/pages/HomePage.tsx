@@ -246,6 +246,10 @@ const HomePage = () => {
     { name: "Touring", count: "189 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
     { name: "Cruiser", count: "156 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
     { name: "Adventure", count: "203 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Naked", count: "178 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Enduro", count: "142 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Scooter", count: "134 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
+    { name: "Chopper", count: "98 anunțuri", image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg" },
   ];
 
   const ListingRow = ({ listing }: { listing: any }) => {
@@ -441,15 +445,15 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="text-center text-white">
-            <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-              Găsește Motocicleta
-              <span className="block text-nexar-accent">Perfectă</span>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+              cumpara si vinde motociclete
+              <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
             
             {/* Hero Search */}
-            <div className="max-w-xl mx-auto mb-8">
+            <div className="max-w-xl mx-auto mb-6">
               <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"
@@ -953,7 +957,7 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map((category, index) => (
               <Link
                 key={index}
@@ -1030,7 +1034,7 @@ const HomePage = () => {
             Gata să Începi?
           </h2>
           <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-            Alătură-te comunității Nexar și descoperă cea mai bună experiență de cumpărare și vânzare de motociclete
+            Alătură-te comunității și descoperă cea mai bună experiență de cumpărare și vânzare de motociclete
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link

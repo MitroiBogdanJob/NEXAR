@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle } from 'lucide-react';
+import { auth } from '../lib/supabase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -18,80 +21,135 @@ const AuthPage = () => {
     agreeToTerms: false
   });
 
+  useEffect(() => {
+    // Verificăm dacă utilizatorul este deja autentificat
+    const user = localStorage.getItem('user');
+    if (user) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Resetăm erorile când utilizatorul începe să tasteze
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (isLogin) {
+      if (!formData.email) return 'Email-ul este obligatoriu';
+      if (!formData.password) return 'Parola este obligatorie';
+    } else {
+      if (!formData.name) return 'Numele este obligatoriu';
+      if (!formData.email) return 'Email-ul este obligatoriu';
+      if (!formData.password) return 'Parola este obligatorie';
+      if (formData.password.length < 6) return 'Parola trebuie să aibă cel puțin 6 caractere';
+      if (formData.password !== formData.confirmPassword) return 'Parolele nu coincid';
+      if (!formData.phone) return 'Telefonul este obligatoriu';
+      if (!formData.location) return 'Locația este obligatorie';
+      if (!formData.agreeToTerms) return 'Trebuie să accepți termenii și condițiile';
+    }
+    return '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    if (isLogin) {
-      console.log('Login:', { email: formData.email, password: formData.password });
-      // Simulate successful login
-      localStorage.setItem('user', JSON.stringify({
-        name: formData.name || 'Bogdan',
-        email: formData.email,
-        sellerType: formData.sellerType,
-        isLoggedIn: true
-      }));
-    } else {
-      console.log('Register:', formData);
-      // Simulate successful registration
-      localStorage.setItem('user', JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        sellerType: formData.sellerType,
-        isLoggedIn: true
-      }));
+    // Validăm formularul
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
     }
     
-    setIsLoading(false);
-    // Redirect to home page after successful auth
-    navigate('/');
-    // Reload to update header state
-    window.location.reload();
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      if (isLogin) {
+        // Login
+        const { data, error } = await auth.signIn(formData.email, formData.password);
+        
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            setError('Email sau parolă incorectă');
+          } else {
+            setError(error.message);
+          }
+        } else if (data) {
+          // Redirecționăm utilizatorul la pagina principală
+          navigate('/');
+        }
+      } else {
+        // Register
+        const { data, error } = await auth.signUp(
+          formData.email, 
+          formData.password, 
+          {
+            name: formData.name,
+            phone: formData.phone,
+            location: formData.location,
+            sellerType: formData.sellerType
+          }
+        );
+        
+        if (error) {
+          if (error.message.includes('already registered')) {
+            setError('Acest email este deja înregistrat');
+          } else {
+            setError(error.message);
+          }
+        } else {
+          // Afișăm mesaj de succes
+          setSuccessMessage('Cont creat cu succes! Te rugăm să-ți verifici email-ul pentru a confirma contul.');
+          // Resetăm formularul
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            phone: '',
+            location: '',
+            sellerType: 'privat',
+            agreeToTerms: false
+          });
+          // Trecem la pagina de login după 3 secunde
+          setTimeout(() => {
+            setIsLogin(true);
+            setSuccessMessage('');
+          }, 3000);
+        }
+      }
+    } catch (err) {
+      console.error('Authentication error:', err);
+      setError('A apărut o eroare. Te rugăm să încerci din nou.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setError('Introdu adresa de email pentru a reseta parola');
+      return;
+    }
+    
     setIsLoading(true);
-    // Simulate Google OAuth
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Google authentication');
     
-    // Simulate successful Google login
-    localStorage.setItem('user', JSON.stringify({
-      name: 'Bogdan',
-      email: 'bogdan@gmail.com',
-      sellerType: 'privat',
-      isLoggedIn: true
-    }));
-    
-    setIsLoading(false);
-    navigate('/');
-    window.location.reload();
-  };
-
-  const handleFacebookAuth = async () => {
-    setIsLoading(true);
-    // Simulate Facebook OAuth
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Facebook authentication');
-    
-    // Simulate successful Facebook login
-    localStorage.setItem('user', JSON.stringify({
-      name: 'Bogdan',
-      email: 'bogdan@facebook.com',
-      sellerType: 'privat',
-      isLoggedIn: true
-    }));
-    
-    setIsLoading(false);
-    navigate('/');
-    window.location.reload();
+    try {
+      const { error } = await auth.resetPassword(formData.email);
+      
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccessMessage('Un email pentru resetarea parolei a fost trimis. Verifică-ți căsuța de email.');
+      }
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setError('A apărut o eroare. Te rugăm să încerci din nou.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,10 +159,7 @@ const AuthPage = () => {
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4">
-              <img src="/image.png" alt="Logo" className="h-8 sm:h-10 w-auto" />
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500">Premium Motorcycles</span>
-              </div>
+              <img src="/Nexar - logo_white & red.png" alt="Logo" className="h-8 sm:h-10 w-auto" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
               {isLogin ? 'Conectează-te' : 'Creează Cont'}
@@ -112,10 +167,32 @@ const AuthPage = () => {
             <p className="text-gray-600 mt-2 text-sm sm:text-base">
               {isLogin 
                 ? 'Bun venit înapoi! Conectează-te la contul tău.' 
-                : 'Alătură-te comunității Nexar și începe să vinzi sau să cumperi motociclete.'
+                : 'Alătură-te comunității și începe să vinzi sau să cumperi motociclete.'
               }
             </p>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-700 flex items-center">
+                <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {successMessage}
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700 flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                {error}
+              </p>
+            </div>
+          )}
 
           {/* Toggle Buttons */}
           <div className="flex bg-gray-50 rounded-xl p-1 mb-6 sm:mb-8">
@@ -191,7 +268,7 @@ const AuthPage = () => {
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
-                      placeholder="0790 454 647"
+                      placeholder="0790 45 46 47"
                       required={!isLogin}
                     />
                     <Phone className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
@@ -287,9 +364,13 @@ const AuthPage = () => {
                   />
                   <span className="ml-2 text-sm text-gray-600">Ține-mă conectat</span>
                 </label>
-                <a href="#" className="text-sm text-nexar-accent hover:text-nexar-gold transition-colors">
+                <button 
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-sm text-nexar-accent hover:text-nexar-gold transition-colors"
+                >
                   Ai uitat parola?
-                </a>
+                </button>
               </div>
             )}
 
@@ -304,11 +385,11 @@ const AuthPage = () => {
                 />
                 <span className="text-sm text-gray-600">
                   Sunt de acord cu{' '}
-                  <a href="#" className="text-nexar-accent hover:text-nexar-gold transition-colors">
+                  <a href="/termeni" className="text-nexar-accent hover:text-nexar-gold transition-colors">
                     Termenii și Condițiile
                   </a>{' '}
                   și{' '}
-                  <a href="#" className="text-nexar-accent hover:text-nexar-gold transition-colors">
+                  <a href="/confidentialitate" className="text-nexar-accent hover:text-nexar-gold transition-colors">
                     Politica de Confidențialitate
                   </a>
                 </span>
@@ -323,45 +404,6 @@ const AuthPage = () => {
               {isLoading ? 'Se procesează...' : (isLogin ? 'Conectează-te' : 'Creează Cont')}
             </button>
           </form>
-
-          {/* Social Login */}
-          <div className="mt-6 sm:mt-8">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">sau continuă cu</span>
-              </div>
-            </div>
-
-            <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-3">
-              <button 
-                onClick={handleGoogleAuth}
-                disabled={isLoading}
-                className="w-full inline-flex justify-center py-2.5 sm:py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span className="ml-2 text-xs sm:text-sm">Google</span>
-              </button>
-
-              <button 
-                onClick={handleFacebookAuth}
-                disabled={isLoading}
-                className="w-full inline-flex justify-center py-2.5 sm:py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                <span className="ml-2 text-xs sm:text-sm">Facebook</span>
-              </button>
-            </div>
-          </div>
 
           {/* Footer */}
           <div className="mt-6 sm:mt-8 text-center">
