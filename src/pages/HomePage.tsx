@@ -445,10 +445,10 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 sm:h-[85vh] md:h-[60vh] lg:h-[50vh]">
           <div className="text-center text-white">
             <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-              cumpara si vinde motociclete
+              Cumpara si Vinde Motociclete
               <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
             
