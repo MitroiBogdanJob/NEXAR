@@ -11,10 +11,22 @@ const Header = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    // Check if user is logged in with proper variable declaration and error handling
+    let userData: string | null = null;
+    
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        userData = localStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      }
+    } catch (error) {
+      console.error('Error accessing localStorage or parsing user data:', error);
+      // Clear potentially corrupted data
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
