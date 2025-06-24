@@ -69,6 +69,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
@@ -193,54 +194,91 @@ const ProfilePage = () => {
     if (!userProfile) return;
 
     try {
-      setIsLoading(true);
+      setIsSaving(true);
+      setError(null);
 
-      const { error } = await supabase
+      console.log('🔄 Updating profile with data:', {
+        name: editForm.name,
+        phone: editForm.phone,
+        location: editForm.location,
+        description: editForm.description
+      });
+
+      // Actualizăm profilul în baza de date folosind user_id
+      const { data, error } = await supabase
         .from('profiles')
         .update({
-          name: editForm.name,
-          phone: editForm.phone,
-          location: editForm.location,
-          description: editForm.description
+          name: editForm.name?.trim() || userProfile.name,
+          phone: editForm.phone?.trim() || '',
+          location: editForm.location?.trim() || '',
+          description: editForm.description?.trim() || '',
+          updated_at: new Date().toISOString()
         })
-        .eq('id', userProfile.id);
+        .eq('user_id', userProfile.user_id)
+        .select()
+        .single();
 
       if (error) {
-        console.error('Error updating profile:', error);
-        alert('Eroare la actualizarea profilului');
-        return;
+        console.error('❌ Error updating profile:', error);
+        throw new Error(`Eroare la actualizarea profilului: ${error.message}`);
       }
 
-      // Actualizăm profilul local
-      setUserProfile(prev => prev ? {
-        ...prev,
-        name: editForm.name || prev.name,
-        phone: editForm.phone || prev.phone,
-        location: editForm.location || prev.location,
-        description: editForm.description || prev.description
-      } : null);
+      console.log('✅ Profile updated successfully:', data);
 
-      // Actualizăm și localStorage dacă este utilizatorul curent
-      if (isCurrentUser) {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        userData.name = editForm.name;
-        localStorage.setItem('user', JSON.stringify(userData));
+      // Actualizăm profilul local cu datele returnate
+      if (data) {
+        setUserProfile(prev => prev ? {
+          ...prev,
+          name: data.name,
+          phone: data.phone,
+          location: data.location,
+          description: data.description
+        } : null);
+
+        // Actualizăm și localStorage dacă este utilizatorul curent
+        if (isCurrentUser) {
+          const userData = JSON.parse(localStorage.getItem('user') || '{}');
+          userData.name = data.name;
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
       }
 
       setIsEditing(false);
-      alert('Profilul a fost actualizat cu succes!');
+      
+      // Afișăm mesaj de succes
+      const successMessage = document.createElement('div');
+      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      successMessage.textContent = 'Profilul a fost actualizat cu succes!';
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        document.body.removeChild(successMessage);
+      }, 3000);
 
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      alert('A apărut o eroare la salvarea profilului');
+    } catch (err: any) {
+      console.error('💥 Error saving profile:', err);
+      setError(err.message || 'A apărut o eroare la salvarea profilului');
+      
+      // Afișăm mesaj de eroare
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      errorMessage.textContent = err.message || 'Eroare la actualizarea profilului';
+      document.body.appendChild(errorMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          document.body.removeChild(errorMessage);
+        }
+      }, 5000);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditForm({});
+    setError(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -343,6 +381,7 @@ const ProfilePage = () => {
                       value={editForm.name || ''}
                       onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full text-center text-xl font-bold border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      placeholder="Numele tău"
                     />
                   </div>
                 ) : (
@@ -368,6 +407,7 @@ const ProfilePage = () => {
                       value={editForm.location || ''}
                       onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      placeholder="Locația ta"
                     />
                   ) : (
                     <span className="text-gray-700">{userProfile.location || 'Nu este specificată'}</span>
@@ -381,6 +421,7 @@ const ProfilePage = () => {
                       value={editForm.phone || ''}
                       onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                      placeholder="Numărul de telefon"
                     />
                   ) : (
                     <span className="text-gray-700">{userProfile.phone || 'Nu este specificat'}</span>
@@ -425,14 +466,20 @@ const ProfilePage = () => {
                     <div className="flex space-x-2">
                       <button 
                         onClick={handleSaveProfile}
-                        className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                        disabled={isSaving}
+                        className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Save className="h-4 w-4" />
-                        <span>Salvează</span>
+                        {isSaving ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                        <span>{isSaving ? 'Se salvează...' : 'Salvează'}</span>
                       </button>
                       <button 
                         onClick={handleCancelEdit}
-                        className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2"
+                        disabled={isSaving}
+                        className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
                       >
                         <X className="h-4 w-4" />
                         <span>Anulează</span>
