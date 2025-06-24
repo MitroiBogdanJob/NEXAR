@@ -17,12 +17,12 @@ const Footer = () => {
             <div className="flex items-center space-x-3">
               <Link to="/" onClick={handleLinkClick}>
                 <img 
-                  src="/Nexar - logo_white & red.png" 
+                  src="/unnamed2.png" 
                   alt="Nexar Logo" 
                   className="h-28 sm:h-32 md:h-36 w-auto hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
-                    if (target.src.includes('Nexar - logo_white & red.png')) {
+                    if (target.src.includes('unnamed2.png')) {
                       target.src = '/nexar-logo.jpg';
                     } else if (target.src.includes('nexar-logo.jpg')) {
                       target.src =  '/nexar-logo.png';
@@ -224,13 +224,13 @@ const Footer = () => {
             </div>
             
             <div className="flex space-x-4 sm:space-x-6 text-sm">
-              <Link to="/termeni" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
+              <Link to="/termeni" className="text-gray-300 hover:text-white transition-colors underline" onClick={handleLinkClick}>
                 Termeni și Condiții
               </Link>
-              <Link to="/confidentialitate" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
+              <Link to="/confidentialitate" className="text-gray-300 hover:text-white transition-colors underline" onClick={handleLinkClick}>
                 Politica de Confidențialitate
               </Link>
-              <Link to="/cookies" className="text-gray-300 hover:text-white transition-colors" onClick={handleLinkClick}>
+              <Link to="/cookies" className="text-gray-300 hover:text-white transition-colors underline" onClick={handleLinkClick}>
                 Cookies
               </Link>
             </div>

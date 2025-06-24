@@ -31,13 +31,13 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-18">
-          {/* Logo - FOLOSIND NOUL LOGO PENTRU HEADER */}
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          {/* Logo - MĂRIT SEMNIFICATIV */}
           <Link to="/" className="flex items-center group min-w-0">
             <img 
               src="/Nexar - logo_black & red copy.png" 
               alt="Nexar" 
-              className="h-14 sm:h-16 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-20 sm:h-24 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
