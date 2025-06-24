@@ -442,42 +442,47 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section - REDUSĂ CU 50% PE MOBIL ȘI 15% PE DESKTOP */}
+      {/* Hero Section - RESPONSIVE PENTRU TOATE ZOOM-URILE */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 md:py-4 lg:py-5 sm:h-[20vh] md:h-[18vh] lg:h-[22vh]">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10 xl:py-12">
           <div className="text-center text-white">
-            <h1 className="text-xl md:text-2xl font-bold mb-1 leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 leading-tight">
               Cumpara si Vinde Motociclete
               <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
             
-            {/* Hero Search */}
-            <div className="max-w-xl mx-auto mb-2">
-              <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-3 sm:mb-4 md:mb-6 max-w-2xl mx-auto">
+              Experiență pentru cumpărare și vânzare de motociclete oferită gratuit!
+            </p>
+            
+            {/* Hero Search - RESPONSIVE */}
+            <div className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto mb-3 sm:mb-4 md:mb-6">
+              <div className="relative backdrop-blur-md bg-white/10 rounded-xl sm:rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Caută după marcă, model sau tip..."
-                  className="w-full pl-4 pr-20 py-1.5 text-sm rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
+                  className="w-full pl-3 sm:pl-4 pr-16 sm:pr-20 md:pr-24 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base rounded-lg sm:rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
                 />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-4 py-1 rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-xs shadow-lg">
+                <button className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-md sm:rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-xs sm:text-sm shadow-lg">
                   Caută
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-1.5 justify-center">
+            {/* Action Buttons - RESPONSIVE */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center max-w-md mx-auto">
               <Link
                 to="/anunturi"
-                className="bg-nexar-accent/90 backdrop-blur-sm text-white px-3 py-1 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-xs"
+                className="bg-nexar-accent/90 backdrop-blur-sm text-white px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-xs sm:text-sm md:text-base"
               >
                 Explorează Anunțurile
               </Link>
               <Link
                 to="/adauga-anunt"
-                className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-xs"
+                className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-xs sm:text-sm md:text-base"
               >
                 Vinde Motocicleta Ta
               </Link>
@@ -1027,20 +1032,20 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-8 bg-gradient-to-r from-gray-900 to-black">
+      {/* CTA Section - RESPONSIVE */}
+      <section className="py-6 sm:py-8 md:py-10 bg-gradient-to-r from-gray-900 to-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center max-w-md mx-auto">
             <Link
               to="/auth"
-              className="bg-nexar-accent/90 backdrop-blur-sm text-white px-4 py-1.5 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-sm"
+              className="bg-nexar-accent/90 backdrop-blur-sm text-white px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-xs sm:text-sm"
               onClick={() => window.scrollTo(0, 0)}
             >
               Creează Cont Gratuit
             </Link>
             <Link
               to="/anunturi"
-              className="bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-1.5 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-sm"
+              className="bg-white/90 backdrop-blur-sm text-gray-900 px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-xs sm:text-sm"
               onClick={() => window.scrollTo(0, 0)}
             >
               Explorează Anunțurile
