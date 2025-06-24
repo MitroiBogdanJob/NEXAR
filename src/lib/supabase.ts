@@ -47,45 +47,53 @@ export interface User {
 // Funcție pentru a crea profilul manual dacă nu există
 const ensureProfileExists = async (user: any, userData?: any) => {
   try {
+    console.log('🔍 Checking if profile exists for user:', user.email)
+    
     // Verificăm dacă profilul există deja
     const { data: existingProfile, error: checkError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('*')
       .eq('user_id', user.id)
       .single()
     
-    if (existingProfile) {
-      console.log('Profile already exists for user:', user.email)
+    if (existingProfile && !checkError) {
+      console.log('✅ Profile already exists for user:', user.email)
       return existingProfile
     }
     
+    console.log('❌ Profile not found, creating new profile for:', user.email)
+    
     // Dacă nu există, îl creăm
-    console.log('Creating profile for user:', user.email)
+    const profileData = {
+      user_id: user.id,
+      name: userData?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'Utilizator',
+      email: user.email,
+      phone: userData?.phone || user.user_metadata?.phone || '',
+      location: userData?.location || user.user_metadata?.location || '',
+      seller_type: userData?.sellerType || user.user_metadata?.sellerType || 'individual',
+      verified: false,
+      rating: 0,
+      reviews_count: 0
+    }
+    
+    console.log('📝 Creating profile with data:', profileData)
+    
     const { data: newProfile, error: createError } = await supabase
       .from('profiles')
-      .insert([
-        {
-          user_id: user.id,
-          name: userData?.name || user.user_metadata?.name || user.email?.split('@')[0] || '',
-          email: user.email,
-          phone: userData?.phone || user.user_metadata?.phone || '',
-          location: userData?.location || user.user_metadata?.location || '',
-          seller_type: userData?.sellerType || user.user_metadata?.sellerType || 'individual'
-        }
-      ])
+      .insert([profileData])
       .select()
       .single()
     
     if (createError) {
-      console.error('Error creating profile:', createError)
-      return null
+      console.error('❌ Error creating profile:', createError)
+      throw createError
     }
     
-    console.log('Profile created successfully:', newProfile)
+    console.log('✅ Profile created successfully:', newProfile)
     return newProfile
   } catch (err) {
-    console.error('Error in ensureProfileExists:', err)
-    return null
+    console.error('💥 Error in ensureProfileExists:', err)
+    throw err
   }
 }
 
@@ -93,7 +101,7 @@ const ensureProfileExists = async (user: any, userData?: any) => {
 export const auth = {
   signUp: async (email: string, password: string, userData: any) => {
     try {
-      console.log('Starting signup process for:', email)
+      console.log('🚀 Starting signup process for:', email)
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -104,26 +112,30 @@ export const auth = {
       })
       
       if (error) {
-        console.error('Signup error:', error)
+        console.error('❌ Signup error:', error)
         return { data, error }
       }
       
       if (data.user) {
-        console.log('User created, ensuring profile exists...')
-        // Asigurăm că profilul este creat
-        await ensureProfileExists(data.user, userData)
+        console.log('👤 User created, ensuring profile exists...')
+        try {
+          await ensureProfileExists(data.user, userData)
+        } catch (profileError) {
+          console.error('⚠️ Profile creation failed during signup:', profileError)
+          // Nu returnăm eroare aici pentru că utilizatorul a fost creat cu succes
+        }
       }
       
       return { data, error }
     } catch (err) {
-      console.error('SignUp error:', err)
+      console.error('💥 SignUp error:', err)
       return { data: null, error: err }
     }
   },
 
   signIn: async (email: string, password: string) => {
     try {
-      console.log('Starting signin process for:', email)
+      console.log('🔐 Starting signin process for:', email)
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -131,49 +143,53 @@ export const auth = {
       })
       
       if (error) {
-        console.error('Signin error:', error)
+        console.error('❌ Signin error:', error)
         return { data, error }
       }
       
       if (data.user) {
-        console.log('User signed in, checking profile...')
+        console.log('✅ User signed in successfully:', data.user.email)
         
-        // Asigurăm că profilul există
-        await ensureProfileExists(data.user)
-        
-        // Obținem profilul utilizatorului
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', data.user.id)
-          .single()
-        
-        if (!profileError && profileData) {
-          // Salvăm datele utilizatorului în localStorage pentru acces rapid
+        try {
+          // Asigurăm că profilul există
+          const profile = await ensureProfileExists(data.user)
+          
+          if (profile) {
+            // Salvăm datele utilizatorului în localStorage pentru acces rapid
+            const userData = {
+              id: data.user.id,
+              name: profile.name,
+              email: profile.email,
+              sellerType: profile.seller_type,
+              isLoggedIn: true
+            }
+            
+            localStorage.setItem('user', JSON.stringify(userData))
+            console.log('💾 User data saved to localStorage:', userData)
+          }
+        } catch (profileError) {
+          console.error('⚠️ Profile handling failed during signin:', profileError)
+          // Salvăm măcar datele de bază
           const userData = {
             id: data.user.id,
-            name: profileData.name,
-            email: profileData.email,
-            sellerType: profileData.seller_type,
+            name: data.user.email?.split('@')[0] || 'Utilizator',
+            email: data.user.email,
+            sellerType: 'individual',
             isLoggedIn: true
           }
-          
           localStorage.setItem('user', JSON.stringify(userData))
-          console.log('User data saved to localStorage:', userData)
-        } else {
-          console.error('Error fetching profile:', profileError)
         }
       }
       
       return { data, error }
     } catch (err) {
-      console.error('SignIn error:', err)
+      console.error('💥 SignIn error:', err)
       return { data: null, error: err }
     }
   },
 
   signOut: async () => {
-    console.log('Signing out user...')
+    console.log('👋 Signing out user...')
     localStorage.removeItem('user')
     const { error } = await supabase.auth.signOut()
     return { error }
@@ -699,32 +715,103 @@ export const testConnection = async () => {
 // Funcție pentru a crea profilul manual pentru utilizatorul existent
 export const createMissingProfile = async (userId: string, email: string) => {
   try {
-    console.log('Creating missing profile for user:', email)
+    console.log('🔧 Creating missing profile for user:', email)
+    
+    const profileData = {
+      user_id: userId,
+      name: email.split('@')[0], // Folosim partea din email ca nume implicit
+      email: email,
+      phone: '',
+      location: '',
+      seller_type: 'individual',
+      verified: false,
+      rating: 0,
+      reviews_count: 0
+    }
     
     const { data, error } = await supabase
       .from('profiles')
-      .insert([
-        {
-          user_id: userId,
-          name: email.split('@')[0], // Folosim partea din email ca nume implicit
-          email: email,
-          phone: '',
-          location: '',
-          seller_type: 'individual'
-        }
-      ])
+      .insert([profileData])
       .select()
       .single()
     
     if (error) {
-      console.error('Error creating missing profile:', error)
-      return { data: null, error }
+      console.error('❌ Error creating missing profile:', error)
+      throw error
     }
     
-    console.log('Missing profile created successfully:', data)
+    console.log('✅ Missing profile created successfully:', data)
     return { data, error: null }
   } catch (err) {
-    console.error('Error in createMissingProfile:', err)
+    console.error('💥 Error in createMissingProfile:', err)
     return { data: null, error: err }
+  }
+}
+
+// Funcție pentru a repara utilizatorul curent
+export const fixCurrentUserProfile = async () => {
+  try {
+    console.log('🔧 Starting profile repair process...')
+    
+    // Obținem utilizatorul curent
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    if (userError || !user) {
+      console.error('❌ No authenticated user found:', userError)
+      return { success: false, error: 'No authenticated user' }
+    }
+    
+    console.log('👤 Found authenticated user:', user.email)
+    
+    // Verificăm dacă profilul există
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+    
+    if (existingProfile && !profileError) {
+      console.log('✅ Profile already exists, updating localStorage...')
+      
+      // Actualizăm localStorage cu datele corecte
+      const userData = {
+        id: user.id,
+        name: existingProfile.name,
+        email: existingProfile.email,
+        sellerType: existingProfile.seller_type,
+        isLoggedIn: true
+      }
+      
+      localStorage.setItem('user', JSON.stringify(userData))
+      return { success: true, message: 'Profile found and localStorage updated' }
+    }
+    
+    // Profilul nu există, îl creăm
+    console.log('❌ Profile not found, creating new profile...')
+    
+    const result = await createMissingProfile(user.id, user.email!)
+    
+    if (result.error) {
+      console.error('❌ Failed to create profile:', result.error)
+      return { success: false, error: 'Failed to create profile' }
+    }
+    
+    // Actualizăm localStorage cu datele noi
+    const userData = {
+      id: user.id,
+      name: result.data!.name,
+      email: result.data!.email,
+      sellerType: result.data!.seller_type,
+      isLoggedIn: true
+    }
+    
+    localStorage.setItem('user', JSON.stringify(userData))
+    
+    console.log('🎉 Profile repair completed successfully!')
+    return { success: true, message: 'Profile created and localStorage updated' }
+    
+  } catch (err) {
+    console.error('💥 Error in fixCurrentUserProfile:', err)
+    return { success: false, error: 'Unexpected error during repair' }
   }
 }

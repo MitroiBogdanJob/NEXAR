@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff } from 'lucide-react';
-import { auth, checkSupabaseConnection, supabase } from '../lib/supabase';
+import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { auth, checkSupabaseConnection, supabase, fixCurrentUserProfile } from '../lib/supabase';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,62 +9,79 @@ const Header = () => {
   const [user, setUser] = useState<any>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFixing, setIsFixing] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check Supabase connection
-    const checkConnection = async () => {
+    initializeAuth();
+  }, [navigate, location.pathname]);
+
+  const initializeAuth = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Check Supabase connection
       const connected = await checkSupabaseConnection();
       setIsConnected(connected);
-    };
-    
-    checkConnection();
 
-    // Check current auth state
-    const checkAuthState = async () => {
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!connected) {
+        console.warn('⚠️ Supabase connection failed');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check current auth state
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (currentUser) {
+        console.log('👤 Found authenticated user:', currentUser.email);
         
-        if (currentUser) {
-          // Get user profile from database
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .single();
+        // Get user profile from database
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .single();
+        
+        if (!profileError && profileData) {
+          console.log('✅ Profile found:', profileData.name);
           
-          if (!profileError && profileData) {
-            const userData = {
-              id: currentUser.id,
-              name: profileData.name,
-              email: profileData.email,
-              sellerType: profileData.seller_type,
-              isLoggedIn: true
-            };
-            
-            setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
-          }
+          const userData = {
+            id: currentUser.id,
+            name: profileData.name,
+            email: profileData.email,
+            sellerType: profileData.seller_type,
+            isLoggedIn: true
+          };
+          
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
         } else {
-          // No user logged in
-          setUser(null);
-          localStorage.removeItem('user');
+          console.warn('⚠️ Profile not found for authenticated user');
+          setUser({ 
+            id: currentUser.id, 
+            email: currentUser.email, 
+            needsProfileFix: true,
+            isLoggedIn: true 
+          });
         }
-      } catch (error) {
-        console.error('Error checking auth state:', error);
+      } else {
+        console.log('👤 No authenticated user');
         setUser(null);
         localStorage.removeItem('user');
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    checkAuthState();
+    } catch (error) {
+      console.error('💥 Error checking auth state:', error);
+      setUser(null);
+      localStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
+    }
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+      console.log('🔄 Auth state changed:', event, session?.user?.email);
       
       if (event === 'SIGNED_IN' && session?.user) {
         // User signed in - get profile
@@ -90,6 +107,14 @@ const Header = () => {
           if (location.pathname === '/auth') {
             navigate('/');
           }
+        } else {
+          // Profile missing - set flag for repair
+          setUser({ 
+            id: session.user.id, 
+            email: session.user.email, 
+            needsProfileFix: true,
+            isLoggedIn: true 
+          });
         }
         setIsLoading(false);
       } else if (event === 'SIGNED_OUT') {
@@ -103,7 +128,29 @@ const Header = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  };
+
+  const handleFixProfile = async () => {
+    setIsFixing(true);
+    try {
+      console.log('🔧 Attempting to fix user profile...');
+      const result = await fixCurrentUserProfile();
+      
+      if (result.success) {
+        console.log('✅ Profile fixed successfully');
+        // Reload the page to refresh the state
+        window.location.reload();
+      } else {
+        console.error('❌ Failed to fix profile:', result.error);
+        alert('Nu s-a putut repara profilul. Te rugăm să încerci din nou sau să te deconectezi și să te conectezi din nou.');
+      }
+    } catch (error) {
+      console.error('💥 Error fixing profile:', error);
+      alert('A apărut o eroare. Te rugăm să încerci din nou.');
+    } finally {
+      setIsFixing(false);
+    }
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -114,6 +161,61 @@ const Header = () => {
     setIsUserMenuOpen(false);
     setIsLoading(false);
     navigate('/');
+  };
+
+  const renderUserButton = () => {
+    if (isLoading) {
+      return (
+        <div className="w-7 h-7 bg-gray-200 rounded-full animate-pulse"></div>
+      );
+    }
+
+    if (user?.needsProfileFix) {
+      return (
+        <button
+          onClick={handleFixProfile}
+          disabled={isFixing}
+          className="flex items-center space-x-2 p-2 rounded-lg bg-yellow-100 hover:bg-yellow-200 transition-colors"
+          title="Click pentru a repara profilul"
+        >
+          {isFixing ? (
+            <div className="w-5 h-5 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <div className="w-5 h-5 bg-yellow-500 rounded-full animate-pulse"></div>
+          )}
+          <span className="text-xs text-yellow-700 hidden xl:inline">
+            {isFixing ? 'Se repară...' : 'Repară profil'}
+          </span>
+        </button>
+      );
+    }
+
+    if (user) {
+      return (
+        <button
+          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-xs">
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <span className="text-sm font-medium text-gray-700 hidden xl:inline">
+              Bună, {user.name || 'Utilizator'}
+            </span>
+          </div>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+      >
+        <User className="h-5 w-5 text-gray-700" />
+      </button>
+    );
   };
 
   return (
@@ -181,28 +283,9 @@ const Header = () => {
             
             {/* User Menu */}
             <div className="relative">
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="w-7 h-7 bg-gray-200 rounded-full animate-pulse"></div>
-                ) : user ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">
-                      Bună, {user.name || 'Utilizator'}
-                    </span>
-                  </div>
-                ) : (
-                  <User className="h-5 w-5 text-gray-700" />
-                )}
-              </button>
+              {renderUserButton()}
               
-              {isUserMenuOpen && !isLoading && (
+              {isUserMenuOpen && !isLoading && !user?.needsProfileFix && (
                 <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-200 py-2 animate-scale-in">
                   {user ? (
                     <>
@@ -279,6 +362,22 @@ const Header = () => {
                   <span>Deconectat de la Supabase</span>
                 </div>
               )}
+
+              {/* Profile Fix Button on Mobile */}
+              {user?.needsProfileFix && (
+                <button
+                  onClick={handleFixProfile}
+                  disabled={isFixing}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-yellow-100 text-yellow-800 rounded-lg font-medium mb-4"
+                >
+                  {isFixing ? (
+                    <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span>{isFixing ? 'Se repară profilul...' : 'Repară Profilul'}</span>
+                </button>
+              )}
               
               <Link
                 to="/anunturi"
@@ -300,7 +399,7 @@ const Header = () => {
                 <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
                   Se încarcă...
                 </div>
-              ) : user ? (
+              ) : user && !user.needsProfileFix ? (
                 <>
                   <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
                     Bună, {user.name || 'Utilizator'}
