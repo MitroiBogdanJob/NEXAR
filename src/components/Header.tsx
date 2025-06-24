@@ -47,13 +47,13 @@ const Header = () => {
           {/* Logo - MĂRIT SEMNIFICATIV */}
           <Link to="/" className="flex items-center group min-w-0">
             <img 
-              src="/Nexar - logo_black & red copy.png" 
+              src="/Nexar - logo_black & red.png" 
               alt="Nexar" 
               className="h-20 sm:h-24 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
-                if (target.src.includes('Nexar - logo_black & red copy.png')) {
+                if (target.src.includes('Nexar - logo_black & red.png')) {
                   target.src = '/nexar-logo.jpg';
                 } else if (target.src.includes('nexar-logo.jpg')) {
                   // Try nexar-logo.png if the other fails
