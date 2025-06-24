@@ -155,7 +155,7 @@ const Footer = () => {
                 href="https://nextsoft-it.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center md:justify-start space-x-1 mt-3 group transition-all duration-500 ease-out transform-gpu relative"
+                className="inline-flex items-center justify-center md:justify-start mt-3 group transition-all duration-500 ease-out transform-gpu relative"
                 style={{
                   filter: 'drop-shadow(0 0 0px transparent)',
                   transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
@@ -187,7 +187,7 @@ const Footer = () => {
                   }, 300);
                 }}
               >
-                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold">
+                <span className="text-gray-400 text-sm group-hover:text-nexar-accent transition-all duration-500 group-hover:font-semibold mr-1">
                   Dezvoltat de
                 </span>
                 <div className="flex items-center space-x-2">
@@ -199,7 +199,7 @@ const Footer = () => {
                   <img 
                     src="/unnamed2.png" 
                     alt="NEXT SOFT" 
-                    className="h-12 w-12 sm:h-14 sm:w-14 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
+                    className="h-14 w-14 sm:h-16 sm:w-16 object-contain opacity-70 group-hover:opacity-100 transition-all duration-500 transform-gpu"
                     style={{
                       filter: 'brightness(0.8) saturate(0.8)',
                       transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'

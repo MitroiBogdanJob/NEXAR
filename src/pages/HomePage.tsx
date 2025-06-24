@@ -442,18 +442,18 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section */}
+      {/* Hero Section - REDUSĂ CU 50% PE MOBIL ȘI 15% PE DESKTOP */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 sm:h-[85vh] md:h-[60vh] lg:h-[50vh]">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-12 sm:h-[42vh] md:h-[30vh] lg:h-[42vh]">
           <div className="text-center text-white">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">
               Cumpara si Vinde Motociclete
               <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
             
             {/* Hero Search */}
-            <div className="max-w-xl mx-auto mb-6">
+            <div className="max-w-xl mx-auto mb-4">
               <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"

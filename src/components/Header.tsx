@@ -31,17 +31,17 @@ const Header = () => {
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between items-center h-20 sm:h-24">
-          {/* Logo - FĂRĂ TEXTUL PREMIUM MOTORCYCLES */}
+        <div className="flex justify-between items-center h-16 sm:h-18">
+          {/* Logo - FOLOSIND NOUL LOGO PENTRU HEADER */}
           <Link to="/" className="flex items-center group min-w-0">
             <img 
-              src="/Nexar - logo_white & red.png" 
+              src="/Nexar - logo_black & red copy.png" 
               alt="Nexar" 
-              className="h-16 sm:h-20 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-12 sm:h-14 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
-                if (target.src.includes('Nexar - logo_white & red.png')) {
+                if (target.src.includes('Nexar - logo_black & red copy.png')) {
                   target.src = '/nexar-logo.jpg';
                 } else if (target.src.includes('nexar-logo.jpg')) {
                   // Try nexar-logo.png if the other fails
@@ -61,7 +61,7 @@ const Header = () => {
             />
             
             {/* Fallback text logo */}
-            <div className="hidden text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-nexar-accent">
+            <div className="hidden text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-nexar-accent">
               NEXAR
             </div>
           </Link>
