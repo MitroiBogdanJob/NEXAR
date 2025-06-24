@@ -56,28 +56,8 @@ export const auth = {
         }
       })
       
-      if (!error && data.user) {
-        // Creăm profilul utilizatorului în tabela profiles
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: uuidv4(),
-              user_id: data.user.id,
-              name: userData.name,
-              email: email,
-              phone: userData.phone || '',
-              location: userData.location || '',
-              seller_type: userData.sellerType || 'individual',
-              verified: false
-            }
-          ])
-        
-        if (profileError) {
-          console.error('Error creating profile:', profileError)
-          return { data, error: profileError }
-        }
-      }
+      // Profile creation is now handled automatically by database trigger
+      // No need for manual profile insertion
       
       return { data, error }
     } catch (err) {
