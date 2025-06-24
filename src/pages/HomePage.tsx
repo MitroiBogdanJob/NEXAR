@@ -447,10 +447,14 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 md:py-5 lg:py-6 sm:h-[25vh] md:h-[20vh] lg:h-[25vh]">
           <div className="text-center text-white">
-            <h1 className="text-xl md:text-2xl font-bold mb-1 leading-tight">
+            <h1 className="text-2xl md:text-3xl font-bold mb-1 leading-tight">
               Cumpara si Vinde Motociclete
               <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
+            
+            <p className="text-sm md:text-base text-white/90 mb-2">
+              Experiență pentru cumpărare și vânzare de motociclete oferită gratuit!
+            </p>
             
             {/* Hero Search */}
             <div className="max-w-xl mx-auto mb-2">
@@ -484,9 +488,6 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-        
-        {/* Spațiu estetic sub butoane */}
-        <div className="h-4 sm:h-6 bg-gradient-to-b from-transparent to-gray-50"></div>
       </section>
 
       {/* Featured Listings with Filters */}
