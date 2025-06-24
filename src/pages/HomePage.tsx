@@ -442,45 +442,25 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section - Dimensiune redusă și echilibrată */}
+      {/* Hero Section - MINIMALIST */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}></div>
-        </div>
-        
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="text-center text-white">
-            {/* Main Heading - Dimensiune redusă */}
-            <div className="mb-6">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 leading-tight">
-                Cumpără și Vinde
-                <span className="block text-nexar-accent bg-gradient-to-r from-nexar-accent to-nexar-gold bg-clip-text text-transparent">
-                  Motociclete
-                </span>
-                <span className="block text-xl sm:text-2xl lg:text-3xl font-normal mt-2">
-                  GRATUIT
-                </span>
-              </h1>
-              
-              <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed">
-                Cel mai premium marketplace pentru motociclete din România
-              </p>
-            </div>
-
-            {/* Hero Search - Dimensiune redusă */}
-            <div className="max-w-xl mx-auto mb-8">
-              <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-2 border border-white/20 shadow-2xl">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight">
+              Cumpără și Vinde Motociclete
+              <span className="block text-nexar-accent">GRATUIT</span>
+            </h1>
+            
+            {/* Hero Search */}
+            <div className="max-w-lg mx-auto mb-6">
+              <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Caută după marcă, model sau tip..."
-                  className="w-full pl-4 pr-24 py-3 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
+                  className="w-full pl-4 pr-20 py-3 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
                 />
                 <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors shadow-lg">
                   Caută
@@ -488,7 +468,6 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Action Buttons - Dimensiune redusă */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/anunturi"
