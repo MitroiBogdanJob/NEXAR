@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Plus, Check, Building, User, AlertTriangle, Camera } from 'lucide-react';
-import { listings, isAuthenticated } from '../lib/supabase';
+import { Upload, X, Plus, Check, AlertTriangle, Camera } from 'lucide-react';
+import { listings, isAuthenticated, supabase } from '../lib/supabase';
 
 const CreateListingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -9,6 +9,8 @@ const CreateListingPage = () => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -28,34 +30,62 @@ const CreateListingPage = () => {
     description: '',
     features: [] as string[],
     phone: '',
-    email: '',
-    sellerType: 'privat'
+    email: ''
   });
 
-  // Check if user is logged in
+  // Check if user is logged in and load profile
   useEffect(() => {
-    const checkAuth = async () => {
-      const isLoggedIn = await isAuthenticated();
-      if (!isLoggedIn) {
-        navigate('/auth');
-        return;
-      }
-      
-      // Pre-fill user data if available
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser.email) {
+    const checkAuthAndLoadProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        
+        const isLoggedIn = await isAuthenticated();
+        if (!isLoggedIn) {
+          navigate('/auth');
+          return;
+        }
+        
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
+
+        // Get user profile from database
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Error loading profile:', profileError);
+          // If profile doesn't exist, redirect to profile page to create it
+          navigate('/profil');
+          return;
+        }
+
+        if (profileData) {
+          setUserProfile(profileData);
+          
+          // Pre-fill form with user data
           setFormData(prev => ({
             ...prev,
-            email: parsedUser.email,
-            sellerType: parsedUser.sellerType || 'privat'
+            email: profileData.email || '',
+            phone: profileData.phone || '',
+            location: profileData.location || ''
           }));
         }
+      } catch (error) {
+        console.error('Error checking auth and loading profile:', error);
+        navigate('/auth');
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
     
-    checkAuth();
+    checkAuthAndLoadProfile();
   }, [navigate]);
 
   const steps = [
@@ -249,8 +279,9 @@ const CreateListingPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Obținem datele utilizatorului
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!userProfile) {
+        throw new Error('Profilul utilizatorului nu a fost găsit');
+      }
       
       // Pregătim datele pentru anunț
       const listingData = {
@@ -269,31 +300,69 @@ const CreateListingPage = () => {
         condition: formData.condition.toLowerCase(),
         color: formData.color,
         features: formData.features,
-        seller_id: userData.id,
-        seller_name: userData.name || 'Utilizator',
-        seller_type: formData.sellerType,
+        seller_id: userProfile.id, // Folosim ID-ul profilului, nu user_id
+        seller_name: userProfile.name || 'Utilizator',
+        seller_type: userProfile.seller_type, // Preluăm automat din profil
         status: 'active'
       };
+      
+      console.log('📝 Creating listing with data:', listingData);
       
       // Trimitem anunțul și imaginile la server
       const { data, error } = await listings.create(listingData, imageFiles);
       
       if (error) {
+        console.error('❌ Error creating listing:', error);
         throw new Error(error.message);
       }
+      
+      console.log('✅ Listing created successfully:', data);
       
       // Afișăm mesaj de succes
       alert('Anunțul a fost publicat cu succes! Vei fi redirecționat către pagina principală.');
       
       // Redirecționăm la pagina principală
       navigate('/');
-    } catch (error) {
-      console.error('Error creating listing:', error);
-      setErrors({ submit: 'A apărut o eroare la publicarea anunțului. Te rog încearcă din nou.' });
+    } catch (error: any) {
+      console.error('💥 Error creating listing:', error);
+      setErrors({ submit: error.message || 'A apărut o eroare la publicarea anunțului. Te rog încearcă din nou.' });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Loading state
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <div className="w-16 h-16 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Se încarcă datele profilului...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No profile found
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md">
+          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Profil incomplet</h2>
+          <p className="text-gray-600 mb-6">
+            Pentru a adăuga un anunț, trebuie să îți completezi profilul mai întâi.
+          </p>
+          <button 
+            onClick={() => navigate('/profil')}
+            className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+          >
+            Completează Profilul
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -306,6 +375,19 @@ const CreateListingPage = () => {
           <p className="text-gray-600 text-lg">
             Completează formularul pentru a-ți publica motocicleta
           </p>
+          
+          {/* User Info Display */}
+          <div className="mt-4 inline-flex items-center space-x-3 bg-white rounded-lg px-4 py-2 shadow-sm border">
+            <div className="w-8 h-8 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              {userProfile.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+            <div className="text-left">
+              <div className="font-semibold text-gray-900">{userProfile.name}</div>
+              <div className="text-xs text-gray-600">
+                {userProfile.seller_type === 'dealer' ? 'Dealer Autorizat' : 'Vânzător Privat'}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Progress Steps */}
@@ -345,48 +427,6 @@ const CreateListingPage = () => {
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-fade-in">
-              {/* Seller Type Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                  Tip Vânzător *
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div 
-                    onClick={() => handleInputChange('sellerType', 'privat')}
-                    className={`p-6 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.sellerType === 'privat' 
-                        ? 'border-nexar-accent bg-nexar-accent/5' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3 mb-3">
-                      <User className="h-8 w-8 text-nexar-accent" />
-                      <h3 className="text-lg font-semibold">Vânzător Privat</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm">
-                      Vând motocicleta personală. Ideal pentru vânzări ocazionale.
-                    </p>
-                  </div>
-                  
-                  <div 
-                    onClick={() => handleInputChange('sellerType', 'dealer')}
-                    className={`p-6 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.sellerType === 'dealer' 
-                        ? 'border-nexar-accent bg-nexar-accent/5' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3 mb-3">
-                      <Building className="h-8 w-8 text-nexar-accent" />
-                      <h3 className="text-lg font-semibold">Dealer Autorizat</h3>
-                    </div>
-                    <p className="text-gray-600 text-sm">
-                      Reprezint un dealer sau service autorizat. Vânzări profesionale.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -883,7 +923,7 @@ const CreateListingPage = () => {
                   </div>
                   <div>
                     <span className="text-green-700 font-medium">Tip vânzător:</span>
-                    <span className="ml-2">{formData.sellerType === 'dealer' ? 'Dealer' : 'Privat'}</span>
+                    <span className="ml-2">{userProfile.seller_type === 'dealer' ? 'Dealer Autorizat' : 'Vânzător Privat'}</span>
                   </div>
                   <div>
                     <span className="text-green-700 font-medium">Fotografii:</span>
