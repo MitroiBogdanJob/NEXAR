@@ -442,82 +442,85 @@ const HomePage = () => {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero Section - ÎMBUNĂTĂȚIT PENTRU DESKTOP */}
+      {/* Hero Section - Îmbunătățit pentru desktop */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-40"></div>
-        
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-nexar-accent/20 to-transparent"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-nexar-accent/10 rounded-full blur-3xl"></div>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
           <div className="text-center text-white">
             {/* Main Heading */}
-            <div className="mb-6 sm:mb-8">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 leading-tight">
-                <span className="block">Cumpără și Vinde</span>
-                <span className="block">Motociclete</span>
+            <div className="mb-8">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 leading-tight">
+                Cumpără și Vinde
                 <span className="block text-nexar-accent bg-gradient-to-r from-nexar-accent to-nexar-gold bg-clip-text text-transparent">
+                  Motociclete
+                </span>
+                <span className="block text-2xl sm:text-3xl lg:text-5xl font-normal mt-2">
                   GRATUIT
                 </span>
               </h1>
               
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl sm:text-2xl lg:text-3xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
                 Cel mai premium marketplace pentru motociclete din România
               </p>
             </div>
-            
+
             {/* Hero Search */}
-            <div className="max-w-2xl mx-auto mb-8 sm:mb-10">
+            <div className="max-w-2xl mx-auto mb-12">
               <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-2 border border-white/20 shadow-2xl">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Caută după marcă, model sau tip..."
-                  className="w-full pl-6 pr-32 py-4 text-base sm:text-lg rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
+                  className="w-full pl-6 pr-32 py-4 text-lg rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
                 />
                 <button className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors shadow-lg">
-                  <Search className="h-5 w-5 sm:hidden" />
-                  <span className="hidden sm:inline">Caută</span>
+                  Caută
                 </button>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link
                 to="/anunturi"
-                className="group bg-nexar-accent/90 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-300 transform hover:scale-105 shadow-lg border border-nexar-accent/30 flex items-center justify-center space-x-2"
+                className="bg-nexar-accent/90 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-lg"
               >
-                <Search className="h-5 w-5" />
-                <span>Explorează Anunțurile</span>
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                Explorează Anunțurile
               </Link>
               <Link
                 to="/adauga-anunt"
-                className="group bg-white/90 backdrop-blur-sm text-gray-900 px-8 py-4 rounded-xl font-semibold hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-lg border border-white/30 flex items-center justify-center space-x-2"
+                className="bg-white/90 backdrop-blur-sm text-gray-900 px-8 py-4 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-lg"
               >
-                <Plus className="h-5 w-5" />
-                <span>Vinde Motocicleta Ta</span>
+                Vinde Motocicleta Ta
               </Link>
             </div>
 
             {/* Stats */}
-            <div className="mt-12 sm:mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-nexar-accent">15K+</div>
-                <div className="text-sm sm:text-base text-gray-300">Utilizatori</div>
+                <div className="text-3xl lg:text-4xl font-bold text-nexar-accent mb-2">15,000+</div>
+                <div className="text-gray-300">Utilizatori activi</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-nexar-accent">2.8K+</div>
-                <div className="text-sm sm:text-base text-gray-300">Anunțuri</div>
+                <div className="text-3xl lg:text-4xl font-bold text-nexar-accent mb-2">2,800+</div>
+                <div className="text-gray-300">Anunțuri active</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-nexar-accent">98%</div>
-                <div className="text-sm sm:text-base text-gray-300">Satisfacție</div>
+                <div className="text-3xl lg:text-4xl font-bold text-nexar-accent mb-2">98%</div>
+                <div className="text-gray-300">Satisfacție clienți</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-nexar-accent mb-2">24/7</div>
+                <div className="text-gray-300">Suport disponibil</div>
               </div>
             </div>
           </div>
@@ -1061,34 +1064,6 @@ const HomePage = () => {
                 Peste 15,000 de pasionați de motociclete. Găsește sfaturi și recomandări de la experți.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-12 bg-gradient-to-r from-gray-900 to-black">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-            Gata să Începi?
-          </h2>
-          <p className="text-gray-300 mb-8 text-lg">
-            Alătură-te comunității Nexar și descoperă lumea motocicletelor premium
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <Link
-              to="/auth"
-              className="bg-nexar-accent/90 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30"
-              onClick={() => window.scrollTo(0, 0)}
-            >
-              Creează Cont Gratuit
-            </Link>
-            <Link
-              to="/anunturi"
-              className="bg-white/90 backdrop-blur-sm text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30"
-              onClick={() => window.scrollTo(0, 0)}
-            >
-              Explorează Anunțurile
-            </Link>
           </div>
         </div>
       </section>
