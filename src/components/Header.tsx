@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, Plus, Menu, X, Bell, Heart } from 'lucide-react';
-import { auth } from '../lib/supabase';
+import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff } from 'lucide-react';
+import { auth, checkSupabaseConnection } from '../lib/supabase';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,6 +29,14 @@ const Header = () => {
         localStorage.removeItem('user');
       }
     }
+
+    // Check Supabase connection
+    const checkConnection = async () => {
+      const connected = await checkSupabaseConnection();
+      setIsConnected(connected);
+    };
+    
+    checkConnection();
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
@@ -77,6 +86,29 @@ const Header = () => {
               NEXAR
             </div>
           </Link>
+
+          {/* Connection Status Indicator */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {isConnected !== null && (
+              <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
+                isConnected 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {isConnected ? (
+                  <>
+                    <Wifi className="h-3 w-3" />
+                    <span>Conectat</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-3 w-3" />
+                    <span>Deconectat</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Navigation - Desktop */}
           <nav className="hidden lg:flex items-center space-x-1">
@@ -186,6 +218,27 @@ const Header = () => {
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-200 animate-slide-up bg-white/95 backdrop-blur-md">
             <div className="space-y-2">
+              {/* Connection Status on Mobile */}
+              {isConnected !== null && (
+                <div className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium ${
+                  isConnected 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {isConnected ? (
+                    <>
+                      <Wifi className="h-3 w-3" />
+                      <span>Conectat la Supabase</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="h-3 w-3" />
+                      <span>Deconectat de la Supabase</span>
+                    </>
+                  )}
+                </div>
+              )}
+              
               <Link
                 to="/anunturi"
                 className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
