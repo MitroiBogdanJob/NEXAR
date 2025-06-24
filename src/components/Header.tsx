@@ -85,68 +85,36 @@ const Header = () => {
           
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
+          
+          // Redirect to home page after successful login
+          if (location.pathname === '/auth') {
+            navigate('/');
+          }
         }
+        setIsLoading(false);
       } else if (event === 'SIGNED_OUT') {
         // User signed out
         setUser(null);
         localStorage.removeItem('user');
+        setIsLoading(false);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate, location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
+    setIsLoading(true);
     await auth.signOut();
     setUser(null);
     setIsUserMenuOpen(false);
+    setIsLoading(false);
     navigate('/');
   };
-
-  if (isLoading) {
-    return (
-      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <Link to="/" className="flex items-center group min-w-0">
-              <img 
-                src="/Nexar - logo_black & red.png" 
-                alt="Nexar" 
-                className="h-20 sm:h-24 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
-                onError={(e) => {
-                  const target = e.currentTarget as HTMLImageElement;
-                  if (target.src.includes('Nexar - logo_black & red.png')) {
-                    target.src = '/nexar-logo.jpg';
-                  } else if (target.src.includes('nexar-logo.jpg')) {
-                    target.src = '/nexar-logo.png';
-                  } else if (target.src.includes('nexar-logo.png')) {
-                    target.src = '/image.png';
-                  } else {
-                    target.style.display = 'none';
-                    const textLogo = target.nextElementSibling as HTMLElement;
-                    if (textLogo) {
-                      textLogo.style.display = 'block';
-                    }
-                  }
-                }}
-              />
-              <div className="hidden text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-nexar-accent">
-                NEXAR
-              </div>
-            </Link>
-            
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -180,28 +148,15 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* Connection Status Indicator */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {isConnected !== null && (
-              <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium ${
-                isConnected 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {isConnected ? (
-                  <>
-                    <Wifi className="h-3 w-3" />
-                    <span>Conectat</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="h-3 w-3" />
-                    <span>Deconectat</span>
-                  </>
-                )}
+          {/* Connection Status Indicator - Only show if disconnected */}
+          {isConnected === false && (
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                <WifiOff className="h-3 w-3" />
+                <span>Deconectat</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Navigation - Desktop */}
           <nav className="hidden lg:flex items-center space-x-1">
@@ -229,20 +184,25 @@ const Header = () => {
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                disabled={isLoading}
               >
-                {user ? (
+                {isLoading ? (
+                  <div className="w-7 h-7 bg-gray-200 rounded-full animate-pulse"></div>
+                ) : user ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-7 h-7 bg-nexar-accent rounded-full flex items-center justify-center text-white font-semibold text-xs">
                       {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">Bună, {user.name || 'Utilizator'}</span>
+                    <span className="text-sm font-medium text-gray-700 hidden xl:inline">
+                      Bună, {user.name || 'Utilizator'}
+                    </span>
                   </div>
                 ) : (
                   <User className="h-5 w-5 text-gray-700" />
                 )}
               </button>
               
-              {isUserMenuOpen && (
+              {isUserMenuOpen && !isLoading && (
                 <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-200 py-2 animate-scale-in">
                   {user ? (
                     <>
@@ -280,6 +240,7 @@ const Header = () => {
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        disabled={isLoading}
                       >
                         Deconectează-te
                       </button>
@@ -311,24 +272,11 @@ const Header = () => {
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-200 animate-slide-up bg-white/95 backdrop-blur-md">
             <div className="space-y-2">
-              {/* Connection Status on Mobile */}
-              {isConnected !== null && (
-                <div className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium ${
-                  isConnected 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {isConnected ? (
-                    <>
-                      <Wifi className="h-3 w-3" />
-                      <span>Conectat la Supabase</span>
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="h-3 w-3" />
-                      <span>Deconectat de la Supabase</span>
-                    </>
-                  )}
+              {/* Connection Status on Mobile - Only show if disconnected */}
+              {isConnected === false && (
+                <div className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium bg-red-100 text-red-800 mb-4">
+                  <WifiOff className="h-3 w-3" />
+                  <span>Deconectat de la Supabase</span>
                 </div>
               )}
               
@@ -348,7 +296,11 @@ const Header = () => {
                 <span>Adaugă Anunț</span>
               </Link>
               
-              {user ? (
+              {isLoading ? (
+                <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
+                  Se încarcă...
+                </div>
+              ) : user ? (
                 <>
                   <div className="px-4 py-3 text-gray-700 font-medium border-t border-gray-200 mt-2 pt-4">
                     Bună, {user.name || 'Utilizator'}
@@ -373,6 +325,7 @@ const Header = () => {
                       setIsMenuOpen(false);
                     }}
                     className="block w-full text-left px-4 py-3 rounded-lg font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={isLoading}
                   >
                     Deconectează-te
                   </button>
