@@ -1,13 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid';
 
-// Verificăm dacă există credențiale salvate în localStorage
-const savedUrl = localStorage.getItem('supabase_url');
-const savedAnonKey = localStorage.getItem('supabase_anon_key');
-
-// Folosim credențialele din localStorage sau cele din variabilele de mediu
-const supabaseUrl = savedUrl || import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
-const supabaseAnonKey = savedAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
+// Credențialele Supabase pentru proiectul tău
+const supabaseUrl = 'https://tidnmzsivsthwwcfdzyo.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpZG5tenNpdnN0aHd3Y2ZkenlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3MjE5NTgsImV4cCI6MjA2NjI5Nzk1OH0.Sr1gSZ2qtoff7gmulkT8uIzB8eL7gqKUUNVj82OqHog'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
