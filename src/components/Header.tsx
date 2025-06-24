@@ -37,7 +37,7 @@ const Header = () => {
             <img 
               src="/Nexar - logo_black & red copy.png" 
               alt="Nexar" 
-              className="h-12 sm:h-14 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+              className="h-14 sm:h-16 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
                 // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;

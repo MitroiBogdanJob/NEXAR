@@ -445,39 +445,39 @@ const HomePage = () => {
       {/* Hero Section - REDUSĂ CU 50% PE MOBIL ȘI 15% PE DESKTOP */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-12 sm:h-[42vh] md:h-[30vh] lg:h-[42vh]">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 md:py-6 lg:py-8 sm:h-[30vh] md:h-[25vh] lg:h-[35vh]">
           <div className="text-center text-white">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
               Cumpara si Vinde Motociclete
               <span className="block text-nexar-accent">GRATUIT</span>
             </h1>
             
             {/* Hero Search */}
-            <div className="max-w-xl mx-auto mb-4">
+            <div className="max-w-xl mx-auto mb-3">
               <div className="relative backdrop-blur-md bg-white/10 rounded-2xl p-1 border border-white/20">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Caută după marcă, model sau tip..."
-                  className="w-full pl-4 pr-24 py-3 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
+                  className="w-full pl-4 pr-24 py-2.5 text-base rounded-xl border-0 bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-nexar-accent shadow-lg text-gray-900 placeholder-gray-600"
                 />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-sm shadow-lg">
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-nexar-accent text-white px-6 py-1.5 rounded-lg font-semibold hover:bg-nexar-gold transition-colors text-sm shadow-lg">
                   Caută
                 </button>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Link
                 to="/anunturi"
-                className="bg-nexar-accent/90 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30"
+                className="bg-nexar-accent/90 backdrop-blur-sm text-white px-5 py-2 rounded-xl font-semibold hover:bg-nexar-gold transition-all duration-200 transform hover:scale-105 shadow-lg border border-nexar-accent/30 text-sm"
               >
                 Explorează Anunțurile
               </Link>
               <Link
                 to="/adauga-anunt"
-                className="bg-white/90 backdrop-blur-sm text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30"
+                className="bg-white/90 backdrop-blur-sm text-gray-900 px-5 py-2 rounded-xl font-semibold hover:bg-white transition-all duration-200 transform hover:scale-105 shadow-lg border border-white/30 text-sm"
               >
                 Vinde Motocicleta Ta
               </Link>

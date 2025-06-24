@@ -727,7 +727,7 @@ const CreateListingPage = () => {
                   <li>• Include imagini din toate unghiurile</li>
                   <li>• Arată detaliile importante și eventualele defecte</li>
                   <li>• Prima fotografie va fi cea principală</li>
-                  <li>• Dimensiunea maximă: 5MB per fotografie</li>
+                  <li>• Limită de 5MB per imagine</li>
                   <li>• Maxim 5 imagini per anunț</li>
                 </ul>
               </div>
