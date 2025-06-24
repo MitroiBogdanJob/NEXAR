@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X 
+  User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X, AlertTriangle 
 } from 'lucide-react';
 import { supabase, profiles, listings } from '../lib/supabase';
 
@@ -17,13 +17,13 @@ interface UserProfile {
   phone: string;
   location: string;
   description?: string;
+  website?: string;
   memberSince: string;
   rating: number;
   reviews: number;
   verified: boolean;
   avatar_url?: string;
   seller_type: UserType;
-  website?: string;
   socialLinks?: {
     facebook?: string;
     instagram?: string;
@@ -57,6 +57,94 @@ interface Listing {
   created_at: string;
 }
 
+// Funcții de validare
+const validateProfileData = (data: Partial<UserProfile>) => {
+  const errors: Record<string, string> = {};
+
+  // Validare nume
+  if (!data.name?.trim()) {
+    errors.name = 'Numele este obligatoriu';
+  } else if (data.name.trim().length < 2) {
+    errors.name = 'Numele trebuie să aibă cel puțin 2 caractere';
+  } else if (data.name.trim().length > 50) {
+    errors.name = 'Numele nu poate depăși 50 de caractere';
+  } else if (!/^[a-zA-ZăâîșțĂÂÎȘȚ\s\-\.]+$/.test(data.name.trim())) {
+    errors.name = 'Numele poate conține doar litere, spații, cratimă și punct';
+  }
+
+  // Validare telefon
+  if (data.phone?.trim()) {
+    const phoneRegex = /^(\+4|0)[0-9]{9}$/;
+    const cleanPhone = data.phone.replace(/[\s\-\(\)]/g, '');
+    if (!phoneRegex.test(cleanPhone)) {
+      errors.phone = 'Numărul de telefon nu este valid (ex: 0790454647 sau +40790454647)';
+    }
+  }
+
+  // Validare locație
+  if (data.location?.trim()) {
+    if (data.location.trim().length < 2) {
+      errors.location = 'Locația trebuie să aibă cel puțin 2 caractere';
+    } else if (data.location.trim().length > 100) {
+      errors.location = 'Locația nu poate depăși 100 de caractere';
+    }
+    
+    // Lista orașelor din România pentru validare
+    const romanianCities = [
+      'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
+      'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
+      'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
+      'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
+      'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
+      'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman'
+    ];
+    
+    const locationLower = data.location.trim().toLowerCase();
+    const isValidCity = romanianCities.some(city => 
+      locationLower.includes(city.toLowerCase()) || 
+      locationLower.includes('românia') || 
+      locationLower.includes('romania') ||
+      locationLower.includes('sector') ||
+      locationLower.includes('județ') ||
+      locationLower.includes('judet')
+    );
+    
+    if (!isValidCity) {
+      errors.location = 'Te rugăm să specifici un oraș din România (ex: București, Cluj-Napoca, Timișoara)';
+    }
+  }
+
+  // Validare descriere
+  if (data.description?.trim()) {
+    if (data.description.trim().length < 10) {
+      errors.description = 'Descrierea trebuie să aibă cel puțin 10 caractere';
+    } else if (data.description.trim().length > 500) {
+      errors.description = 'Descrierea nu poate depăși 500 de caractere';
+    }
+  }
+
+  // Validare website
+  if (data.website?.trim()) {
+    const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+    if (!urlRegex.test(data.website.trim())) {
+      errors.website = 'Website-ul trebuie să fie o adresă URL validă (ex: https://exemplu.com)';
+    }
+  }
+
+  return errors;
+};
+
+// Funcție pentru curățarea datelor
+const sanitizeProfileData = (data: Partial<UserProfile>) => {
+  return {
+    name: data.name?.trim() || '',
+    phone: data.phone?.replace(/[\s\-\(\)]/g, '') || '',
+    location: data.location?.trim() || '',
+    description: data.description?.trim() || '',
+    website: data.website?.trim() || ''
+  };
+};
+
 // Componenta principală pentru pagina de profil
 const ProfilePage = () => {
   const { id } = useParams<{ id?: string }>();
@@ -70,6 +158,7 @@ const ProfilePage = () => {
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadUserProfile();
@@ -147,6 +236,7 @@ const ProfilePage = () => {
         phone: profileData.phone || '',
         location: profileData.location || '',
         description: profileData.description || '',
+        website: profileData.website || '',
         memberSince: new Date(profileData.created_at).toLocaleDateString('ro-RO', { 
           year: 'numeric', 
           month: 'long' 
@@ -187,6 +277,16 @@ const ProfilePage = () => {
         socialLinks: userProfile.socialLinks
       });
       setIsEditing(true);
+      setValidationErrors({});
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+    
+    // Curățăm eroarea pentru câmpul modificat
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -196,22 +296,29 @@ const ProfilePage = () => {
     try {
       setIsSaving(true);
       setError(null);
+      setValidationErrors({});
 
-      console.log('🔄 Updating profile with data:', {
-        name: editForm.name,
-        phone: editForm.phone,
-        location: editForm.location,
-        description: editForm.description
-      });
+      // Curățăm și validăm datele
+      const sanitizedData = sanitizeProfileData(editForm);
+      const errors = validateProfileData(sanitizedData);
+
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        setIsSaving(false);
+        return;
+      }
+
+      console.log('🔄 Updating profile with validated data:', sanitizedData);
 
       // Actualizăm profilul în baza de date folosind user_id
       const { data, error } = await supabase
         .from('profiles')
         .update({
-          name: editForm.name?.trim() || userProfile.name,
-          phone: editForm.phone?.trim() || '',
-          location: editForm.location?.trim() || '',
-          description: editForm.description?.trim() || '',
+          name: sanitizedData.name,
+          phone: sanitizedData.phone,
+          location: sanitizedData.location,
+          description: sanitizedData.description,
+          website: sanitizedData.website,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userProfile.user_id)
@@ -232,7 +339,8 @@ const ProfilePage = () => {
           name: data.name,
           phone: data.phone,
           location: data.location,
-          description: data.description
+          description: data.description,
+          website: data.website
         } : null);
 
         // Actualizăm și localStorage dacă este utilizatorul curent
@@ -247,13 +355,20 @@ const ProfilePage = () => {
       
       // Afișăm mesaj de succes
       const successMessage = document.createElement('div');
-      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-      successMessage.textContent = 'Profilul a fost actualizat cu succes!';
+      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+      successMessage.innerHTML = `
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Profilul a fost actualizat cu succes!</span>
+      `;
       document.body.appendChild(successMessage);
       
       setTimeout(() => {
-        document.body.removeChild(successMessage);
-      }, 3000);
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 4000);
 
     } catch (err: any) {
       console.error('💥 Error saving profile:', err);
@@ -261,15 +376,20 @@ const ProfilePage = () => {
       
       // Afișăm mesaj de eroare
       const errorMessage = document.createElement('div');
-      errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-      errorMessage.textContent = err.message || 'Eroare la actualizarea profilului';
+      errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+      errorMessage.innerHTML = `
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>${err.message || 'Eroare la actualizarea profilului'}</span>
+      `;
       document.body.appendChild(errorMessage);
       
       setTimeout(() => {
         if (document.body.contains(errorMessage)) {
           document.body.removeChild(errorMessage);
         }
-      }, 5000);
+      }, 6000);
     } finally {
       setIsSaving(false);
     }
@@ -279,6 +399,7 @@ const ProfilePage = () => {
     setIsEditing(false);
     setEditForm({});
     setError(null);
+    setValidationErrors({});
   };
 
   const getStatusColor = (status: string) => {
@@ -376,13 +497,23 @@ const ProfilePage = () => {
                 
                 {isEditing ? (
                   <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={editForm.name || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full text-center text-xl font-bold border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      placeholder="Numele tău"
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        value={editForm.name || ''}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        className={`w-full text-center text-xl font-bold border rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                          validationErrors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Numele tău"
+                      />
+                      {validationErrors.name && (
+                        <p className="mt-1 text-xs text-red-600 flex items-center justify-center">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {validationErrors.name}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <h2 className="text-xl font-bold text-nexar-primary">{userProfile.name}</h2>
@@ -402,39 +533,96 @@ const ProfilePage = () => {
                 <div className="flex items-start space-x-3">
                   <MapPin className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
                   {isEditing ? (
-                    <input
-                      type="text"
-                      value={editForm.location || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      placeholder="Locația ta"
-                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editForm.location || ''}
+                        onChange={(e) => handleInputChange('location', e.target.value)}
+                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                          validationErrors.location ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Orașul tău (ex: București, Cluj-Napoca)"
+                      />
+                      {validationErrors.location && (
+                        <p className="mt-1 text-xs text-red-600 flex items-center">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {validationErrors.location}
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-gray-700">{userProfile.location || 'Nu este specificată'}</span>
                   )}
                 </div>
+                
                 <div className="flex items-start space-x-3">
                   <Phone className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
                   {isEditing ? (
-                    <input
-                      type="tel"
-                      value={editForm.phone || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                      placeholder="Numărul de telefon"
-                    />
+                    <div className="flex-1">
+                      <input
+                        type="tel"
+                        value={editForm.phone || ''}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="0790454647 sau +40790454647"
+                      />
+                      {validationErrors.phone && (
+                        <p className="mt-1 text-xs text-red-600 flex items-center">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {validationErrors.phone}
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-gray-700">{userProfile.phone || 'Nu este specificat'}</span>
                   )}
                 </div>
+                
                 <div className="flex items-start space-x-3">
                   <Mail className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700">{userProfile.email}</span>
                 </div>
+                
                 <div className="flex items-start space-x-3">
                   <Calendar className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700">Membru din {userProfile.memberSince}</span>
                 </div>
+
+                {(userProfile.website || isEditing) && (
+                  <div className="flex items-start space-x-3">
+                    <ExternalLink className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
+                    {isEditing ? (
+                      <div className="flex-1">
+                        <input
+                          type="url"
+                          value={editForm.website || ''}
+                          onChange={(e) => handleInputChange('website', e.target.value)}
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                            validationErrors.website ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="https://website.com"
+                        />
+                        {validationErrors.website && (
+                          <p className="mt-1 text-xs text-red-600 flex items-center">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            {validationErrors.website}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <a 
+                        href={userProfile.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-nexar-accent hover:text-nexar-gold transition-colors"
+                      >
+                        {userProfile.website?.replace(/^https?:\/\//, '')}
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Statistici */}
@@ -507,13 +695,26 @@ const ProfilePage = () => {
                 Despre {userProfile.seller_type === 'dealer' ? 'Noi' : 'Mine'}
               </h2>
               {isEditing ? (
-                <textarea
-                  value={editForm.description || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
-                  placeholder="Descrie-te pe scurt..."
-                />
+                <div>
+                  <textarea
+                    value={editForm.description || ''}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={4}
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                      validationErrors.description ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Descrie-te pe scurt... (minim 10 caractere, maxim 500)"
+                  />
+                  {validationErrors.description && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {validationErrors.description}
+                    </p>
+                  )}
+                  <div className="mt-1 text-xs text-gray-500 text-right">
+                    {(editForm.description || '').length}/500 caractere
+                  </div>
+                </div>
               ) : (
                 <p className="text-gray-700 leading-relaxed">
                   {userProfile.description || 'Nicio descriere adăugată încă.'}
