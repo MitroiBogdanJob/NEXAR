@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle } from 'lucide-react';
-import { auth } from '../lib/supabase';
+import { auth, supabase } from '../lib/supabase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,16 +17,20 @@ const AuthPage = () => {
     confirmPassword: '',
     phone: '',
     location: '',
-    sellerType: 'privat',
+    sellerType: 'individual',
     agreeToTerms: false
   });
 
   useEffect(() => {
     // Verificăm dacă utilizatorul este deja autentificat
-    const user = localStorage.getItem('user');
-    if (user) {
-      navigate('/');
-    }
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        navigate('/');
+      }
+    };
+    
+    checkAuth();
   }, [navigate]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -64,6 +68,7 @@ const AuthPage = () => {
     
     setIsLoading(true);
     setError('');
+    setSuccessMessage('');
     
     try {
       if (isLogin) {
@@ -73,12 +78,14 @@ const AuthPage = () => {
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             setError('Email sau parolă incorectă');
+          } else if (error.message.includes('Email not confirmed')) {
+            setError('Te rugăm să-ți confirmi email-ul înainte de a te conecta');
           } else {
             setError(error.message);
           }
-        } else if (data) {
-          // Redirecționăm utilizatorul la pagina principală
-          navigate('/');
+        } else if (data?.user) {
+          // Login successful - redirect will happen via auth state change
+          console.log('Login successful for:', data.user.email);
         }
       } else {
         // Register
@@ -99,9 +106,15 @@ const AuthPage = () => {
           } else {
             setError(error.message);
           }
-        } else {
-          // Afișăm mesaj de succes
-          setSuccessMessage('Cont creat cu succes! Te rugăm să-ți verifici email-ul pentru a confirma contul.');
+        } else if (data?.user) {
+          // Check if email confirmation is required
+          if (!data.session) {
+            setSuccessMessage('Cont creat cu succes! Verifică-ți email-ul pentru a confirma contul înainte de a te conecta.');
+          } else {
+            setSuccessMessage('Cont creat cu succes! Ești acum conectat.');
+            // Redirect will happen via auth state change
+          }
+          
           // Resetăm formularul
           setFormData({
             name: '',
@@ -110,17 +123,12 @@ const AuthPage = () => {
             confirmPassword: '',
             phone: '',
             location: '',
-            sellerType: 'privat',
+            sellerType: 'individual',
             agreeToTerms: false
           });
-          // Trecem la pagina de login după 3 secunde
-          setTimeout(() => {
-            setIsLogin(true);
-            setSuccessMessage('');
-          }, 3000);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Authentication error:', err);
       setError('A apărut o eroare. Te rugăm să încerci din nou.');
     } finally {
@@ -159,7 +167,7 @@ const AuthPage = () => {
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4">
-              <img src="/Nexar - logo_white & red.png" alt="Logo" className="h-8 sm:h-10 w-auto" />
+              <img src="/Nexar - logo_black & red.png" alt="Logo" className="h-8 sm:h-10 w-auto" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
               {isLogin ? 'Conectează-te' : 'Creează Cont'}
@@ -303,7 +311,7 @@ const AuthPage = () => {
                       className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors appearance-none text-sm sm:text-base"
                       required={!isLogin}
                     >
-                      <option value="privat">Vânzător Privat</option>
+                      <option value="individual">Vânzător Privat</option>
                       <option value="dealer">Dealer Autorizat</option>
                     </select>
                     <Building className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />

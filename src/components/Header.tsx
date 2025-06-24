@@ -1,35 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff } from 'lucide-react';
-import { auth, checkSupabaseConnection } from '../lib/supabase';
+import { auth, checkSupabaseConnection, supabase } from '../lib/supabase';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in with proper variable declaration and error handling
-    let userData: string | null = null;
-    
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        userData = localStorage.getItem('user');
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-      }
-    } catch (error) {
-      console.error('Error accessing localStorage or parsing user data:', error);
-      // Clear potentially corrupted data
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem('user');
-      }
-    }
-
     // Check Supabase connection
     const checkConnection = async () => {
       const connected = await checkSupabaseConnection();
@@ -37,41 +20,153 @@ const Header = () => {
     };
     
     checkConnection();
+
+    // Check current auth state
+    const checkAuthState = async () => {
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        
+        if (currentUser) {
+          // Get user profile from database
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+          
+          if (!profileError && profileData) {
+            const userData = {
+              id: currentUser.id,
+              name: profileData.name,
+              email: profileData.email,
+              sellerType: profileData.seller_type,
+              isLoggedIn: true
+            };
+            
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
+        } else {
+          // No user logged in
+          setUser(null);
+          localStorage.removeItem('user');
+        }
+      } catch (error) {
+        console.error('Error checking auth state:', error);
+        setUser(null);
+        localStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthState();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        // User signed in - get profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (!profileError && profileData) {
+          const userData = {
+            id: session.user.id,
+            name: profileData.name,
+            email: profileData.email,
+            sellerType: profileData.seller_type,
+            isLoggedIn: true
+          };
+          
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out
+        setUser(null);
+        localStorage.removeItem('user');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
     await auth.signOut();
-    localStorage.removeItem('user');
     setUser(null);
     setIsUserMenuOpen(false);
     navigate('/');
   };
 
+  if (isLoading) {
+    return (
+      <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <Link to="/" className="flex items-center group min-w-0">
+              <img 
+                src="/Nexar - logo_black & red.png" 
+                alt="Nexar" 
+                className="h-20 sm:h-24 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src.includes('Nexar - logo_black & red.png')) {
+                    target.src = '/nexar-logo.jpg';
+                  } else if (target.src.includes('nexar-logo.jpg')) {
+                    target.src = '/nexar-logo.png';
+                  } else if (target.src.includes('nexar-logo.png')) {
+                    target.src = '/image.png';
+                  } else {
+                    target.style.display = 'none';
+                    const textLogo = target.nextElementSibling as HTMLElement;
+                    if (textLogo) {
+                      textLogo.style.display = 'block';
+                    }
+                  }
+                }}
+              />
+              <div className="hidden text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-nexar-accent">
+                NEXAR
+              </div>
+            </Link>
+            
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
-          {/* Logo - MĂRIT SEMNIFICATIV */}
+          {/* Logo */}
           <Link to="/" className="flex items-center group min-w-0">
             <img 
               src="/Nexar - logo_black & red.png" 
               alt="Nexar" 
               className="h-20 sm:h-24 w-auto transition-transform group-hover:scale-105 flex-shrink-0"
               onError={(e) => {
-                // Try PNG if JPG fails
                 const target = e.currentTarget as HTMLImageElement;
                 if (target.src.includes('Nexar - logo_black & red.png')) {
                   target.src = '/nexar-logo.jpg';
                 } else if (target.src.includes('nexar-logo.jpg')) {
-                  // Try nexar-logo.png if the other fails
                   target.src = '/nexar-logo.png';
                 } else if (target.src.includes('nexar-logo.png')) {
-                  // Try image.png as fallback
                   target.src = '/image.png';
                 } else {
-                  // Final fallback - hide image and show text
                   target.style.display = 'none';
                   const textLogo = target.nextElementSibling as HTMLElement;
                   if (textLogo) {
@@ -80,8 +175,6 @@ const Header = () => {
                 }
               }}
             />
-            
-            {/* Fallback text logo */}
             <div className="hidden text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-nexar-accent">
               NEXAR
             </div>
