@@ -22,9 +22,7 @@ const Footer = () => {
                   className="h-28 sm:h-32 md:h-36 w-auto hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
-                    if (target.src.includes('unnamed2.png')) {
-                      target.src = '/nexar-logo.jpg';
-                    } else if (target.src.includes('nexar-logo.jpg')) {
+                 if (target.src.includes('Nexar - logo_white & red.png')) {
                       target.src =  '/nexar-logo.png';
                     } else if (target.src.includes('nexar-logo.png')) {
                       target.src = '/image.png';
