@@ -300,7 +300,7 @@ END $$;
 
 ## 📋 Pasul 3: Verifică Funcția de Reparare Profil
 
-Dacă după rularea migrației încă ai probleme cu profilurile, poți folosi funcția `fixCurrentUserProfile` din aplicație:
+Dacă după rularea migrației încă ai probleme cu profilurile, poți folosi funcția `fixUserProfile` din aplicație:
 
 1. **Deschide aplicația** și verifică dacă vezi butonul "Repară profil" în header
 2. **Click pe butonul "Repară profil"** pentru a încerca repararea automată

@@ -68,7 +68,7 @@ const fixRLSPolicies = async (): Promise<void> => {
  * Funcție pentru a repara profilul utilizatorului curent
  * @returns Promise<{success: boolean, message?: string, error?: any}>
  */
-export const fixCurrentUserProfile = async (): Promise<{success: boolean, message?: string, error?: any}> => {
+export const fixUserProfile = async (): Promise<{success: boolean, message?: string, error?: any}> => {
   try {
     console.log('🔧 Încercare de reparare a profilului utilizatorului curent...');
     
@@ -121,72 +121,41 @@ export const fixCurrentUserProfile = async (): Promise<{success: boolean, messag
 };
 
 /**
- * Funcție pentru a crea funcția RPC fix_rls_policies în Supabase
- * Această funcție trebuie rulată de un administrator
+ * Funcție pentru a repara toate problemele Supabase
+ * @returns Promise<{success: boolean, message?: string, error?: any}>
  */
-export const createFixRLSFunction = async (): Promise<boolean> => {
+export const fixAllSupabaseIssues = async (): Promise<{success: boolean, message?: string, error?: any}> => {
   try {
-    console.log('🔧 Creare funcție RPC pentru repararea politicilor RLS...');
+    console.log('🔧 Începere reparare completă Supabase...');
     
-    // Acest script va crea o funcție RPC care poate fi apelată pentru a repara politicile RLS
-    const { error } = await supabase.rpc('create_fix_rls_function', {
-      sql_script: `
-        -- Dezactivează temporar RLS
-        ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
-        ALTER TABLE listings DISABLE ROW LEVEL SECURITY;
-        ALTER TABLE favorites DISABLE ROW LEVEL SECURITY;
-        
-        -- Șterge toate politicile existente
-        DO $$
-        DECLARE
-            r RECORD;
-        BEGIN
-            -- Șterge toate politicile pentru profiles
-            FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'profiles') LOOP
-                EXECUTE 'DROP POLICY IF EXISTS "' || r.policyname || '" ON profiles';
-            END LOOP;
-            
-            -- Șterge toate politicile pentru listings
-            FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'listings') LOOP
-                EXECUTE 'DROP POLICY IF EXISTS "' || r.policyname || '" ON listings';
-            END LOOP;
-            
-            -- Șterge toate politicile pentru favorites
-            FOR r IN (SELECT policyname FROM pg_policies WHERE tablename = 'favorites') LOOP
-                EXECUTE 'DROP POLICY IF EXISTS "' || r.policyname || '" ON favorites';
-            END LOOP;
-        END $$;
-        
-        -- Reactivează RLS
-        ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-        ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
-        ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
-        
-        -- Creează politici simple
-        CREATE POLICY "profiles_select" ON profiles FOR SELECT USING (true);
-        CREATE POLICY "profiles_update" ON profiles FOR UPDATE USING (auth.uid() = user_id);
-        CREATE POLICY "profiles_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-        
-        CREATE POLICY "listings_select" ON listings FOR SELECT USING (status = 'active');
-        CREATE POLICY "listings_insert" ON listings FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-        CREATE POLICY "listings_update" ON listings FOR UPDATE USING (auth.uid() IS NOT NULL);
-        CREATE POLICY "listings_delete" ON listings FOR DELETE USING (auth.uid() IS NOT NULL);
-        
-        CREATE POLICY "favorites_select" ON favorites FOR SELECT USING (auth.uid() = user_id);
-        CREATE POLICY "favorites_insert" ON favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
-        CREATE POLICY "favorites_delete" ON favorites FOR DELETE USING (auth.uid() = user_id);
-      `
-    });
+    // Pasul 1: Verifică și repară conexiunea
+    const connectionFixed = await checkAndFixSupabaseConnection();
     
-    if (error) {
-      console.error('❌ Eroare la crearea funcției RPC:', error);
-      return false;
+    if (!connectionFixed) {
+      return { 
+        success: false, 
+        message: 'Nu s-a putut repara conexiunea la Supabase. Contactează administratorul.' 
+      };
     }
     
-    console.log('✅ Funcția RPC a fost creată cu succes!');
-    return true;
+    // Pasul 2: Repară profilul utilizatorului
+    const profileResult = await fixUserProfile();
+    
+    if (!profileResult.success) {
+      return { 
+        success: false, 
+        message: `Conexiunea a fost reparată, dar profilul nu: ${profileResult.error}` 
+      };
+    }
+    
+    // Totul a funcționat
+    return { 
+      success: true, 
+      message: 'Toate problemele au fost reparate cu succes!' 
+    };
+    
   } catch (err) {
-    console.error('💥 Eroare la crearea funcției RPC:', err);
-    return false;
+    console.error('💥 Eroare la repararea completă:', err);
+    return { success: false, error: err };
   }
 };

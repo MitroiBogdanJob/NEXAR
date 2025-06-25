@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { RefreshCw, CheckCircle, XCircle } from 'lucide-react';
-import { checkAndFixSupabaseConnection, fixCurrentUserProfile } from '../lib/fixSupabase';
+import { fixAllSupabaseIssues } from '../lib/fixSupabase';
 
 interface FixSupabaseButtonProps {
   onSuccess?: () => void;
+  onError?: () => void;
+  buttonText?: string;
+  className?: string;
 }
 
-const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ onSuccess }) => {
+const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ 
+  onSuccess, 
+  onError, 
+  buttonText = "Repară Conexiunea",
+  className = "bg-nexar-accent text-white"
+}) => {
   const [isFixing, setIsFixing] = useState(false);
   const [result, setResult] = useState<{
     success?: boolean;
@@ -18,43 +26,25 @@ const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ onSuccess }) => {
     setResult({});
     
     try {
-      // Pasul 1: Verifică și repară conexiunea
-      const connectionFixed = await checkAndFixSupabaseConnection();
+      const fixResult = await fixAllSupabaseIssues();
       
-      if (!connectionFixed) {
-        setResult({
-          success: false,
-          message: 'Nu s-a putut repara conexiunea la Supabase'
-        });
-        return;
-      }
-      
-      // Pasul 2: Repară profilul utilizatorului
-      const profileResult = await fixCurrentUserProfile();
-      
-      if (!profileResult.success) {
-        setResult({
-          success: false,
-          message: `Eroare la repararea profilului: ${profileResult.error}`
-        });
-        return;
-      }
-      
-      // Totul a funcționat
       setResult({
-        success: true,
-        message: 'Conexiunea și profilul au fost reparate cu succes!'
+        success: fixResult.success,
+        message: fixResult.message
       });
       
-      // Apelăm callback-ul de succes dacă există
-      if (onSuccess) {
-        setTimeout(onSuccess, 1500);
+      if (fixResult.success) {
+        if (onSuccess) {
+          setTimeout(onSuccess, 1500);
+        } else {
+          // Reîncărcăm pagina după 2 secunde
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      } else if (onError) {
+        onError();
       }
-      
-      // Reîncărcăm pagina după 2 secunde
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
       
     } catch (error) {
       console.error('Eroare la repararea conexiunii:', error);
@@ -62,6 +52,8 @@ const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ onSuccess }) => {
         success: false,
         message: 'A apărut o eroare neașteptată'
       });
+      
+      if (onError) onError();
     } finally {
       setIsFixing(false);
     }
@@ -72,7 +64,7 @@ const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ onSuccess }) => {
       <button
         onClick={handleFix}
         disabled={isFixing}
-        className="flex items-center space-x-2 bg-nexar-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`flex items-center space-x-2 ${className} px-4 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {isFixing ? (
           <>
@@ -82,7 +74,7 @@ const FixSupabaseButton: React.FC<FixSupabaseButtonProps> = ({ onSuccess }) => {
         ) : (
           <>
             <RefreshCw className="h-5 w-5" />
-            <span>Repară Conexiunea</span>
+            <span>{buttonText}</span>
           </>
         )}
       </button>
