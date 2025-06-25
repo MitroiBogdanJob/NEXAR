@@ -1,690 +1,383 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X, AlertTriangle, Check, RefreshCw
+  User, Mail, Phone, MapPin, Edit, Camera, 
+  Star, Heart, Package, Eye, MessageCircle, 
+  ChevronRight, Calendar, Shield, Building, 
+  Lock, AlertTriangle, CheckCircle, X
 } from 'lucide-react';
-import { supabase, profiles, listings } from '../lib/supabase';
+import { supabase, auth, profiles, romanianCities } from '../lib/supabase';
 
-// Tipuri de utilizatori
-type UserType = 'individual' | 'dealer';
-
-// Interfață pentru profilul utilizatorului
-interface UserProfile {
-  id: string;
-  user_id: string;
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
-  description?: string;
-  website?: string;
-  memberSince: string;
-  rating: number;
-  reviews: number;
-  verified: boolean;
-  avatar_url?: string;
-  seller_type: UserType;
-  socialLinks?: {
-    facebook?: string;
-    instagram?: string;
-    youtube?: string;
-  };
-  stats: {
-    activeListings: number;
-    soldListings: number;
-    views: number;
-    favorites: number;
-  };
-  dealerInfo?: {
-    companyName: string;
-    cui: string;
-    address: string;
-    openHours: string;
-    services: string[];
-    brands: string[];
-  };
-}
-
-// Interfață pentru anunțuri
-interface Listing {
-  id: string;
-  title: string;
-  price: number;
-  images: string[];
-  status: 'active' | 'sold' | 'pending';
-  views_count: number;
-  favorites_count: number;
-  created_at: string;
-}
-
-// Funcții de validare
-const validateProfileData = (data: Partial<UserProfile>) => {
-  const errors: Record<string, string> = {};
-
-  // Validare nume
-  if (!data.name?.trim()) {
-    errors.name = 'Numele este obligatoriu';
-  } else if (data.name.trim().length < 2) {
-    errors.name = 'Numele trebuie să aibă cel puțin 2 caractere';
-  } else if (data.name.trim().length > 50) {
-    errors.name = 'Numele nu poate depăși 50 de caractere';
-  } else if (!/^[a-zA-ZăâîșțĂÂÎȘȚ\s\-\.]+$/.test(data.name.trim())) {
-    errors.name = 'Numele poate conține doar litere, spații, cratimă și punct';
-  }
-
-  // Validare telefon
-  if (data.phone?.trim()) {
-    const phoneRegex = /^(\+4|0)[0-9]{9}$/;
-    const cleanPhone = data.phone.replace(/[\s\-\(\)]/g, '');
-    if (!phoneRegex.test(cleanPhone)) {
-      errors.phone = 'Numărul de telefon nu este valid (ex: 0790454647 sau +40790454647)';
-    }
-  }
-
-  // Validare locație
-  if (data.location?.trim()) {
-    if (data.location.trim().length < 2) {
-      errors.location = 'Locația trebuie să aibă cel puțin 2 caractere';
-    } else if (data.location.trim().length > 100) {
-      errors.location = 'Locația nu poate depăși 100 de caractere';
-    }
-    
-    // Lista orașelor din România pentru validare
-    const romanianCities = [
-      'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
-      'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
-      'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
-      'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
-      'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
-      'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman'
-    ];
-    
-    const locationLower = data.location.trim().toLowerCase();
-    const isValidCity = romanianCities.some(city => 
-      locationLower.includes(city.toLowerCase()) || 
-      locationLower.includes('românia') || 
-      locationLower.includes('romania') ||
-      locationLower.includes('sector') ||
-      locationLower.includes('județ') ||
-      locationLower.includes('judet')
-    );
-    
-    if (!isValidCity) {
-      errors.location = 'Te rugăm să specifici un oraș din România (ex: București, Cluj-Napoca, Timișoara)';
-    }
-  }
-
-  // Validare descriere
-  if (data.description?.trim()) {
-    if (data.description.trim().length < 10) {
-      errors.description = 'Descrierea trebuie să aibă cel puțin 10 caractere';
-    } else if (data.description.trim().length > 500) {
-      errors.description = 'Descrierea nu poate depăși 500 de caractere';
-    }
-  }
-
-  // Validare website
-  if (data.website?.trim()) {
-    const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-    if (!urlRegex.test(data.website.trim())) {
-      errors.website = 'Website-ul trebuie să fie o adresă URL validă (ex: https://exemplu.com)';
-    }
-  }
-
-  return errors;
-};
-
-// Funcție pentru curățarea datelor
-const sanitizeProfileData = (data: Partial<UserProfile>) => {
-  return {
-    name: data.name?.trim() || '',
-    phone: data.phone?.replace(/[\s\-\(\)]/g, '') || '',
-    location: data.location?.trim() || '',
-    description: data.description?.trim() || '',
-    website: data.website?.trim() || ''
-  };
-};
-
-// Componenta principală pentru pagina de profil
 const ProfilePage = () => {
-  const { id } = useParams<{ id?: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('listings');
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [userListingsData, setUserListingsData] = useState<Listing[]>([]);
-  const [favoriteListings, setFavoriteListings] = useState<Listing[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
-  const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [editedProfile, setEditedProfile] = useState<any>({});
+  const [activeTab, setActiveTab] = useState('listings');
+  const [userListings, setUserListings] = useState<any[]>([]);
+  const [userFavorites, setUserFavorites] = useState<any[]>([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(false);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [filteredCities, setFilteredCities] = useState<string[]>([]);
 
   useEffect(() => {
-    loadUserProfile();
-  }, [id, navigate]);
+    loadProfile();
+  }, [id]);
 
-  const loadUserProfile = async () => {
+  const loadProfile = async () => {
     try {
       setIsLoading(true);
       setError(null);
-
-      // Obținem utilizatorul curent
+      
+      // Obținem utilizatorul curent pentru a verifica dacă este profilul propriu
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      if (!currentUser && !id) {
-        // Dacă nu este autentificat și nu avem ID, redirecționăm la login
+      // Determinăm ID-ul utilizatorului de afișat
+      const userIdToFetch = id || (currentUser ? currentUser.id : null);
+      
+      if (!userIdToFetch) {
+        // Dacă nu avem ID și nici utilizator curent, redirecționăm la login
         navigate('/auth');
         return;
       }
-
-      let targetUserId = id;
-      let isOwner = false;
-
-      if (!id && currentUser) {
-        // Dacă nu avem ID în URL, încărcăm profilul utilizatorului curent
-        targetUserId = currentUser.id;
-        isOwner = true;
-      } else if (id && currentUser && currentUser.id === id) {
-        // Dacă ID-ul din URL este al utilizatorului curent
-        isOwner = true;
-      }
-
-      setIsCurrentUser(isOwner);
-
-      // Încărcăm profilul din baza de date
+      
+      // Verificăm dacă este profilul utilizatorului curent
+      setIsCurrentUser(!id || (currentUser && id === currentUser.id));
+      
+      // Obținem profilul utilizatorului
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq(id ? 'id' : 'user_id', targetUserId)
+        .eq(id ? 'id' : 'user_id', userIdToFetch)
         .single();
-
+      
       if (profileError) {
         console.error('Error loading profile:', profileError);
-        setError('Profilul nu a putut fi încărcat');
-        return;
-      }
-
-      if (!profileData) {
         setError('Profilul nu a fost găsit');
         return;
       }
-
+      
+      setProfile(profileData);
+      setEditedProfile(profileData);
+      
       // Încărcăm anunțurile utilizatorului
-      const { data: listingsData, error: listingsError } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('seller_id', profileData.id)
-        .order('created_at', { ascending: false });
-
-      if (listingsError) {
-        console.error('Error loading listings:', listingsError);
+      loadUserListings(profileData.id);
+      
+      // Încărcăm favoritele dacă este utilizatorul curent
+      if (isCurrentUser && currentUser) {
+        loadUserFavorites(currentUser.id);
       }
-
-      // Încărcăm anunțurile favorite dacă este utilizatorul curent
-      let favoritesData: any[] = [];
-      if (isOwner && currentUser) {
-        setIsLoadingFavorites(true);
-        
-        try {
-          // Obținem ID-urile anunțurilor favorite
-          const { data: favIds, error: favError } = await supabase
-            .from('favorites')
-            .select('listing_id')
-            .eq('user_id', currentUser.id);
-          
-          if (favError) {
-            console.error('Error loading favorites:', favError);
-          } else if (favIds && favIds.length > 0) {
-            // Obținem detaliile anunțurilor favorite
-            const listingIds = favIds.map(fav => fav.listing_id);
-            
-            const { data: favListings, error: favListingsError } = await supabase
-              .from('listings')
-              .select('*')
-              .in('id', listingIds)
-              .order('created_at', { ascending: false });
-            
-            if (favListingsError) {
-              console.error('Error loading favorite listings:', favListingsError);
-            } else {
-              favoritesData = favListings || [];
-            }
-          }
-        } catch (err) {
-          console.error('Error in favorites loading:', err);
-        } finally {
-          setIsLoadingFavorites(false);
-        }
-      }
-
-      // Calculăm statisticile
-      const activeListings = listingsData?.filter(l => l.status === 'active').length || 0;
-      const soldListings = listingsData?.filter(l => l.status === 'sold').length || 0;
-      const totalViews = listingsData?.reduce((sum, l) => sum + (l.views_count || 0), 0) || 0;
-      const totalFavorites = listingsData?.reduce((sum, l) => sum + (l.favorites_count || 0), 0) || 0;
-
-      // Formatăm datele profilului
-      const formattedProfile: UserProfile = {
-        id: profileData.id,
-        user_id: profileData.user_id,
-        name: profileData.name || 'Utilizator',
-        email: profileData.email || '',
-        phone: profileData.phone || '',
-        location: profileData.location || '',
-        description: profileData.description || '',
-        website: profileData.website || '',
-        memberSince: new Date(profileData.created_at).toLocaleDateString('ro-RO', { 
-          year: 'numeric', 
-          month: 'long' 
-        }),
-        rating: profileData.rating || 0,
-        reviews: profileData.reviews_count || 0,
-        verified: profileData.verified || false,
-        avatar_url: profileData.avatar_url,
-        seller_type: profileData.seller_type || 'individual',
-        stats: {
-          activeListings,
-          soldListings,
-          views: totalViews,
-          favorites: favoritesData.length || 0
-        }
-      };
-
-      setUserProfile(formattedProfile);
-      setUserListingsData(listingsData || []);
-      setFavoriteListings(favoritesData);
-
+      
     } catch (err) {
-      console.error('Error in loadUserProfile:', err);
+      console.error('Error loading profile:', err);
       setError('A apărut o eroare la încărcarea profilului');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEditProfile = () => {
-    if (userProfile) {
-      setEditForm({
-        name: userProfile.name,
-        email: userProfile.email,
-        phone: userProfile.phone,
-        location: userProfile.location,
-        description: userProfile.description,
-        website: userProfile.website,
-        socialLinks: userProfile.socialLinks
-      });
-      setIsEditing(true);
-      setValidationErrors({});
-    }
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setEditForm(prev => ({ ...prev, [field]: value }));
-    
-    // Curățăm eroarea pentru câmpul modificat
-    if (validationErrors[field]) {
-      setValidationErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    if (!userProfile) return;
-
+  const loadUserListings = async (profileId: string) => {
     try {
-      setIsSaving(true);
-      setError(null);
-      setValidationErrors({});
-
-      // Curățăm și validăm datele
-      const sanitizedData = sanitizeProfileData(editForm);
-      const errors = validateProfileData(sanitizedData);
-
-      if (Object.keys(errors).length > 0) {
-        setValidationErrors(errors);
-        setIsSaving(false);
+      setIsLoadingListings(true);
+      
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('seller_id', profileId)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error loading user listings:', error);
         return;
       }
-
-      console.log('🔄 Updating profile with validated data:', sanitizedData);
-
-      // Actualizăm profilul în baza de date folosind user_id
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          name: sanitizedData.name,
-          phone: sanitizedData.phone,
-          location: sanitizedData.location,
-          description: sanitizedData.description,
-          website: sanitizedData.website,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userProfile.user_id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Error updating profile:', error);
-        throw new Error(`Eroare la actualizarea profilului: ${error.message}`);
-      }
-
-      console.log('✅ Profile updated successfully:', data);
-
-      // Actualizăm profilul local cu datele returnate
-      if (data) {
-        setUserProfile(prev => prev ? {
-          ...prev,
-          name: data.name,
-          phone: data.phone,
-          location: data.location,
-          description: data.description,
-          website: data.website
-        } : null);
-
-        // Actualizăm și localStorage dacă este utilizatorul curent
-        if (isCurrentUser) {
-          const userData = JSON.parse(localStorage.getItem('user') || '{}');
-          userData.name = data.name;
-          localStorage.setItem('user', JSON.stringify(userData));
-        }
-      }
-
-      setIsEditing(false);
       
-      // Afișăm mesaj de succes
-      const successMessage = document.createElement('div');
-      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
-      successMessage.innerHTML = `
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span>Profilul a fost actualizat cu succes!</span>
-      `;
-      document.body.appendChild(successMessage);
-      
-      setTimeout(() => {
-        if (document.body.contains(successMessage)) {
-          document.body.removeChild(successMessage);
-        }
-      }, 4000);
-
-    } catch (err: any) {
-      console.error('💥 Error saving profile:', err);
-      setError(err.message || 'A apărut o eroare la salvarea profilului');
-      
-      // Afișăm mesaj de eroare
-      const errorMessage = document.createElement('div');
-      errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
-      errorMessage.innerHTML = `
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>${err.message || 'Eroare la actualizarea profilului'}</span>
-      `;
-      document.body.appendChild(errorMessage);
-      
-      setTimeout(() => {
-        if (document.body.contains(errorMessage)) {
-          document.body.removeChild(errorMessage);
-        }
-      }, 6000);
+      setUserListings(data || []);
+    } catch (err) {
+      console.error('Error loading user listings:', err);
     } finally {
-      setIsSaving(false);
+      setIsLoadingListings(false);
     }
+  };
+
+  const loadUserFavorites = async (userId: string) => {
+    try {
+      setIsLoadingFavorites(true);
+      
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          listing_id,
+          listings (*)
+        `)
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error loading favorites:', error);
+        return;
+      }
+      
+      // Extragem anunțurile din rezultate
+      const favoriteListings = data?.map(item => item.listings) || [];
+      setUserFavorites(favoriteListings);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  };
+
+  const handleEditProfile = () => {
+    setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditForm({});
-    setError(null);
-    setValidationErrors({});
+    setEditedProfile(profile);
+    setAvatarFile(null);
+    setAvatarPreview(null);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0 || !userProfile) return;
+  const handleInputChange = (field: string, value: string) => {
+    setEditedProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLocationChange = (value: string) => {
+    handleInputChange('location', value);
     
-    const file = files[0];
-    
-    // Validare dimensiune (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Imaginea nu poate depăși 5MB');
-      return;
+    if (value.length > 0) {
+      const filtered = romanianCities.filter(city =>
+        city.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 10); // Limităm la 10 rezultate
+      setFilteredCities(filtered);
+      setShowLocationDropdown(true);
+    } else {
+      setFilteredCities([]);
+      setShowLocationDropdown(false);
     }
-    
-    // Validare tip fișier
-    if (!file.type.startsWith('image/')) {
-      alert('Doar fișierele imagine sunt permise');
-      return;
-    }
-    
-    try {
-      setIsUploadingAvatar(true);
-      
-      // Verificăm dacă bucket-ul există
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error checking buckets:', bucketsError);
-        throw new Error('Eroare la verificarea storage-ului');
+  };
+
+  const selectCity = (city: string) => {
+    handleInputChange('location', city);
+    setShowLocationDropdown(false);
+    setFilteredCities([]);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validare dimensiune și tip
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Imaginea nu poate depăși 2MB');
+        return;
       }
       
-      const profileImagesBucket = buckets?.find(bucket => bucket.name === 'profile-images');
+      if (!file.type.startsWith('image/')) {
+        alert('Doar fișierele imagine sunt permise');
+        return;
+      }
       
-      if (!profileImagesBucket) {
-        console.log('Creating profile-images bucket...');
-        const { error: createBucketError } = await supabase.storage.createBucket('profile-images', {
-          public: true,
-          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-          fileSizeLimit: 5242880 // 5MB
-        });
+      setAvatarFile(file);
+      
+      // Generăm URL pentru previzualizare
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setAvatarPreview(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      if (!profile || !isCurrentUser) return;
+      
+      // Validare
+      if (!editedProfile.name.trim()) {
+        alert('Numele este obligatoriu');
+        return;
+      }
+      
+      if (!editedProfile.email.trim()) {
+        alert('Email-ul este obligatoriu');
+        return;
+      }
+      
+      // Actualizăm profilul
+      const { data, error } = await profiles.update(profile.user_id, {
+        name: editedProfile.name.trim(),
+        phone: editedProfile.phone.trim(),
+        location: editedProfile.location.trim(),
+        description: editedProfile.description?.trim(),
+        website: editedProfile.website?.trim()
+      });
+      
+      if (error) {
+        console.error('Error updating profile:', error);
+        alert('Eroare la actualizarea profilului');
+        return;
+      }
+      
+      // Încărcăm avatar-ul dacă există
+      if (avatarFile) {
+        const { data: avatarData, error: avatarError } = await profiles.uploadAvatar(profile.user_id, avatarFile);
         
-        if (createBucketError) {
-          console.error('Error creating bucket:', createBucketError);
-          throw new Error('Eroare la crearea bucket-ului pentru imagini');
+        if (avatarError) {
+          console.error('Error uploading avatar:', avatarError);
+          alert('Eroare la încărcarea avatarului');
+        } else if (avatarData) {
+          // Actualizăm profilul cu noul avatar
+          setProfile(prev => ({ ...prev, avatar_url: avatarData.avatar_url }));
         }
       }
       
-      // Încărcăm imaginea
-      const { data, error } = await profiles.uploadAvatar(userProfile.user_id, file);
+      // Actualizăm profilul local
+      setProfile(data);
+      setIsEditing(false);
+      
+      // Resetăm starea
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      
+      alert('Profilul a fost actualizat cu succes!');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('A apărut o eroare la salvarea profilului');
+    }
+  };
+
+  const handlePasswordChange = (field: string, value: string) => {
+    setPasswordData(prev => ({ ...prev, [field]: value }));
+    
+    // Curățăm eroarea pentru câmpul modificat
+    if (passwordErrors[field]) {
+      setPasswordErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validatePassword = (password: string): string => {
+    if (!password) return 'Parola este obligatorie';
+    if (password.length < 8) return 'Parola trebuie să aibă cel puțin 8 caractere';
+    if (!/(?=.*[a-z])/.test(password)) return 'Parola trebuie să conțină cel puțin o literă mică';
+    if (!/(?=.*[A-Z])/.test(password)) return 'Parola trebuie să conțină cel puțin o literă mare';
+    if (!/(?=.*\d)/.test(password)) return 'Parola trebuie să conțină cel puțin o cifră';
+    return '';
+  };
+
+  const handleSavePassword = async () => {
+    try {
+      // Validare
+      const errors: Record<string, string> = {};
+      
+      const passwordError = validatePassword(passwordData.newPassword);
+      if (passwordError) errors.newPassword = passwordError;
+      
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        errors.confirmPassword = 'Parolele nu coincid';
+      }
+      
+      if (Object.keys(errors).length > 0) {
+        setPasswordErrors(errors);
+        return;
+      }
+      
+      // Actualizăm parola
+      const { error } = await auth.updatePassword(passwordData.newPassword);
       
       if (error) {
-        throw new Error('Eroare la încărcarea imaginii');
+        console.error('Error updating password:', error);
+        alert('Eroare la actualizarea parolei');
+        return;
       }
       
-      // Actualizăm profilul local
-      if (data) {
-        setUserProfile(prev => prev ? {
-          ...prev,
-          avatar_url: data.avatar_url
-        } : null);
-        
-        // Afișăm mesaj de succes
-        alert('Imaginea de profil a fost actualizată cu succes!');
-      }
+      // Resetăm starea
+      setPasswordData({
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setPasswordChangeSuccess(true);
       
-    } catch (err: any) {
-      console.error('Error uploading avatar:', err);
-      alert(err.message || 'Eroare la încărcarea imaginii de profil');
-    } finally {
-      setIsUploadingAvatar(false);
+      // Ascundem mesajul de succes după 3 secunde
+      setTimeout(() => {
+        setPasswordChangeSuccess(false);
+        setIsChangingPassword(false);
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Error saving password:', err);
+      alert('A apărut o eroare la salvarea parolei');
     }
   };
 
   const handleDeleteListing = async (listingId: string) => {
-    if (isDeleting) return;
+    if (!confirm('Ești sigur că vrei să ștergi acest anunț?')) return;
     
     try {
-      setIsDeleting(listingId);
-      
-      // Ștergem anunțul
-      const { error } = await listings.delete(listingId);
+      const { error } = await supabase
+        .from('listings')
+        .delete()
+        .eq('id', listingId);
       
       if (error) {
-        throw new Error(`Eroare la ștergerea anunțului: ${error.message}`);
+        console.error('Error deleting listing:', error);
+        alert('Eroare la ștergerea anunțului');
+        return;
       }
       
       // Actualizăm lista de anunțuri
-      setUserListingsData(prev => prev.filter(listing => listing.id !== listingId));
+      setUserListings(prev => prev.filter(listing => listing.id !== listingId));
       
-      // Actualizăm statisticile
-      setUserProfile(prev => {
-        if (!prev) return null;
-        
-        const listing = userListingsData.find(l => l.id === listingId);
-        const isActive = listing?.status === 'active';
-        const isSold = listing?.status === 'sold';
-        
-        return {
-          ...prev,
-          stats: {
-            ...prev.stats,
-            activeListings: isActive ? prev.stats.activeListings - 1 : prev.stats.activeListings,
-            soldListings: isSold ? prev.stats.soldListings - 1 : prev.stats.soldListings,
-            views: prev.stats.views - (listing?.views_count || 0),
-            favorites: prev.stats.favorites - (listing?.favorites_count || 0)
-          }
-        };
-      });
-      
-      // Afișăm mesaj de succes
-      const successMessage = document.createElement('div');
-      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
-      successMessage.innerHTML = `
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span>Anunțul a fost șters cu succes!</span>
-      `;
-      document.body.appendChild(successMessage);
-      
-      setTimeout(() => {
-        if (document.body.contains(successMessage)) {
-          document.body.removeChild(successMessage);
-        }
-      }, 4000);
-      
-    } catch (err: any) {
+      alert('Anunțul a fost șters cu succes!');
+    } catch (err) {
       console.error('Error deleting listing:', err);
-      alert(err.message || 'Eroare la ștergerea anunțului');
-    } finally {
-      setIsDeleting(null);
-      setShowDeleteConfirm(null);
+      alert('A apărut o eroare la ștergerea anunțului');
     }
   };
 
-  const handleUpdateListingStatus = async (listingId: string, newStatus: 'active' | 'sold' | 'pending') => {
-    if (isUpdating) return;
-    
+  const handleRemoveFavorite = async (listingId: string) => {
     try {
-      setIsUpdating(listingId);
+      const { data: { user } } = await supabase.auth.getUser();
       
-      // Actualizăm statusul anunțului
-      const { data, error } = await listings.update(listingId, { status: newStatus });
+      if (!user) return;
+      
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .match({ user_id: user.id, listing_id: listingId });
       
       if (error) {
-        throw new Error(`Eroare la actualizarea anunțului: ${error.message}`);
+        console.error('Error removing favorite:', error);
+        alert('Eroare la eliminarea din favorite');
+        return;
       }
       
-      // Actualizăm lista de anunțuri
-      setUserListingsData(prev => prev.map(listing => 
-        listing.id === listingId 
-          ? { ...listing, status: newStatus }
-          : listing
-      ));
-      
-      // Actualizăm statisticile
-      setUserProfile(prev => {
-        if (!prev) return null;
-        
-        const oldListing = userListingsData.find(l => l.id === listingId);
-        const wasActive = oldListing?.status === 'active';
-        const wasSold = oldListing?.status === 'sold';
-        const isActive = newStatus === 'active';
-        const isSold = newStatus === 'sold';
-        
-        return {
-          ...prev,
-          stats: {
-            ...prev.stats,
-            activeListings: 
-              (wasActive && !isActive ? prev.stats.activeListings - 1 : prev.stats.activeListings) + 
-              (!wasActive && isActive ? 1 : 0),
-            soldListings: 
-              (wasSold && !isSold ? prev.stats.soldListings - 1 : prev.stats.soldListings) + 
-              (!wasSold && isSold ? 1 : 0)
-          }
-        };
-      });
-      
-      // Afișăm mesaj de succes
-      const successMessage = document.createElement('div');
-      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
-      successMessage.innerHTML = `
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span>Statusul anunțului a fost actualizat cu succes!</span>
-      `;
-      document.body.appendChild(successMessage);
-      
-      setTimeout(() => {
-        if (document.body.contains(successMessage)) {
-          document.body.removeChild(successMessage);
-        }
-      }, 4000);
-      
-    } catch (err: any) {
-      console.error('Error updating listing status:', err);
-      alert(err.message || 'Eroare la actualizarea statusului anunțului');
-    } finally {
-      setIsUpdating(null);
+      // Actualizăm lista de favorite
+      setUserFavorites(prev => prev.filter(listing => listing.id !== listingId));
+    } catch (err) {
+      console.error('Error removing favorite:', err);
+      alert('A apărut o eroare la eliminarea din favorite');
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'sold': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Activ';
-      case 'sold': return 'Vândut';
-      case 'pending': return 'În așteptare';
-      default: return 'Necunoscut';
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    return `€${price.toLocaleString()}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return 'Acum 1 zi';
-    if (diffDays < 7) return `Acum ${diffDays} zile`;
-    if (diffDays < 30) return `Acum ${Math.ceil(diffDays / 7)} săptămâni`;
-    return date.toLocaleDateString('ro-RO');
-  };
-
+  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-nexar-light flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
           <div className="w-16 h-16 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Se încarcă profilul...</p>
@@ -693,18 +386,19 @@ const ProfilePage = () => {
     );
   }
 
-  if (error || !userProfile) {
+  // Error state
+  if (error || !profile) {
     return (
-      <div className="min-h-screen bg-nexar-light flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md">
-          <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {error || 'Profil negăsit'}
           </h2>
           <p className="text-gray-600 mb-6">
-            {error || 'Utilizatorul căutat nu există sau profilul nu este disponibil.'}
+            {error || 'Profilul căutat nu există sau a fost șters.'}
           </p>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
           >
@@ -716,554 +410,602 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-nexar-light py-6 sm:py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
-          {/* Profile Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sidebar - Profile Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-              <div className="text-center mb-6">
-                <div className="relative inline-block mb-4">
-                  <img
-                    src={userProfile.avatar_url || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
-                    alt={userProfile.name}
-                    className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-white shadow-md"
-                    onError={(e) => {
-                      const target = e.currentTarget as HTMLImageElement;
-                      target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
-                    }}
-                  />
-                  {userProfile.verified && (
-                    <div className="absolute bottom-0 right-0 bg-green-500 text-white p-1 rounded-full">
-                      <Shield className="h-4 w-4" />
-                    </div>
-                  )}
-                  {isCurrentUser && (
-                    <label className="absolute bottom-0 left-0 bg-nexar-accent text-white p-1 rounded-full hover:bg-nexar-gold transition-colors cursor-pointer">
-                      <Camera className="h-4 w-4" />
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        disabled={isUploadingAvatar}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {/* Profile Header */}
+              <div className="relative">
+                {/* Cover Image */}
+                <div className="h-32 bg-gradient-to-r from-nexar-accent to-nexar-gold"></div>
+                
+                {/* Avatar */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gray-200">
+                      <img
+                        src={avatarPreview || profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=random`}
+                        alt={profile.name}
+                        className="w-full h-full object-cover"
                       />
-                    </label>
-                  )}
-                  {isUploadingAvatar && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                  )}
+                    
+                    {isEditing && (
+                      <label className="absolute bottom-0 right-0 bg-nexar-accent text-white p-1 rounded-full cursor-pointer">
+                        <Camera className="h-4 w-4" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleAvatarChange}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Profile Details */}
+              <div className="pt-16 px-6 pb-6">
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
+                  
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                    {profile.verified && (
+                      <div className="flex items-center text-green-600">
+                        <Shield className="h-4 w-4 mr-1" />
+                        <span>Verificat</span>
+                      </div>
+                    )}
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                      <span>{profile.rating || '0.0'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2">
+                    {profile.seller_type === 'dealer' ? (
+                      <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 rounded-full shadow-md border border-emerald-400">
+                        <Building className="h-3 w-3" />
+                        <span className="font-bold text-xs tracking-wide">DEALER PREMIUM</span>
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-3 py-1.5 rounded-full shadow-md">
+                        <User className="h-3 w-3" />
+                        <span className="font-semibold text-xs">VÂNZĂTOR PRIVAT</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {isEditing ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nume
+                      </label>
                       <input
                         type="text"
-                        value={editForm.name || ''}
+                        value={editedProfile.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className={`w-full text-center text-xl font-bold border rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
-                          validationErrors.name ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Numele tău"
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
                       />
-                      {validationErrors.name && (
-                        <p className="mt-1 text-xs text-red-600 flex items-center justify-center">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {validationErrors.name}
-                        </p>
-                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={editedProfile.email}
+                        disabled
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 cursor-not-allowed"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Email-ul nu poate fi modificat</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Telefon
+                      </label>
+                      <input
+                        type="tel"
+                        value={editedProfile.phone || ''}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        placeholder="0790 45 46 47"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Locația
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={editedProfile.location || ''}
+                          onChange={(e) => handleLocationChange(e.target.value)}
+                          onFocus={() => {
+                            if (editedProfile.location?.length > 0) {
+                              const filtered = romanianCities.filter(city =>
+                                city.toLowerCase().includes(editedProfile.location.toLowerCase())
+                              ).slice(0, 10);
+                              setFilteredCities(filtered);
+                              setShowLocationDropdown(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            // Delay pentru a permite click-ul pe opțiuni
+                            setTimeout(() => setShowLocationDropdown(false), 200);
+                          }}
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          placeholder="București"
+                        />
+                        
+                        {/* Dropdown cu orașe */}
+                        {showLocationDropdown && filteredCities.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {filteredCities.map((city, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => selectCity(city)}
+                                className="w-full text-left px-4 py-2 hover:bg-nexar-accent hover:text-white transition-colors text-sm border-b border-gray-100 last:border-b-0"
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Descriere
+                      </label>
+                      <textarea
+                        value={editedProfile.description || ''}
+                        onChange={(e) => handleInputChange('description', e.target.value)}
+                        rows={4}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                        placeholder="Descriere despre tine..."
+                      />
+                    </div>
+                    
+                    {profile.seller_type === 'dealer' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Website
+                        </label>
+                        <input
+                          type="url"
+                          value={editedProfile.website || ''}
+                          onChange={(e) => handleInputChange('website', e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
+                          placeholder="https://www.exemplu.ro"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex space-x-3 pt-4">
+                      <button
+                        onClick={handleSaveProfile}
+                        className="flex-1 bg-nexar-accent text-white py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                      >
+                        Salvează
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                      >
+                        Anulează
+                      </button>
                     </div>
                   </div>
                 ) : (
-                  <h2 className="text-xl font-bold text-nexar-primary">{userProfile.name}</h2>
-                )}
-                
-                <div className="flex items-center justify-center space-x-1 mt-1">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="font-semibold">{userProfile.rating.toFixed(1)}</span>
-                  <span className="text-gray-600">({userProfile.reviews} recenzii)</span>
-                </div>
-                <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  {userProfile.seller_type === 'dealer' ? 'Dealer Autorizat' : 'Vânzător Privat'}
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  {isEditing ? (
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={editForm.location || ''}
-                        onChange={(e) => handleInputChange('location', e.target.value)}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
-                          validationErrors.location ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Orașul tău (ex: București, Cluj-Napoca)"
-                      />
-                      {validationErrors.location && (
-                        <p className="mt-1 text-xs text-red-600 flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {validationErrors.location}
-                        </p>
-                      )}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                      <span className="text-gray-700">{profile.email}</span>
                     </div>
-                  ) : (
-                    <span className="text-gray-700">{userProfile.location || 'Nu este specificată'}</span>
-                  )}
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <Phone className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  {isEditing ? (
-                    <div className="flex-1">
-                      <input
-                        type="tel"
-                        value={editForm.phone || ''}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
-                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="0790454647 sau +40790454647"
-                      />
-                      {validationErrors.phone && (
-                        <p className="mt-1 text-xs text-red-600 flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {validationErrors.phone}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-gray-700">{userProfile.phone || 'Nu este specificat'}</span>
-                  )}
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <Mail className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">{userProfile.email}</span>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <Calendar className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Membru din {userProfile.memberSince}</span>
-                </div>
-
-                {(userProfile.website || isEditing) && (
-                  <div className="flex items-start space-x-3">
-                    <ExternalLink className="h-5 w-5 text-nexar-accent flex-shrink-0 mt-0.5" />
-                    {isEditing ? (
-                      <div className="flex-1">
-                        <input
-                          type="url"
-                          value={editForm.website || ''}
-                          onChange={(e) => handleInputChange('website', e.target.value)}
-                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
-                            validationErrors.website ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="https://website.com"
-                        />
-                        {validationErrors.website && (
-                          <p className="mt-1 text-xs text-red-600 flex items-center">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            {validationErrors.website}
-                          </p>
-                        )}
+                    
+                    {profile.phone && (
+                      <div className="flex items-center space-x-3">
+                        <Phone className="h-5 w-5 text-gray-400" />
+                        <span className="text-gray-700">{profile.phone}</span>
                       </div>
-                    ) : (
-                      <a 
-                        href={userProfile.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-nexar-accent hover:text-nexar-gold transition-colors"
-                      >
-                        {userProfile.website?.replace(/^https?:\/\//, '')}
-                      </a>
+                    )}
+                    
+                    {profile.location && (
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                        <span className="text-gray-700">{profile.location}</span>
+                      </div>
+                    )}
+                    
+                    {profile.description && (
+                      <div className="pt-2 text-gray-700">
+                        <p>{profile.description}</p>
+                      </div>
+                    )}
+                    
+                    {profile.website && (
+                      <div className="pt-2">
+                        <a 
+                          href={profile.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-nexar-accent hover:text-nexar-gold transition-colors"
+                        >
+                          {profile.website}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {isCurrentUser && (
+                      <div className="pt-4 space-y-3">
+                        <button
+                          onClick={handleEditProfile}
+                          className="w-full bg-nexar-accent text-white py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span>Editează Profilul</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => setIsChangingPassword(!isChangingPassword)}
+                          className="w-full bg-gray-800 text-white py-2 rounded-lg font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <Lock className="h-4 w-4" />
+                          <span>Schimbă Parola</span>
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Password Change Form */}
+                    {isCurrentUser && isChangingPassword && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 animate-slide-up">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Schimbă Parola</h3>
+                        
+                        {passwordChangeSuccess && (
+                          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3">
+                            <p className="text-green-700 flex items-center text-sm">
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Parola a fost schimbată cu succes!
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Parolă Nouă
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="password"
+                                value={passwordData.newPassword}
+                                onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                                  passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                                placeholder="Minim 8 caractere"
+                              />
+                              <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            </div>
+                            {passwordErrors.newPassword && (
+                              <p className="mt-1 text-sm text-red-600 flex items-center">
+                                <AlertTriangle className="h-4 w-4 mr-1" />
+                                {passwordErrors.newPassword}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Confirmă Parola
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="password"
+                                value={passwordData.confirmPassword}
+                                onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
+                                  passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                                placeholder="Repetă parola nouă"
+                              />
+                              <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            </div>
+                            {passwordErrors.confirmPassword && (
+                              <p className="mt-1 text-sm text-red-600 flex items-center">
+                                <AlertTriangle className="h-4 w-4 mr-1" />
+                                {passwordErrors.confirmPassword}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex space-x-3 pt-2">
+                            <button
+                              onClick={handleSavePassword}
+                              className="flex-1 bg-nexar-accent text-white py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                            >
+                              Salvează Parola
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsChangingPassword(false);
+                                setPasswordData({
+                                  newPassword: '',
+                                  confirmPassword: ''
+                                });
+                                setPasswordErrors({});
+                              }}
+                              className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                            >
+                              Anulează
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
               </div>
-
-              {isCurrentUser && (
-                <div className="space-y-3">
-                  {isEditing ? (
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                        className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isSaving ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Save className="h-4 w-4" />
-                        )}
-                        <span>{isSaving ? 'Se salvează...' : 'Salvează'}</span>
-                      </button>
-                      <button 
-                        onClick={handleCancelEdit}
-                        disabled={isSaving}
-                        className="flex-1 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
-                      >
-                        <X className="h-4 w-4" />
-                        <span>Anulează</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={handleEditProfile}
-                      className="w-full bg-nexar-primary text-white py-3 rounded-xl font-semibold hover:bg-nexar-secondary transition-colors flex items-center justify-center space-x-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      <span>Editează Profilul</span>
-                    </button>
-                  )}
+            </div>
+            
+            {/* Stats Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Statistici</h2>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-nexar-accent">{userListings.length}</div>
+                  <div className="text-sm text-gray-600">Anunțuri Active</div>
                 </div>
-              )}
+                
+                <div className="bg-gray-50 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-nexar-accent">{userFavorites.length}</div>
+                  <div className="text-sm text-gray-600">Favorite</div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* Descriere profil */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <h2 className="text-xl font-bold text-nexar-primary mb-4">
-                Despre {userProfile.seller_type === 'dealer' ? 'Noi' : 'Mine'}
-              </h2>
-              {isEditing ? (
-                <div>
-                  <textarea
-                    value={editForm.description || ''}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    rows={4}
-                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-nexar-accent focus:border-transparent ${
-                      validationErrors.description ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Descrie-te pe scurt... (minim 10 caractere, maxim 500)"
-                  />
-                  {validationErrors.description && (
-                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                      <AlertTriangle className="h-4 w-4 mr-1" />
-                      {validationErrors.description}
-                    </p>
-                  )}
-                  <div className="mt-1 text-xs text-gray-500 text-right">
-                    {(editForm.description || '').length}/500 caractere
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-700 leading-relaxed">
-                  {userProfile.description || 'Nicio descriere adăugată încă.'}
-                </p>
-              )}
-            </div>
-
+          <div className="lg:col-span-2">
             {/* Tabs */}
-            <div className="bg-white rounded-2xl shadow-lg mb-8">
-              <div className="border-b border-gray-200">
-                <nav className="flex space-x-8 px-6 overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="flex border-b border-gray-200">
+                <button
+                  onClick={() => setActiveTab('listings')}
+                  className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
+                    activeTab === 'listings'
+                      ? 'text-nexar-accent border-b-2 border-nexar-accent'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Anunțurile Mele
+                </button>
+                
+                {isCurrentUser && (
                   <button
-                    onClick={() => setActiveTab('listings')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
-                      activeTab === 'listings'
-                        ? 'border-nexar-accent text-nexar-accent'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    onClick={() => setActiveTab('favorites')}
+                    className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
+                      activeTab === 'favorites'
+                        ? 'text-nexar-accent border-b-2 border-nexar-accent'
+                        : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Anunțuri ({userListingsData.length})
+                    Favorite
                   </button>
-                  <button
-                    onClick={() => setActiveTab('reviews')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
-                      activeTab === 'reviews'
-                        ? 'border-nexar-accent text-nexar-accent'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Recenzii ({userProfile.reviews})
-                  </button>
-                  {isCurrentUser && (
-                    <>
-                      <button
-                        onClick={() => setActiveTab('favorites')}
-                        className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
-                          activeTab === 'favorites'
-                            ? 'border-nexar-accent text-nexar-accent'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Favorite ({favoriteListings.length})
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('messages')}
-                        className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
-                          activeTab === 'messages'
-                            ? 'border-nexar-accent text-nexar-accent'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Mesaje
-                      </button>
-                    </>
-                  )}
-                </nav>
+                )}
               </div>
 
-              <div className="p-6">
-                {/* Listings Tab */}
-                {activeTab === 'listings' && (
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-semibold text-nexar-primary">
-                        {isCurrentUser ? 'Anunțurile Mele' : `Anunțurile ${userProfile.name}`}
+              {/* Listings Tab */}
+              {activeTab === 'listings' && (
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    {isCurrentUser ? 'Anunțurile Mele' : `Anunțurile lui ${profile.name}`}
+                  </h2>
+                  
+                  {isLoadingListings ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-600">Se încarcă anunțurile...</p>
+                    </div>
+                  ) : userListings.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {isCurrentUser ? 'Nu ai anunțuri active' : `${profile.name} nu are anunțuri active`}
                       </h3>
                       {isCurrentUser && (
-                        <button 
+                        <button
                           onClick={() => navigate('/adauga-anunt')}
-                          className="bg-nexar-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center space-x-2"
+                          className="mt-4 bg-nexar-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
                         >
-                          <Plus className="h-4 w-4" />
-                          <span>Anunț Nou</span>
+                          Adaugă Primul Anunț
                         </button>
                       )}
                     </div>
-
-                    {userListingsData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">
-                          {isCurrentUser 
-                            ? 'Nu ai anunțuri active. Adaugă primul tău anunț!' 
-                            : 'Acest utilizator nu are anunțuri active.'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {userListingsData.map((listing) => (
-                          <div key={listing.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-center space-x-4">
+                  ) : (
+                    <div className="space-y-4">
+                      {userListings.map(listing => (
+                        <div key={listing.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="flex flex-col sm:flex-row">
+                            <div className="relative w-full sm:w-48 h-40 sm:h-auto">
                               <img
-                                src={listing.images?.[0] || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
+                                src={listing.images && listing.images[0] ? listing.images[0] : "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
                                 alt={listing.title}
-                                className="w-24 h-24 rounded-lg object-cover"
-                                onError={(e) => {
-                                  const target = e.currentTarget as HTMLImageElement;
-                                  target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
-                                }}
+                                className="w-full h-full object-cover"
                               />
-                              
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="text-lg font-semibold text-nexar-primary">{listing.title}</h4>
-                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(listing.status)}`}>
-                                    {getStatusText(listing.status)}
-                                  </span>
+                              <div className="absolute top-2 left-2">
+                                <span className="bg-nexar-accent text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                  {listing.category}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{listing.title}</h3>
+                                  <div className="text-xl font-bold text-nexar-accent mb-2">€{listing.price.toLocaleString()}</div>
                                 </div>
                                 
-                                <div className="text-xl font-bold text-nexar-accent mb-2">{formatPrice(listing.price)}</div>
-                                
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                  <div className="flex items-center space-x-1">
-                                    <Eye className="h-4 w-4" />
-                                    <span>{listing.views_count || 0} vizualizări</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <Heart className="h-4 w-4" />
-                                    <span>{listing.favorites_count || 0} favorite</span>
-                                  </div>
-                                  <span>{formatDate(listing.created_at)}</span>
+                                <div className="flex items-center space-x-1 bg-gray-50 rounded-lg px-2 py-1">
+                                  <Eye className="h-4 w-4 text-gray-500" />
+                                  <span className="text-xs font-medium">{listing.views_count || 0}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>{listing.year}</span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{listing.location}</span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>{new Date(listing.created_at).toLocaleDateString('ro-RO')}</span>
                                 </div>
                               </div>
                               
                               {isCurrentUser && (
-                                <div className="flex flex-col space-y-2">
-                                  <button 
+                                <div className="flex space-x-2">
+                                  <button
                                     onClick={() => navigate(`/anunt/${listing.id}`)}
-                                    className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
-                                    title="Vezi anunțul"
+                                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center space-x-1"
                                   >
                                     <Eye className="h-4 w-4" />
+                                    <span>Vezi</span>
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => navigate(`/editeaza-anunt/${listing.id}`)}
-                                    className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
-                                    title="Editează anunțul"
+                                    className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors flex items-center space-x-1"
                                   >
                                     <Edit className="h-4 w-4" />
+                                    <span>Editează</span>
                                   </button>
-                                  
-                                  {/* Dropdown pentru schimbare status */}
-                                  {listing.status !== 'sold' && (
-                                    <button 
-                                      onClick={() => handleUpdateListingStatus(listing.id, 'sold')}
-                                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                                      title="Marchează ca vândut"
-                                      disabled={isUpdating === listing.id}
-                                    >
-                                      {isUpdating === listing.id ? (
-                                        <RefreshCw className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <Check className="h-4 w-4" />
-                                      )}
-                                    </button>
-                                  )}
-                                  
-                                  {/* Buton de ștergere cu confirmare */}
-                                  {showDeleteConfirm === listing.id ? (
-                                    <div className="absolute right-16 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-lg p-3 border border-gray-200 z-10">
-                                      <p className="text-sm text-gray-700 mb-2">Ești sigur?</p>
-                                      <div className="flex space-x-2">
-                                        <button
-                                          onClick={() => handleDeleteListing(listing.id)}
-                                          className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                                          disabled={isDeleting === listing.id}
-                                        >
-                                          {isDeleting === listing.id ? (
-                                            <RefreshCw className="h-3 w-3 animate-spin" />
-                                          ) : (
-                                            'Da'
-                                          )}
-                                        </button>
-                                        <button
-                                          onClick={() => setShowDeleteConfirm(null)}
-                                          className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300"
-                                        >
-                                          Nu
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <button 
-                                      onClick={() => setShowDeleteConfirm(listing.id)}
-                                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                      title="Șterge anunțul"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={() => handleDeleteListing(listing.id)}
+                                    className="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors flex items-center space-x-1"
+                                  >
+                                    <X className="h-4 w-4" />
+                                    <span>Șterge</span>
+                                  </button>
                                 </div>
                               )}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Reviews Tab */}
-                {activeTab === 'reviews' && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-nexar-primary">
-                      {isCurrentUser ? 'Recenziile Mele' : `Recenzii pentru ${userProfile.name}`}
-                    </h3>
-                    
-                    <div className="text-center py-12">
-                      <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">
-                        {isCurrentUser 
-                          ? 'Nu ai primit recenzii încă.' 
-                          : 'Acest utilizator nu are recenzii încă.'}
-                      </p>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
 
-                {/* Favorites Tab - Doar pentru utilizatorul curent */}
-                {activeTab === 'favorites' && isCurrentUser && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-nexar-primary">Anunțuri Favorite</h3>
-                    
-                    {isLoadingFavorites ? (
-                      <div className="text-center py-12">
-                        <div className="w-12 h-12 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-gray-600">Se încarcă anunțurile favorite...</p>
-                      </div>
-                    ) : favoriteListings.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">
-                          Nu ai anunțuri favorite încă.
-                        </p>
-                        <p className="text-gray-500 text-sm mt-2">
-                          Adaugă anunțuri la favorite apăsând pe iconița inimă.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {favoriteListings.map((listing) => (
-                          <div key={listing.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-center space-x-4">
+              {/* Favorites Tab */}
+              {activeTab === 'favorites' && isCurrentUser && (
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Anunțurile Favorite</h2>
+                  
+                  {isLoadingFavorites ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-600">Se încarcă favoritele...</p>
+                    </div>
+                  ) : userFavorites.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Nu ai anunțuri favorite
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Adaugă anunțuri la favorite pentru a le găsi mai ușor
+                      </p>
+                      <button
+                        onClick={() => navigate('/anunturi')}
+                        className="mt-2 bg-nexar-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                      >
+                        Explorează Anunțuri
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {userFavorites.map(listing => (
+                        <div key={listing.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="flex flex-col sm:flex-row">
+                            <div className="relative w-full sm:w-48 h-40 sm:h-auto">
                               <img
-                                src={listing.images?.[0] || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
+                                src={listing.images && listing.images[0] ? listing.images[0] : "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
                                 alt={listing.title}
-                                className="w-24 h-24 rounded-lg object-cover"
-                                onError={(e) => {
-                                  const target = e.currentTarget as HTMLImageElement;
-                                  target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
-                                }}
+                                className="w-full h-full object-cover"
                               />
-                              
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="text-lg font-semibold text-nexar-primary">{listing.title}</h4>
-                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(listing.status)}`}>
-                                    {getStatusText(listing.status)}
-                                  </span>
-                                </div>
-                                
-                                <div className="text-xl font-bold text-nexar-accent mb-2">{formatPrice(listing.price)}</div>
-                                
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                  <div className="flex items-center space-x-1">
-                                    <Eye className="h-4 w-4" />
-                                    <span>{listing.views_count || 0} vizualizări</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <Heart className="h-4 w-4 text-red-500" />
-                                    <span>{listing.favorites_count || 0} favorite</span>
-                                  </div>
-                                  <span>{formatDate(listing.created_at)}</span>
+                              <div className="absolute top-2 left-2">
+                                <span className="bg-nexar-accent text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                  {listing.category}
+                                </span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleRemoveFavorite(listing.id);
+                                }}
+                                className="absolute top-2 right-2 bg-white rounded-full p-1.5 hover:bg-gray-100 transition-colors"
+                              >
+                                <Heart className="h-4 w-4 text-red-500 fill-current" />
+                              </button>
+                            </div>
+                            
+                            <div className="flex-1 p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{listing.title}</h3>
+                                  <div className="text-xl font-bold text-nexar-accent mb-2">€{listing.price.toLocaleString()}</div>
                                 </div>
                               </div>
                               
-                              <div className="flex flex-col space-y-2">
-                                <button 
-                                  onClick={() => navigate(`/anunt/${listing.id}`)}
-                                  className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
-                                  title="Vezi anunțul"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </button>
-                                <button 
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  title="Elimină de la favorite"
-                                >
-                                  <Heart className="h-4 w-4 fill-current" />
-                                </button>
+                              <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>{listing.year}</span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{listing.location}</span>
+                                </div>
+                                <div className="flex items-center space-x-1 text-gray-600">
+                                  <User className="h-4 w-4" />
+                                  <span>{listing.seller_name}</span>
+                                </div>
                               </div>
+                              
+                              <button
+                                onClick={() => navigate(`/anunt/${listing.id}`)}
+                                className="bg-nexar-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-nexar-gold transition-colors flex items-center space-x-2"
+                              >
+                                <Eye className="h-4 w-4" />
+                                <span>Vezi Anunțul</span>
+                              </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Messages Tab - Doar pentru utilizatorul curent */}
-                {activeTab === 'messages' && isCurrentUser && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold text-nexar-primary">Mesaje</h3>
-                    <div className="text-center py-12">
-                      <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">Nu ai mesaje noi</p>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

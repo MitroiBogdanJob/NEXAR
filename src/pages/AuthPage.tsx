@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle, CheckCircle, ChevronDown } from 'lucide-react';
-import { auth, supabase } from '../lib/supabase';
+import { auth, supabase, romanianCities } from '../lib/supabase';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,28 +36,6 @@ const AuthPage = () => {
     
     checkAuth();
   }, [navigate]);
-
-  // Lista completă a orașelor din România
-  const romanianCities = [
-    'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
-    'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
-    'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
-    'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
-    'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
-    'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman',
-    'Câmpina', 'Caracal', 'Făgăraș', 'Lugoj', 'Mangalia', 'Moreni', 'Oltenița', 'Petroșani',
-    'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele', 'Sebeș', 'Sfântu Gheorghe', 'Tecuci',
-    'Toplița', 'Voluntari', 'Pantelimon', 'Popești-Leordeni', 'Chiajna', 'Otopeni',
-    'Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6',
-    'Bragadiru', 'Buftea', 'Chitila', 'Corbeanca', 'Domnești', 'Măgurele', 'Mogoșoaia',
-    'Cernica', 'Glina', 'Jilava', 'Peris', 'Snagov', 'Stefanestii de Jos', 'Tunari',
-    'Florești', 'Apahida', 'Baciu', 'Feleacu', 'Gilău', 'Jucu', 'Kolozsvar',
-    'Dumbrăvița', 'Ghiroda', 'Giroc', 'Moșnița Nouă', 'Pișchia', 'Remetea Mare',
-    'Rediu', 'Miroslava', 'Popricani', 'Tomești', 'Valea Lupului', 'Ciurea',
-    'Mamaia', 'Eforie Nord', 'Eforie Sud', 'Neptun', 'Olimp', 'Costinești',
-    'Predeal', 'Sinaia', 'Bușteni', 'Azuga', 'Câmpulung', 'Mioveni',
-    'Drobeta Turnu Severin', 'Băilești', 'Calafat', 'Filiași', 'Motru', 'Segarcea'
-  ];
 
   // Funcții de validare
   const validateName = (name: string): string => {

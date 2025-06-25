@@ -44,6 +44,28 @@ export interface User {
   created_at: string
 }
 
+// Lista orașelor din România
+export const romanianCities = [
+  'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
+  'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
+  'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
+  'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
+  'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
+  'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman',
+  'Câmpina', 'Caracal', 'Făgăraș', 'Lugoj', 'Mangalia', 'Moreni', 'Oltenița', 'Petroșani',
+  'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele', 'Sebeș', 'Sfântu Gheorghe', 'Tecuci',
+  'Toplița', 'Voluntari', 'Pantelimon', 'Popești-Leordeni', 'Chiajna', 'Otopeni',
+  'Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6',
+  'Bragadiru', 'Buftea', 'Chitila', 'Corbeanca', 'Domnești', 'Măgurele', 'Mogoșoaia',
+  'Cernica', 'Glina', 'Jilava', 'Peris', 'Snagov', 'Stefanestii de Jos', 'Tunari',
+  'Florești', 'Apahida', 'Baciu', 'Feleacu', 'Gilău', 'Jucu', 'Kolozsvar',
+  'Dumbrăvița', 'Ghiroda', 'Giroc', 'Moșnița Nouă', 'Pișchia', 'Remetea Mare',
+  'Rediu', 'Miroslava', 'Popricani', 'Tomești', 'Valea Lupului', 'Ciurea',
+  'Mamaia', 'Eforie Nord', 'Eforie Sud', 'Neptun', 'Olimp', 'Costinești',
+  'Predeal', 'Sinaia', 'Bușteni', 'Azuga', 'Câmpulung', 'Mioveni',
+  'Drobeta Turnu Severin', 'Băilești', 'Calafat', 'Filiași', 'Motru', 'Segarcea'
+];
+
 // Funcție pentru a crea profilul manual dacă nu există
 const ensureProfileExists = async (user: any, userData?: any) => {
   try {
@@ -205,6 +227,25 @@ export const auth = {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
     return { data, error }
+  },
+
+  updatePassword: async (newPassword: string) => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+      
+      if (error) {
+        console.error('❌ Error updating password:', error)
+        return { data: null, error }
+      }
+      
+      console.log('✅ Password updated successfully')
+      return { data, error: null }
+    } catch (err) {
+      console.error('💥 Error updating password:', err)
+      return { data: null, error: err }
+    }
   }
 }
 
@@ -534,7 +575,10 @@ export const listings = {
     try {
       const { data, error } = await supabase
         .from('favorites')
-        .select('listing_id')
+        .select(`
+          listing_id,
+          listings (*)
+        `)
         .eq('user_id', userId)
       
       return { data, error }

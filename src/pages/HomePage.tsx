@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, Zap, Building, ChevronLeft, ChevronRight } from 'lucide-react';
 import { listings } from '../lib/supabase';
 
 const HomePage = () => {
+  const [searchParams] = useSearchParams();
   // On desktop, show filters by default. On mobile, hide them by default
   const [showFilters, setShowFilters] = useState(window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,7 +12,7 @@ const HomePage = () => {
   const [filters, setFilters] = useState({
     priceMin: '',
     priceMax: '',
-    category: '',
+    category: searchParams.get('categorie') || '',
     brand: '',
     yearMin: '',
     yearMax: '',
@@ -27,6 +28,14 @@ const HomePage = () => {
   useEffect(() => {
     loadListings();
   }, []);
+
+  // Update filters when URL params change
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('categorie');
+    if (categoryFromUrl) {
+      setFilters(prev => ({ ...prev, category: categoryFromUrl }));
+    }
+  }, [searchParams]);
 
   const loadListings = async () => {
     try {
@@ -132,6 +141,8 @@ const HomePage = () => {
     });
     setSearchQuery('');
     setCurrentPage(1);
+    // Clear URL params
+    navigate('/', { replace: true });
   };
 
   // Funcție pentru a merge la o pagină și a face scroll la top
@@ -153,6 +164,8 @@ const HomePage = () => {
 
   const ListingRow = ({ listing }: { listing: any }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
     const touchStartX = useRef<number>(0);
     const touchEndX = useRef<number>(0);
     const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -205,6 +218,32 @@ const HomePage = () => {
       e.stopPropagation();
       // Navigate to seller profile
       navigate(`/profil/${listing.sellerId}`);
+    };
+
+    const handleToggleFavorite = async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      setIsTogglingFavorite(true);
+      
+      try {
+        // Simulate toggle for now - you'll need to implement the actual logic
+        setIsFavorite(!isFavorite);
+        
+        // Here you would call the actual API to add/remove from favorites
+        // const { data: { user } } = await supabase.auth.getUser();
+        // if (user) {
+        //   if (isFavorite) {
+        //     await listings.removeFromFavorites(user.id, listing.id);
+        //   } else {
+        //     await listings.addToFavorites(user.id, listing.id);
+        //   }
+        // }
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+      } finally {
+        setIsTogglingFavorite(false);
+      }
     };
 
     // Funcție pentru a obține imaginea corectă
@@ -277,13 +316,17 @@ const HomePage = () => {
               </span>
             </div>
             <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              onClick={handleToggleFavorite}
+              disabled={isTogglingFavorite}
               className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors"
             >
-              <Heart className="h-4 w-4 text-gray-600 hover:text-nexar-accent transition-colors" />
+              {isTogglingFavorite ? (
+                <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Heart className={`h-4 w-4 transition-colors ${
+                  isFavorite ? 'text-red-500 fill-current' : 'text-gray-600 hover:text-red-500'
+                }`} />
+              )}
             </button>
           </div>
           
@@ -458,18 +501,14 @@ const HomePage = () => {
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
                     >
                       <option value="">Toate categoriile</option>
-                      <option value="Sport">Sport</option>
-                      <option value="Touring">Touring</option>
-                      <option value="Cruiser">Cruiser</option>
-                      <option value="Adventure">Adventure</option>
-                      <option value="Naked">Naked</option>
-                      <option value="Scooter">Scooter</option>
-                      <option value="Enduro">Enduro</option>
-                      <option value="Chopper">Chopper</option>
-                      <option value="Cafe Racer">Cafe Racer</option>
-                      <option value="Supermoto">Supermoto</option>
-                      <option value="Motocross">Motocross</option>
-                      <option value="Trial">Trial</option>
+                      <option value="sport">Sport</option>
+                      <option value="touring">Touring</option>
+                      <option value="cruiser">Cruiser</option>
+                      <option value="adventure">Adventure</option>
+                      <option value="naked">Naked</option>
+                      <option value="scooter">Scooter</option>
+                      <option value="enduro">Enduro</option>
+                      <option value="chopper">Chopper</option>
                     </select>
                   </div>
 
@@ -492,18 +531,6 @@ const HomePage = () => {
                       <option value="Kawasaki">Kawasaki</option>
                       <option value="Triumph">Triumph</option>
                       <option value="Aprilia">Aprilia</option>
-                      <option value="MV Agusta">MV Agusta</option>
-                      <option value="Benelli">Benelli</option>
-                      <option value="Moto Guzzi">Moto Guzzi</option>
-                      <option value="Indian">Indian</option>
-                      <option value="Zero">Zero</option>
-                      <option value="Husqvarna">Husqvarna</option>
-                      <option value="Royal Enfield">Royal Enfield</option>
-                      <option value="Bimota">Bimota</option>
-                      <option value="Buell">Buell</option>
-                      <option value="CF Moto">CF Moto</option>
-                      <option value="Hyosung">Hyosung</option>
-                      <option value="Kymco">Kymco</option>
                     </select>
                   </div>
 
@@ -614,18 +641,14 @@ const HomePage = () => {
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-nexar-accent focus:border-transparent"
                     >
                       <option value="">Toate categoriile</option>
-                      <option value="Sport">Sport</option>
-                      <option value="Touring">Touring</option>
-                      <option value="Cruiser">Cruiser</option>
-                      <option value="Adventure">Adventure</option>
-                      <option value="Naked">Naked</option>
-                      <option value="Scooter">Scooter</option>
-                      <option value="Enduro">Enduro</option>
-                      <option value="Chopper">Chopper</option>
-                      <option value="Cafe Racer">Cafe Racer</option>
-                      <option value="Supermoto">Supermoto</option>
-                      <option value="Motocross">Motocross</option>
-                      <option value="Trial">Trial</option>
+                      <option value="sport">Sport</option>
+                      <option value="touring">Touring</option>
+                      <option value="cruiser">Cruiser</option>
+                      <option value="adventure">Adventure</option>
+                      <option value="naked">Naked</option>
+                      <option value="scooter">Scooter</option>
+                      <option value="enduro">Enduro</option>
+                      <option value="chopper">Chopper</option>
                     </select>
                   </div>
 
@@ -648,18 +671,6 @@ const HomePage = () => {
                       <option value="Kawasaki">Kawasaki</option>
                       <option value="Triumph">Triumph</option>
                       <option value="Aprilia">Aprilia</option>
-                      <option value="MV Agusta">MV Agusta</option>
-                      <option value="Benelli">Benelli</option>
-                      <option value="Moto Guzzi">Moto Guzzi</option>
-                      <option value="Indian">Indian</option>
-                      <option value="Zero">Zero</option>
-                      <option value="Husqvarna">Husqvarna</option>
-                      <option value="Royal Enfield">Royal Enfield</option>
-                      <option value="Bimota">Bimota</option>
-                      <option value="Buell">Buell</option>
-                      <option value="CF Moto">CF Moto</option>
-                      <option value="Hyosung">Hyosung</option>
-                      <option value="Kymco">Kymco</option>
                     </select>
                   </div>
 
@@ -953,9 +964,12 @@ const HomePage = () => {
             {categories.map((category, index) => (
               <Link
                 key={index}
-                to={`/anunturi?categorie=${category.name.toLowerCase()}`}
+                to={`/?categorie=${category.name.toLowerCase()}`}
                 className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 border border-gray-200"
-                onClick={() => window.scrollTo(0, 0)}
+                onClick={() => {
+                  setFilters(prev => ({ ...prev, category: category.name.toLowerCase() }));
+                  window.scrollTo(0, 0);
+                }}
               >
                 <img
                   src={category.image}

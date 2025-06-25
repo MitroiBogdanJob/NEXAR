@@ -126,19 +126,14 @@ const ListingDetailPage = () => {
       }
       
       // Verificăm dacă anunțul este în lista de favorite
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('listing_id', listingId)
-        .single();
+      const { isFavorite, error } = await listings.checkIfFavorite(user.id, listingId);
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking favorite status:', error);
         return;
       }
       
-      setIsFavorite(!!data);
+      setIsFavorite(isFavorite);
       
     } catch (err) {
       console.error('Error in checkIfFavorite:', err);
