@@ -542,6 +542,29 @@ export const listings = {
       console.error('Error fetching favorites:', err)
       return { data: null, error: err }
     }
+  },
+
+  checkIfFavorite: async (userId: string, listingId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('listing_id', listingId)
+      
+      if (error) {
+        console.error('Error checking if favorite:', error)
+        return { isFavorite: false, error }
+      }
+      
+      // Check if data array has any items (favorite exists)
+      const isFavorite = data && data.length > 0
+      
+      return { isFavorite, error: null }
+    } catch (err) {
+      console.error('Error checking if favorite:', err)
+      return { isFavorite: false, error: err }
+    }
   }
 }
 
