@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle, CheckCircle, ChevronDown } from 'lucide-react';
 import { auth, supabase } from '../lib/supabase';
 
 const AuthPage = () => {
@@ -22,6 +22,8 @@ const AuthPage = () => {
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isValidating, setIsValidating] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [filteredCities, setFilteredCities] = useState<string[]>([]);
 
   useEffect(() => {
     // Verificăm dacă utilizatorul este deja autentificat
@@ -35,7 +37,7 @@ const AuthPage = () => {
     checkAuth();
   }, [navigate]);
 
-  // Lista orașelor din România pentru validare
+  // Lista completă a orașelor din România
   const romanianCities = [
     'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
     'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
@@ -43,10 +45,18 @@ const AuthPage = () => {
     'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
     'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
     'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman',
-    'Câmpina', 'Caracal', 'Drobeta Turnu Severin', 'Făgăraș', 'Lugoj', 'Mangalia',
-    'Moreni', 'Oltenița', 'Petroșani', 'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele',
-    'Sebeș', 'Sfântu Gheorghe', 'Tecuci', 'Toplița', 'Voluntari', 'Sector 1', 'Sector 2',
-    'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6'
+    'Câmpina', 'Caracal', 'Făgăraș', 'Lugoj', 'Mangalia', 'Moreni', 'Oltenița', 'Petroșani',
+    'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele', 'Sebeș', 'Sfântu Gheorghe', 'Tecuci',
+    'Toplița', 'Voluntari', 'Pantelimon', 'Popești-Leordeni', 'Chiajna', 'Otopeni',
+    'Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6',
+    'Bragadiru', 'Buftea', 'Chitila', 'Corbeanca', 'Domnești', 'Măgurele', 'Mogoșoaia',
+    'Cernica', 'Glina', 'Jilava', 'Peris', 'Snagov', 'Stefanestii de Jos', 'Tunari',
+    'Florești', 'Apahida', 'Baciu', 'Feleacu', 'Gilău', 'Jucu', 'Kolozsvar',
+    'Dumbrăvița', 'Ghiroda', 'Giroc', 'Moșnița Nouă', 'Pișchia', 'Remetea Mare',
+    'Rediu', 'Miroslava', 'Popricani', 'Tomești', 'Valea Lupului', 'Ciurea',
+    'Mamaia', 'Eforie Nord', 'Eforie Sud', 'Neptun', 'Olimp', 'Costinești',
+    'Predeal', 'Sinaia', 'Bușteni', 'Azuga', 'Câmpulung', 'Mioveni',
+    'Drobeta Turnu Severin', 'Băilești', 'Calafat', 'Filiași', 'Motru', 'Segarcea'
   ];
 
   // Funcții de validare
@@ -80,7 +90,7 @@ const AuthPage = () => {
     }
     
     // Verificăm prefixele valide pentru România
-    const validPrefixes = ['072', '073', '074', '075', '076', '077', '078', '079', '021', '031', '0230', '0231', '0232', '0233', '0234', '0235', '0236', '0237', '0238', '0239', '0240', '0241', '0242', '0243', '0244', '0245', '0246', '0247', '0248', '0249', '0250', '0251', '0252', '0253', '0254', '0255', '0256', '0257', '0258', '0259', '0260', '0261', '0262', '0263', '0264', '0265', '0266', '0267', '0268', '0269'];
+    const validPrefixes = ['072', '073', '074', '075', '076', '077', '078', '079'];
     
     let isValidPrefix = false;
     if (cleanPhone.startsWith('+4')) {
@@ -91,7 +101,7 @@ const AuthPage = () => {
     }
     
     if (!isValidPrefix) {
-      return 'Prefixul nu este valid pentru România';
+      return 'Prefixul nu este valid pentru România (ex: 072, 073, 074, 075, 076, 077, 078, 079)';
     }
     
     return '';
@@ -99,21 +109,14 @@ const AuthPage = () => {
 
   const validateLocation = (location: string): string => {
     if (!location.trim()) return 'Locația este obligatorie';
-    if (location.trim().length < 2) return 'Locația trebuie să aibă cel puțin 2 caractere';
-    if (location.trim().length > 100) return 'Locația nu poate depăși 100 de caractere';
     
-    const locationLower = location.trim().toLowerCase();
+    // Verificăm dacă locația este în lista orașelor românești
     const isValidCity = romanianCities.some(city => 
-      locationLower.includes(city.toLowerCase()) || 
-      locationLower.includes('românia') || 
-      locationLower.includes('romania') ||
-      locationLower.includes('sector') ||
-      locationLower.includes('județ') ||
-      locationLower.includes('judet')
+      city.toLowerCase() === location.trim().toLowerCase()
     );
     
     if (!isValidCity) {
-      return 'Te rugăm să specifici un oraș din România (ex: București, Cluj-Napoca, Timișoara)';
+      return 'Te rugăm să selectezi un oraș din lista disponibilă';
     }
     
     return '';
@@ -126,6 +129,28 @@ const AuthPage = () => {
     if (!/(?=.*[A-Z])/.test(password)) return 'Parola trebuie să conțină cel puțin o literă mare';
     if (!/(?=.*\d)/.test(password)) return 'Parola trebuie să conțină cel puțin o cifră';
     return '';
+  };
+
+  // Funcție pentru filtrarea orașelor
+  const handleLocationChange = (value: string) => {
+    handleInputChange('location', value);
+    
+    if (value.length > 0) {
+      const filtered = romanianCities.filter(city =>
+        city.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 10); // Limităm la 10 rezultate
+      setFilteredCities(filtered);
+      setShowLocationDropdown(true);
+    } else {
+      setFilteredCities([]);
+      setShowLocationDropdown(false);
+    }
+  };
+
+  const selectCity = (city: string) => {
+    handleInputChange('location', city);
+    setShowLocationDropdown(false);
+    setFilteredCities([]);
   };
 
   const validateForm = async (): Promise<boolean> => {
@@ -145,21 +170,22 @@ const AuthPage = () => {
       const emailError = validateEmail(formData.email);
       if (emailError) errors.email = emailError;
       
-      // Verificăm dacă email-ul există deja
+      // Verificăm dacă email-ul există deja în auth.users
       if (!emailError) {
         setIsValidating(true);
         try {
-          const { data: existingUser } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('email', formData.email.trim())
-            .single();
+          // Încercăm să facem sign up cu un email temporar pentru a verifica dacă există
+          const { error: checkError } = await supabase.auth.signUp({
+            email: formData.email.trim(),
+            password: 'temp_password_for_check_123',
+            options: { data: { check_only: true } }
+          });
           
-          if (existingUser) {
+          if (checkError && checkError.message.includes('already registered')) {
             errors.email = 'Acest email este deja înregistrat';
           }
         } catch (err) {
-          // Dacă nu găsește utilizatorul, e ok (eroarea este normală)
+          // Ignorăm erorile de verificare
         }
         setIsValidating(false);
       }
@@ -248,6 +274,8 @@ const AuthPage = () => {
             setError('Parola trebuie să aibă cel puțin 6 caractere');
           } else if (error.message.includes('Unable to validate email')) {
             setError('Email-ul nu este valid');
+          } else if (error.message.includes('User already registered')) {
+            setError('Acest email este deja înregistrat');
           } else {
             setError(error.message);
           }
@@ -314,7 +342,7 @@ const AuthPage = () => {
               <img 
                 src="/Nexar - logo_black & red.png" 
                 alt="Nexar Logo" 
-                className="h-16 sm:h-20 md:h-24 w-auto"
+                className="h-20 sm:h-24 md:h-28 w-auto"
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
                   if (target.src.includes('Nexar - logo_black & red.png')) {
@@ -486,7 +514,7 @@ const AuthPage = () => {
                   )}
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Locația *
                   </label>
@@ -494,14 +522,45 @@ const AuthPage = () => {
                     <input
                       type="text"
                       value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                      onChange={(e) => handleLocationChange(e.target.value)}
+                      onFocus={() => {
+                        if (formData.location.length > 0) {
+                          const filtered = romanianCities.filter(city =>
+                            city.toLowerCase().includes(formData.location.toLowerCase())
+                          ).slice(0, 10);
+                          setFilteredCities(filtered);
+                          setShowLocationDropdown(true);
+                        }
+                      }}
+                      onBlur={() => {
+                        // Delay pentru a permite click-ul pe opțiuni
+                        setTimeout(() => setShowLocationDropdown(false), 200);
+                      }}
+                      className={`w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
                         validationErrors.location ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="București, România"
+                      placeholder="Începe să scrii orașul..."
                       required={!isLogin}
+                      autoComplete="off"
                     />
                     <MapPin className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+                    <ChevronDown className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+                    
+                    {/* Dropdown cu orașe */}
+                    {showLocationDropdown && filteredCities.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredCities.map((city, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => selectCity(city)}
+                            className="w-full text-left px-4 py-2 hover:bg-nexar-accent hover:text-white transition-colors text-sm border-b border-gray-100 last:border-b-0"
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {validationErrors.location && (
                     <p className="mt-1 text-sm text-red-600 flex items-center">
