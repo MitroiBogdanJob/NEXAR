@@ -18,6 +18,8 @@ const ListingDetailPage = () => {
   const [listing, setListing] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -25,6 +27,7 @@ const ListingDetailPage = () => {
     
     if (id) {
       loadListing(id);
+      checkIfFavorite(id);
     }
   }, [id]);
 
@@ -108,6 +111,82 @@ const ListingDetailPage = () => {
       setError('A apărut o eroare la încărcarea anunțului');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Verifică dacă anunțul este în lista de favorite
+  const checkIfFavorite = async (listingId: string) => {
+    try {
+      // Obținem utilizatorul curent
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Utilizatorul nu este autentificat
+        return;
+      }
+      
+      // Verificăm dacă anunțul este în lista de favorite
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('listing_id', listingId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking favorite status:', error);
+        return;
+      }
+      
+      setIsFavorite(!!data);
+      
+    } catch (err) {
+      console.error('Error in checkIfFavorite:', err);
+    }
+  };
+
+  // Adaugă/elimină anunțul din favorite
+  const toggleFavorite = async () => {
+    try {
+      setIsTogglingFavorite(true);
+      
+      // Obținem utilizatorul curent
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Utilizatorul nu este autentificat, redirecționăm la pagina de login
+        navigate('/auth');
+        return;
+      }
+      
+      if (isFavorite) {
+        // Eliminăm din favorite
+        const { error } = await listings.removeFromFavorites(user.id, id!);
+        
+        if (error) {
+          console.error('Error removing from favorites:', error);
+          throw new Error('Eroare la eliminarea din favorite');
+        }
+        
+        setIsFavorite(false);
+        
+      } else {
+        // Adăugăm la favorite
+        const { error } = await listings.addToFavorites(user.id, id!);
+        
+        if (error) {
+          console.error('Error adding to favorites:', error);
+          throw new Error('Eroare la adăugarea în favorite');
+        }
+        
+        setIsFavorite(true);
+      }
+      
+    } catch (err: any) {
+      console.error('Error toggling favorite:', err);
+      alert(err.message || 'Eroare la actualizarea favoritelor');
+    } finally {
+      setIsTogglingFavorite(false);
     }
   };
 
@@ -256,8 +335,18 @@ const ListingDetailPage = () => {
                 )}
                 
                 <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex space-x-2">
-                  <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 sm:p-3 hover:bg-white transition-colors">
-                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 hover:text-red-500 transition-colors" />
+                  <button 
+                    onClick={toggleFavorite}
+                    disabled={isTogglingFavorite}
+                    className="bg-white/90 backdrop-blur-sm rounded-full p-2 sm:p-3 hover:bg-white transition-colors"
+                  >
+                    {isTogglingFavorite ? (
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Heart 
+                        className={`h-4 w-4 sm:h-5 sm:w-5 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-600 hover:text-red-500'} transition-colors`} 
+                      />
+                    )}
                   </button>
                   <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 sm:p-3 hover:bg-white transition-colors">
                     <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />

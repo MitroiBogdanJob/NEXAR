@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X, AlertTriangle 
+  User, Settings, Star, Eye, Heart, MessageCircle, Edit, Trash2, Plus, MapPin, Phone, Mail, Calendar, Building, Shield, Camera, ExternalLink, Save, X, AlertTriangle, Check, RefreshCw
 } from 'lucide-react';
 import { supabase, profiles, listings } from '../lib/supabase';
 
@@ -152,6 +152,7 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('listings');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userListingsData, setUserListingsData] = useState<Listing[]>([]);
+  const [favoriteListings, setFavoriteListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -159,6 +160,11 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
@@ -221,6 +227,43 @@ const ProfilePage = () => {
         console.error('Error loading listings:', listingsError);
       }
 
+      // Încărcăm anunțurile favorite dacă este utilizatorul curent
+      let favoritesData: any[] = [];
+      if (isOwner && currentUser) {
+        setIsLoadingFavorites(true);
+        
+        try {
+          // Obținem ID-urile anunțurilor favorite
+          const { data: favIds, error: favError } = await supabase
+            .from('favorites')
+            .select('listing_id')
+            .eq('user_id', currentUser.id);
+          
+          if (favError) {
+            console.error('Error loading favorites:', favError);
+          } else if (favIds && favIds.length > 0) {
+            // Obținem detaliile anunțurilor favorite
+            const listingIds = favIds.map(fav => fav.listing_id);
+            
+            const { data: favListings, error: favListingsError } = await supabase
+              .from('listings')
+              .select('*')
+              .in('id', listingIds)
+              .order('created_at', { ascending: false });
+            
+            if (favListingsError) {
+              console.error('Error loading favorite listings:', favListingsError);
+            } else {
+              favoritesData = favListings || [];
+            }
+          }
+        } catch (err) {
+          console.error('Error in favorites loading:', err);
+        } finally {
+          setIsLoadingFavorites(false);
+        }
+      }
+
       // Calculăm statisticile
       const activeListings = listingsData?.filter(l => l.status === 'active').length || 0;
       const soldListings = listingsData?.filter(l => l.status === 'sold').length || 0;
@@ -250,12 +293,13 @@ const ProfilePage = () => {
           activeListings,
           soldListings,
           views: totalViews,
-          favorites: totalFavorites
+          favorites: favoritesData.length || 0
         }
       };
 
       setUserProfile(formattedProfile);
       setUserListingsData(listingsData || []);
+      setFavoriteListings(favoritesData);
 
     } catch (err) {
       console.error('Error in loadUserProfile:', err);
@@ -402,6 +446,208 @@ const ProfilePage = () => {
     setValidationErrors({});
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !userProfile) return;
+    
+    const file = files[0];
+    
+    // Validare dimensiune (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Imaginea nu poate depăși 5MB');
+      return;
+    }
+    
+    // Validare tip fișier
+    if (!file.type.startsWith('image/')) {
+      alert('Doar fișierele imagine sunt permise');
+      return;
+    }
+    
+    try {
+      setIsUploadingAvatar(true);
+      
+      // Verificăm dacă bucket-ul există
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error checking buckets:', bucketsError);
+        throw new Error('Eroare la verificarea storage-ului');
+      }
+      
+      const profileImagesBucket = buckets?.find(bucket => bucket.name === 'profile-images');
+      
+      if (!profileImagesBucket) {
+        console.log('Creating profile-images bucket...');
+        const { error: createBucketError } = await supabase.storage.createBucket('profile-images', {
+          public: true,
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          fileSizeLimit: 5242880 // 5MB
+        });
+        
+        if (createBucketError) {
+          console.error('Error creating bucket:', createBucketError);
+          throw new Error('Eroare la crearea bucket-ului pentru imagini');
+        }
+      }
+      
+      // Încărcăm imaginea
+      const { data, error } = await profiles.uploadAvatar(userProfile.user_id, file);
+      
+      if (error) {
+        throw new Error('Eroare la încărcarea imaginii');
+      }
+      
+      // Actualizăm profilul local
+      if (data) {
+        setUserProfile(prev => prev ? {
+          ...prev,
+          avatar_url: data.avatar_url
+        } : null);
+        
+        // Afișăm mesaj de succes
+        alert('Imaginea de profil a fost actualizată cu succes!');
+      }
+      
+    } catch (err: any) {
+      console.error('Error uploading avatar:', err);
+      alert(err.message || 'Eroare la încărcarea imaginii de profil');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleDeleteListing = async (listingId: string) => {
+    if (isDeleting) return;
+    
+    try {
+      setIsDeleting(listingId);
+      
+      // Ștergem anunțul
+      const { error } = await listings.delete(listingId);
+      
+      if (error) {
+        throw new Error(`Eroare la ștergerea anunțului: ${error.message}`);
+      }
+      
+      // Actualizăm lista de anunțuri
+      setUserListingsData(prev => prev.filter(listing => listing.id !== listingId));
+      
+      // Actualizăm statisticile
+      setUserProfile(prev => {
+        if (!prev) return null;
+        
+        const listing = userListingsData.find(l => l.id === listingId);
+        const isActive = listing?.status === 'active';
+        const isSold = listing?.status === 'sold';
+        
+        return {
+          ...prev,
+          stats: {
+            ...prev.stats,
+            activeListings: isActive ? prev.stats.activeListings - 1 : prev.stats.activeListings,
+            soldListings: isSold ? prev.stats.soldListings - 1 : prev.stats.soldListings,
+            views: prev.stats.views - (listing?.views_count || 0),
+            favorites: prev.stats.favorites - (listing?.favorites_count || 0)
+          }
+        };
+      });
+      
+      // Afișăm mesaj de succes
+      const successMessage = document.createElement('div');
+      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+      successMessage.innerHTML = `
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Anunțul a fost șters cu succes!</span>
+      `;
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 4000);
+      
+    } catch (err: any) {
+      console.error('Error deleting listing:', err);
+      alert(err.message || 'Eroare la ștergerea anunțului');
+    } finally {
+      setIsDeleting(null);
+      setShowDeleteConfirm(null);
+    }
+  };
+
+  const handleUpdateListingStatus = async (listingId: string, newStatus: 'active' | 'sold' | 'pending') => {
+    if (isUpdating) return;
+    
+    try {
+      setIsUpdating(listingId);
+      
+      // Actualizăm statusul anunțului
+      const { data, error } = await listings.update(listingId, { status: newStatus });
+      
+      if (error) {
+        throw new Error(`Eroare la actualizarea anunțului: ${error.message}`);
+      }
+      
+      // Actualizăm lista de anunțuri
+      setUserListingsData(prev => prev.map(listing => 
+        listing.id === listingId 
+          ? { ...listing, status: newStatus }
+          : listing
+      ));
+      
+      // Actualizăm statisticile
+      setUserProfile(prev => {
+        if (!prev) return null;
+        
+        const oldListing = userListingsData.find(l => l.id === listingId);
+        const wasActive = oldListing?.status === 'active';
+        const wasSold = oldListing?.status === 'sold';
+        const isActive = newStatus === 'active';
+        const isSold = newStatus === 'sold';
+        
+        return {
+          ...prev,
+          stats: {
+            ...prev.stats,
+            activeListings: 
+              (wasActive && !isActive ? prev.stats.activeListings - 1 : prev.stats.activeListings) + 
+              (!wasActive && isActive ? 1 : 0),
+            soldListings: 
+              (wasSold && !isSold ? prev.stats.soldListings - 1 : prev.stats.soldListings) + 
+              (!wasSold && isSold ? 1 : 0)
+          }
+        };
+      });
+      
+      // Afișăm mesaj de succes
+      const successMessage = document.createElement('div');
+      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+      successMessage.innerHTML = `
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Statusul anunțului a fost actualizat cu succes!</span>
+      `;
+      document.body.appendChild(successMessage);
+      
+      setTimeout(() => {
+        if (document.body.contains(successMessage)) {
+          document.body.removeChild(successMessage);
+        }
+      }, 4000);
+      
+    } catch (err: any) {
+      console.error('Error updating listing status:', err);
+      alert(err.message || 'Eroare la actualizarea statusului anunțului');
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -482,6 +728,10 @@ const ProfilePage = () => {
                     src={userProfile.avatar_url || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
                     alt={userProfile.name}
                     className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-white shadow-md"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                    }}
                   />
                   {userProfile.verified && (
                     <div className="absolute bottom-0 right-0 bg-green-500 text-white p-1 rounded-full">
@@ -489,9 +739,21 @@ const ProfilePage = () => {
                     </div>
                   )}
                   {isCurrentUser && (
-                    <button className="absolute bottom-0 left-0 bg-nexar-accent text-white p-1 rounded-full hover:bg-nexar-gold transition-colors">
+                    <label className="absolute bottom-0 left-0 bg-nexar-accent text-white p-1 rounded-full hover:bg-nexar-gold transition-colors cursor-pointer">
                       <Camera className="h-4 w-4" />
-                    </button>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={isUploadingAvatar}
+                      />
+                    </label>
+                  )}
+                  {isUploadingAvatar && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
                   )}
                 </div>
                 
@@ -625,29 +887,6 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* Statistici */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3 text-center">Statistici</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-2 bg-white rounded-lg">
-                    <div className="font-bold text-nexar-accent">{userProfile.stats.activeListings}</div>
-                    <div className="text-xs text-gray-600">Anunțuri active</div>
-                  </div>
-                  <div className="text-center p-2 bg-white rounded-lg">
-                    <div className="font-bold text-nexar-accent">{userProfile.stats.soldListings}</div>
-                    <div className="text-xs text-gray-600">Vândute</div>
-                  </div>
-                  <div className="text-center p-2 bg-white rounded-lg">
-                    <div className="font-bold text-nexar-accent">{userProfile.stats.views}</div>
-                    <div className="text-xs text-gray-600">Vizualizări</div>
-                  </div>
-                  <div className="text-center p-2 bg-white rounded-lg">
-                    <div className="font-bold text-nexar-accent">{userProfile.stats.favorites}</div>
-                    <div className="text-xs text-gray-600">Favorite</div>
-                  </div>
-                </div>
-              </div>
-
               {isCurrentUser && (
                 <div className="space-y-3">
                   {isEditing ? (
@@ -756,7 +995,7 @@ const ProfilePage = () => {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                       >
-                        Favorite
+                        Favorite ({favoriteListings.length})
                       </button>
                       <button
                         onClick={() => setActiveTab('messages')}
@@ -810,6 +1049,10 @@ const ProfilePage = () => {
                                 src={listing.images?.[0] || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
                                 alt={listing.title}
                                 className="w-24 h-24 rounded-lg object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                                }}
                               />
                               
                               <div className="flex-1">
@@ -840,15 +1083,67 @@ const ProfilePage = () => {
                                   <button 
                                     onClick={() => navigate(`/anunt/${listing.id}`)}
                                     className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
+                                    title="Vezi anunțul"
                                   >
                                     <Eye className="h-4 w-4" />
                                   </button>
-                                  <button className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors">
+                                  <button 
+                                    onClick={() => navigate(`/editeaza-anunt/${listing.id}`)}
+                                    className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
+                                    title="Editează anunțul"
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </button>
-                                  <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
+                                  
+                                  {/* Dropdown pentru schimbare status */}
+                                  {listing.status !== 'sold' && (
+                                    <button 
+                                      onClick={() => handleUpdateListingStatus(listing.id, 'sold')}
+                                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                      title="Marchează ca vândut"
+                                      disabled={isUpdating === listing.id}
+                                    >
+                                      {isUpdating === listing.id ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Check className="h-4 w-4" />
+                                      )}
+                                    </button>
+                                  )}
+                                  
+                                  {/* Buton de ștergere cu confirmare */}
+                                  {showDeleteConfirm === listing.id ? (
+                                    <div className="absolute right-16 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-lg p-3 border border-gray-200 z-10">
+                                      <p className="text-sm text-gray-700 mb-2">Ești sigur?</p>
+                                      <div className="flex space-x-2">
+                                        <button
+                                          onClick={() => handleDeleteListing(listing.id)}
+                                          className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                          disabled={isDeleting === listing.id}
+                                        >
+                                          {isDeleting === listing.id ? (
+                                            <RefreshCw className="h-3 w-3 animate-spin" />
+                                          ) : (
+                                            'Da'
+                                          )}
+                                        </button>
+                                        <button
+                                          onClick={() => setShowDeleteConfirm(null)}
+                                          className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300"
+                                        >
+                                          Nu
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button 
+                                      onClick={() => setShowDeleteConfirm(listing.id)}
+                                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="Șterge anunțul"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -882,12 +1177,79 @@ const ProfilePage = () => {
                   <div className="space-y-6">
                     <h3 className="text-xl font-semibold text-nexar-primary">Anunțuri Favorite</h3>
                     
-                    <div className="text-center py-12">
-                      <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">
-                        Nu ai anunțuri favorite încă.
-                      </p>
-                    </div>
+                    {isLoadingFavorites ? (
+                      <div className="text-center py-12">
+                        <div className="w-12 h-12 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-gray-600">Se încarcă anunțurile favorite...</p>
+                      </div>
+                    ) : favoriteListings.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">
+                          Nu ai anunțuri favorite încă.
+                        </p>
+                        <p className="text-gray-500 text-sm mt-2">
+                          Adaugă anunțuri la favorite apăsând pe iconița inimă.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {favoriteListings.map((listing) => (
+                          <div key={listing.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-center space-x-4">
+                              <img
+                                src={listing.images?.[0] || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"}
+                                alt={listing.title}
+                                className="w-24 h-24 rounded-lg object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                                }}
+                              />
+                              
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-2">
+                                  <h4 className="text-lg font-semibold text-nexar-primary">{listing.title}</h4>
+                                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(listing.status)}`}>
+                                    {getStatusText(listing.status)}
+                                  </span>
+                                </div>
+                                
+                                <div className="text-xl font-bold text-nexar-accent mb-2">{formatPrice(listing.price)}</div>
+                                
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                  <div className="flex items-center space-x-1">
+                                    <Eye className="h-4 w-4" />
+                                    <span>{listing.views_count || 0} vizualizări</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <Heart className="h-4 w-4 text-red-500" />
+                                    <span>{listing.favorites_count || 0} favorite</span>
+                                  </div>
+                                  <span>{formatDate(listing.created_at)}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col space-y-2">
+                                <button 
+                                  onClick={() => navigate(`/anunt/${listing.id}`)}
+                                  className="p-2 text-nexar-primary hover:bg-nexar-light rounded-lg transition-colors"
+                                  title="Vezi anunțul"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button 
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Elimină de la favorite"
+                                >
+                                  <Heart className="h-4 w-4 fill-current" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
