@@ -268,45 +268,98 @@ export const listings = {
 
   create: async (listing: Partial<Listing>, images: File[]) => {
     try {
-      // 1. Încărcăm imaginile în storage
-      const imageUrls: string[] = []
+      console.log('🚀 Starting listing creation process...')
       
-      for (const image of images) {
-        const fileExt = image.name.split('.').pop()
-        const fileName = `${uuidv4()}.${fileExt}`
-        const filePath = `${listing.seller_id}/${fileName}`
-        
-        const { error: uploadError, data } = await supabase.storage
-          .from('listing-images')
-          .upload(filePath, image)
-        
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError)
-          continue
-        }
-        
-        // Obținem URL-ul public pentru imagine
-        const { data: { publicUrl } } = supabase.storage
-          .from('listing-images')
-          .getPublicUrl(filePath)
-        
-        imageUrls.push(publicUrl)
+      // 1. Obținem utilizatorul curent
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Utilizatorul nu este autentificat')
       }
       
-      // 2. Creăm anunțul cu URL-urile imaginilor
+      console.log('👤 Current user:', user.email)
+      
+      // 2. Obținem profilul utilizatorului pentru a avea seller_id corect
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, name, seller_type')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (profileError || !profile) {
+        console.error('❌ Profile not found:', profileError)
+        throw new Error('Profilul utilizatorului nu a fost găsit. Te rugăm să-ți completezi profilul mai întâi.')
+      }
+      
+      console.log('✅ Profile found:', profile)
+      
+      // 3. Încărcăm imaginile în storage (dacă există)
+      const imageUrls: string[] = []
+      
+      if (images && images.length > 0) {
+        console.log(`📸 Uploading ${images.length} images...`)
+        
+        for (const image of images) {
+          const fileExt = image.name.split('.').pop()
+          const fileName = `${uuidv4()}.${fileExt}`
+          const filePath = `${profile.id}/${fileName}`
+          
+          const { error: uploadError, data } = await supabase.storage
+            .from('listing-images')
+            .upload(filePath, image)
+          
+          if (uploadError) {
+            console.error('Error uploading image:', uploadError)
+            continue
+          }
+          
+          // Obținem URL-ul public pentru imagine
+          const { data: { publicUrl } } = supabase.storage
+            .from('listing-images')
+            .getPublicUrl(filePath)
+          
+          imageUrls.push(publicUrl)
+        }
+        
+        console.log(`✅ Uploaded ${imageUrls.length} images successfully`)
+      }
+      
+      // 4. Pregătim datele pentru anunț cu seller_id corect
+      const listingData = {
+        ...listing,
+        id: uuidv4(),
+        seller_id: profile.id, // Folosim ID-ul din profiles, nu din auth.users
+        seller_name: profile.name,
+        seller_type: profile.seller_type,
+        images: imageUrls,
+        status: 'active',
+        views_count: 0,
+        favorites_count: 0,
+        rating: 0,
+        featured: false
+      }
+      
+      console.log('📝 Creating listing with data:', {
+        ...listingData,
+        images: `${imageUrls.length} images`
+      })
+      
+      // 5. Creăm anunțul în baza de date
       const { data, error } = await supabase
         .from('listings')
-        .insert([{
-          ...listing,
-          images: imageUrls,
-          id: uuidv4(),
-          status: 'active'
-        }])
+        .insert([listingData])
         .select()
+        .single()
       
-      return { data, error }
-    } catch (err) {
-      console.error('Error creating listing:', err)
+      if (error) {
+        console.error('❌ Error creating listing:', error)
+        throw new Error(`Eroare la crearea anunțului: ${error.message}`)
+      }
+      
+      console.log('✅ Listing created successfully:', data.id)
+      return { data, error: null }
+      
+    } catch (err: any) {
+      console.error('💥 Error in listings.create:', err)
       return { data: null, error: err }
     }
   },
