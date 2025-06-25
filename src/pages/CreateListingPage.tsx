@@ -112,6 +112,43 @@ const CreateListingPage = () => {
     'Scaun încălzit', 'Tempomat', 'Sistem anti-furt', 'Jante aliaj'
   ];
 
+  // Mapare pentru valorile din baza de date
+  const mapValueForDatabase = (field: string, value: string): string => {
+    switch (field) {
+      case 'category':
+        return value.toLowerCase();
+      
+      case 'fuel':
+        const fuelMap: Record<string, string> = {
+          'Benzină': 'benzina',
+          'Electric': 'electric',
+          'Hibrid': 'hibrid'
+        };
+        return fuelMap[value] || value.toLowerCase();
+      
+      case 'transmission':
+        const transmissionMap: Record<string, string> = {
+          'Manual': 'manuala',
+          'Automat': 'automata',
+          'Semi-automat': 'semi-automata'
+        };
+        return transmissionMap[value] || value.toLowerCase();
+      
+      case 'condition':
+        const conditionMap: Record<string, string> = {
+          'Nouă': 'noua',
+          'Excelentă': 'excelenta',
+          'Foarte bună': 'foarte_buna',
+          'Bună': 'buna',
+          'Satisfăcătoare': 'satisfacatoare'
+        };
+        return conditionMap[value] || value.toLowerCase();
+      
+      default:
+        return value;
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -283,37 +320,40 @@ const CreateListingPage = () => {
         throw new Error('Profilul utilizatorului nu a fost găsit');
       }
       
-      // Pregătim datele pentru anunț
+      console.log('🚀 Starting listing creation...');
+      console.log('📋 Form data before mapping:', formData);
+      
+      // Pregătim datele pentru anunț cu maparea corectă
       const listingData = {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         price: parseFloat(formData.price),
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage),
-        location: formData.location,
-        category: formData.category.toLowerCase(),
+        location: formData.location.trim(),
+        category: mapValueForDatabase('category', formData.category),
         brand: formData.brand,
-        model: formData.model,
+        model: formData.model.trim(),
         engine_capacity: parseInt(formData.engine),
-        fuel_type: formData.fuel.toLowerCase(),
-        transmission: formData.transmission.toLowerCase(),
-        condition: formData.condition.toLowerCase(),
-        color: formData.color,
+        fuel_type: mapValueForDatabase('fuel', formData.fuel),
+        transmission: mapValueForDatabase('transmission', formData.transmission),
+        condition: mapValueForDatabase('condition', formData.condition),
+        color: formData.color.trim(),
         features: formData.features,
-        seller_id: userProfile.id, // Folosim ID-ul profilului, nu user_id
+        seller_id: userProfile.id,
         seller_name: userProfile.name || 'Utilizator',
-        seller_type: userProfile.seller_type, // Preluăm automat din profil
+        seller_type: userProfile.seller_type,
         status: 'active'
       };
       
-      console.log('📝 Creating listing with data:', listingData);
+      console.log('📝 Mapped listing data:', listingData);
       
       // Trimitem anunțul și imaginile la server
       const { data, error } = await listings.create(listingData, imageFiles);
       
       if (error) {
         console.error('❌ Error creating listing:', error);
-        throw new Error(error.message);
+        throw new Error(error.message || 'Eroare la crearea anunțului');
       }
       
       console.log('✅ Listing created successfully:', data);
