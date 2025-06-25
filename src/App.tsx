@@ -12,6 +12,7 @@ import AuthPage from './pages/AuthPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
+import FavoritesPage from './pages/FavoritesPage';
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -162,6 +163,7 @@ function App() {
             <Route path="/termeni" element={<TermsPage />} />
             <Route path="/confidentialitate" element={<PrivacyPage />} />
             <Route path="/cookies" element={<CookiesPage />} />
+            <Route path="/favorite" element={<FavoritesPage />} />
           </Routes>
         </main>
         <Footer />
