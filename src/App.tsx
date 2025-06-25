@@ -13,6 +13,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
 import FavoritesPage from './pages/FavoritesPage';
+import FixSupabasePage from './pages/FixSupabasePage';
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -164,6 +165,7 @@ function App() {
             <Route path="/confidentialitate" element={<PrivacyPage />} />
             <Route path="/cookies" element={<CookiesPage />} />
             <Route path="/favorite" element={<FavoritesPage />} />
+            <Route path="/fix-supabase" element={<FixSupabasePage />} />
           </Routes>
         </main>
         <Footer />

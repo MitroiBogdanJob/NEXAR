@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { User, Plus, Menu, X, Bell, Heart, Wifi, WifiOff, RefreshCw, Database } from 'lucide-react';
 import { auth, checkSupabaseConnection, supabase, fixCurrentUserProfile } from '../lib/supabase';
+import { checkAndFixSupabaseConnection } from '../lib/fixSupabase';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -152,6 +153,27 @@ const Header = () => {
     }
   };
 
+  const handleFixConnection = async () => {
+    setIsFixing(true);
+    try {
+      const success = await checkAndFixSupabaseConnection();
+      
+      if (success) {
+        // Reload the page to refresh the state
+        window.location.reload();
+      } else {
+        alert('Nu s-a putut repara conexiunea. Te rugăm să încerci din nou sau să accesezi pagina de reparare.');
+        navigate('/fix-supabase');
+      }
+    } catch (error) {
+      console.error('Error fixing connection:', error);
+      alert('A apărut o eroare. Te rugăm să încerci din nou.');
+      navigate('/fix-supabase');
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
@@ -253,10 +275,26 @@ const Header = () => {
           {/* Connection Status Indicator - Only show if disconnected */}
           {isConnected === false && (
             <div className="hidden lg:flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                <WifiOff className="h-3 w-3" />
-                <span>Deconectat</span>
-              </div>
+              <button
+                onClick={handleFixConnection}
+                disabled={isFixing}
+                className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors"
+              >
+                {isFixing ? (
+                  <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <WifiOff className="h-3 w-3" />
+                )}
+                <span>{isFixing ? 'Se repară...' : 'Deconectat'}</span>
+              </button>
+              
+              <Link
+                to="/fix-supabase"
+                className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+              >
+                <Database className="h-3 w-3" />
+                <span>Reparare Avansată</span>
+              </Link>
             </div>
           )}
 
@@ -319,6 +357,14 @@ const Header = () => {
                       >
                         Admin Panel
                       </Link>
+                      <Link
+                        to="/fix-supabase"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Database className="h-4 w-4" />
+                        <span>Reparare Supabase</span>
+                      </Link>
                       <hr className="my-2" />
                       <button
                         onClick={handleLogout}
@@ -357,9 +403,35 @@ const Header = () => {
             <div className="space-y-2">
               {/* Connection Status on Mobile - Only show if disconnected */}
               {isConnected === false && (
-                <div className="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium bg-red-100 text-red-800 mb-4">
-                  <WifiOff className="h-3 w-3" />
-                  <span>Deconectat de la Supabase</span>
+                <div className="flex flex-col space-y-2 px-4 py-2 rounded-lg text-xs font-medium bg-red-100 text-red-800 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <WifiOff className="h-3 w-3" />
+                    <span>Deconectat de la Supabase</span>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleFixConnection}
+                      disabled={isFixing}
+                      className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-red-200 text-red-800 rounded-md text-xs"
+                    >
+                      {isFixing ? (
+                        <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <RefreshCw className="h-3 w-3" />
+                      )}
+                      <span>Repară</span>
+                    </button>
+                    
+                    <Link
+                      to="/fix-supabase"
+                      className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-blue-200 text-blue-800 rounded-md text-xs"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Database className="h-3 w-3" />
+                      <span>Reparare Avansată</span>
+                    </Link>
+                  </div>
                 </div>
               )}
 
@@ -412,11 +484,25 @@ const Header = () => {
                     Profilul Meu
                   </Link>
                   <Link
+                    to="/favorite"
+                    className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Favorite
+                  </Link>
+                  <Link
                     to="/admin"
                     className="block px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Admin Panel
+                  </Link>
+                  <Link
+                    to="/fix-supabase"
+                    className="block px-4 py-3 rounded-lg font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Reparare Supabase
                   </Link>
                   <button
                     onClick={() => {
