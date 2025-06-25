@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Building, AlertTriangle, CheckCircle } from 'lucide-react';
 import { auth, supabase } from '../lib/supabase';
 
 const AuthPage = () => {
@@ -20,6 +20,8 @@ const AuthPage = () => {
     sellerType: 'individual',
     agreeToTerms: false
   });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [isValidating, setIsValidating] = useState(false);
 
   useEffect(() => {
     // Verificăm dacă utilizatorul este deja autentificat
@@ -33,38 +35,175 @@ const AuthPage = () => {
     checkAuth();
   }, [navigate]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Resetăm erorile când utilizatorul începe să tasteze
-    if (error) setError('');
-  };
+  // Lista orașelor din România pentru validare
+  const romanianCities = [
+    'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
+    'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
+    'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
+    'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
+    'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
+    'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman',
+    'Câmpina', 'Caracal', 'Drobeta Turnu Severin', 'Făgăraș', 'Lugoj', 'Mangalia',
+    'Moreni', 'Oltenița', 'Petroșani', 'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele',
+    'Sebeș', 'Sfântu Gheorghe', 'Tecuci', 'Toplița', 'Voluntari', 'Sector 1', 'Sector 2',
+    'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6'
+  ];
 
-  const validateForm = () => {
-    if (isLogin) {
-      if (!formData.email) return 'Email-ul este obligatoriu';
-      if (!formData.password) return 'Parola este obligatorie';
-    } else {
-      if (!formData.name) return 'Numele este obligatoriu';
-      if (!formData.email) return 'Email-ul este obligatoriu';
-      if (!formData.password) return 'Parola este obligatorie';
-      if (formData.password.length < 6) return 'Parola trebuie să aibă cel puțin 6 caractere';
-      if (formData.password !== formData.confirmPassword) return 'Parolele nu coincid';
-      if (!formData.phone) return 'Telefonul este obligatoriu';
-      if (!formData.location) return 'Locația este obligatorie';
-      if (!formData.agreeToTerms) return 'Trebuie să accepți termenii și condițiile';
+  // Funcții de validare
+  const validateName = (name: string): string => {
+    if (!name.trim()) return 'Numele este obligatoriu';
+    if (name.trim().length < 2) return 'Numele trebuie să aibă cel puțin 2 caractere';
+    if (name.trim().length > 50) return 'Numele nu poate depăși 50 de caractere';
+    if (!/^[a-zA-ZăâîșțĂÂÎȘȚ\s\-\.]+$/.test(name.trim())) {
+      return 'Numele poate conține doar litere, spații, cratimă și punct';
     }
     return '';
+  };
+
+  const validateEmail = (email: string): string => {
+    if (!email.trim()) return 'Email-ul este obligatoriu';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Email-ul nu este valid';
+    return '';
+  };
+
+  const validatePhone = (phone: string): string => {
+    if (!phone.trim()) return 'Numărul de telefon este obligatoriu';
+    
+    // Curățăm numărul de telefon
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+    
+    // Verificăm formatul românesc
+    const phoneRegex = /^(\+4|0)[0-9]{9}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      return 'Numărul de telefon nu este valid (ex: 0790454647 sau +40790454647)';
+    }
+    
+    // Verificăm prefixele valide pentru România
+    const validPrefixes = ['072', '073', '074', '075', '076', '077', '078', '079', '021', '031', '0230', '0231', '0232', '0233', '0234', '0235', '0236', '0237', '0238', '0239', '0240', '0241', '0242', '0243', '0244', '0245', '0246', '0247', '0248', '0249', '0250', '0251', '0252', '0253', '0254', '0255', '0256', '0257', '0258', '0259', '0260', '0261', '0262', '0263', '0264', '0265', '0266', '0267', '0268', '0269'];
+    
+    let isValidPrefix = false;
+    if (cleanPhone.startsWith('+4')) {
+      const withoutCountry = cleanPhone.substring(2);
+      isValidPrefix = validPrefixes.some(prefix => withoutCountry.startsWith(prefix.substring(1)));
+    } else if (cleanPhone.startsWith('0')) {
+      isValidPrefix = validPrefixes.some(prefix => cleanPhone.startsWith(prefix));
+    }
+    
+    if (!isValidPrefix) {
+      return 'Prefixul nu este valid pentru România';
+    }
+    
+    return '';
+  };
+
+  const validateLocation = (location: string): string => {
+    if (!location.trim()) return 'Locația este obligatorie';
+    if (location.trim().length < 2) return 'Locația trebuie să aibă cel puțin 2 caractere';
+    if (location.trim().length > 100) return 'Locația nu poate depăși 100 de caractere';
+    
+    const locationLower = location.trim().toLowerCase();
+    const isValidCity = romanianCities.some(city => 
+      locationLower.includes(city.toLowerCase()) || 
+      locationLower.includes('românia') || 
+      locationLower.includes('romania') ||
+      locationLower.includes('sector') ||
+      locationLower.includes('județ') ||
+      locationLower.includes('judet')
+    );
+    
+    if (!isValidCity) {
+      return 'Te rugăm să specifici un oraș din România (ex: București, Cluj-Napoca, Timișoara)';
+    }
+    
+    return '';
+  };
+
+  const validatePassword = (password: string): string => {
+    if (!password) return 'Parola este obligatorie';
+    if (password.length < 8) return 'Parola trebuie să aibă cel puțin 8 caractere';
+    if (!/(?=.*[a-z])/.test(password)) return 'Parola trebuie să conțină cel puțin o literă mică';
+    if (!/(?=.*[A-Z])/.test(password)) return 'Parola trebuie să conțină cel puțin o literă mare';
+    if (!/(?=.*\d)/.test(password)) return 'Parola trebuie să conțină cel puțin o cifră';
+    return '';
+  };
+
+  const validateForm = async (): Promise<boolean> => {
+    const errors: Record<string, string> = {};
+
+    if (isLogin) {
+      // Validare pentru login
+      const emailError = validateEmail(formData.email);
+      if (emailError) errors.email = emailError;
+      
+      if (!formData.password) errors.password = 'Parola este obligatorie';
+    } else {
+      // Validare pentru înregistrare
+      const nameError = validateName(formData.name);
+      if (nameError) errors.name = nameError;
+      
+      const emailError = validateEmail(formData.email);
+      if (emailError) errors.email = emailError;
+      
+      // Verificăm dacă email-ul există deja
+      if (!emailError) {
+        setIsValidating(true);
+        try {
+          const { data: existingUser } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('email', formData.email.trim())
+            .single();
+          
+          if (existingUser) {
+            errors.email = 'Acest email este deja înregistrat';
+          }
+        } catch (err) {
+          // Dacă nu găsește utilizatorul, e ok (eroarea este normală)
+        }
+        setIsValidating(false);
+      }
+      
+      const phoneError = validatePhone(formData.phone);
+      if (phoneError) errors.phone = phoneError;
+      
+      const locationError = validateLocation(formData.location);
+      if (locationError) errors.location = locationError;
+      
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) errors.password = passwordError;
+      
+      if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = 'Parolele nu coincid';
+      }
+      
+      if (!formData.agreeToTerms) {
+        errors.agreeToTerms = 'Trebuie să accepți termenii și condițiile';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Curățăm eroarea pentru câmpul modificat
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Curățăm eroarea generală
+    if (error) setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validăm formularul
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    const isValid = await validateForm();
+    if (!isValid) return;
     
     setIsLoading(true);
     setError('');
@@ -73,29 +212,31 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         // Login
-        const { data, error } = await auth.signIn(formData.email, formData.password);
+        const { data, error } = await auth.signIn(formData.email.trim(), formData.password);
         
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             setError('Email sau parolă incorectă');
           } else if (error.message.includes('Email not confirmed')) {
             setError('Te rugăm să-ți confirmi email-ul înainte de a te conecta');
+          } else if (error.message.includes('Too many requests')) {
+            setError('Prea multe încercări. Te rugăm să aștepți câteva minute');
           } else {
             setError(error.message);
           }
         } else if (data?.user) {
-          // Login successful - redirect will happen via auth state change
           console.log('Login successful for:', data.user.email);
+          // Redirect will happen via auth state change
         }
       } else {
         // Register
         const { data, error } = await auth.signUp(
-          formData.email, 
+          formData.email.trim(), 
           formData.password, 
           {
-            name: formData.name,
-            phone: formData.phone,
-            location: formData.location,
+            name: formData.name.trim(),
+            phone: formData.phone.replace(/[\s\-\(\)]/g, ''),
+            location: formData.location.trim(),
             sellerType: formData.sellerType
           }
         );
@@ -103,16 +244,18 @@ const AuthPage = () => {
         if (error) {
           if (error.message.includes('already registered')) {
             setError('Acest email este deja înregistrat');
+          } else if (error.message.includes('Password should be at least')) {
+            setError('Parola trebuie să aibă cel puțin 6 caractere');
+          } else if (error.message.includes('Unable to validate email')) {
+            setError('Email-ul nu este valid');
           } else {
             setError(error.message);
           }
         } else if (data?.user) {
-          // Check if email confirmation is required
           if (!data.session) {
             setSuccessMessage('Cont creat cu succes! Verifică-ți email-ul pentru a confirma contul înainte de a te conecta.');
           } else {
             setSuccessMessage('Cont creat cu succes! Ești acum conectat.');
-            // Redirect will happen via auth state change
           }
           
           // Resetăm formularul
@@ -137,15 +280,16 @@ const AuthPage = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setError('Introdu adresa de email pentru a reseta parola');
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setError('Introdu o adresă de email validă pentru a reseta parola');
       return;
     }
     
     setIsLoading(true);
     
     try {
-      const { error } = await auth.resetPassword(formData.email);
+      const { error } = await auth.resetPassword(formData.email.trim());
       
       if (error) {
         setError(error.message);
@@ -164,10 +308,32 @@ const AuthPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
-          {/* Header */}
+          {/* Header cu logo mai mare */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4">
-              <img src="/Nexar - logo_black & red.png" alt="Logo" className="h-8 sm:h-10 w-auto" />
+            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-6">
+              <img 
+                src="/Nexar - logo_black & red.png" 
+                alt="Nexar Logo" 
+                className="h-16 sm:h-20 md:h-24 w-auto"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src.includes('Nexar - logo_black & red.png')) {
+                    target.src = '/nexar-logo.png';
+                  } else if (target.src.includes('nexar-logo.png')) {
+                    target.src = '/image.png';
+                  } else {
+                    target.style.display = 'none';
+                    const textLogo = target.nextElementSibling as HTMLElement;
+                    if (textLogo) {
+                      textLogo.style.display = 'block';
+                    }
+                  }
+                }}
+              />
+              {/* Fallback text logo */}
+              <div className="hidden text-4xl sm:text-5xl font-bold text-nexar-accent">
+                NEXAR
+              </div>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
               {isLogin ? 'Conectează-te' : 'Creează Cont'}
@@ -184,9 +350,7 @@ const AuthPage = () => {
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-green-700 flex items-center">
-                <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckCircle className="h-5 w-5 mr-2" />
                 {successMessage}
               </p>
             </div>
@@ -205,7 +369,12 @@ const AuthPage = () => {
           {/* Toggle Buttons */}
           <div className="flex bg-gray-50 rounded-xl p-1 mb-6 sm:mb-8">
             <button
-              onClick={() => setIsLogin(true)}
+              onClick={() => {
+                setIsLogin(true);
+                setValidationErrors({});
+                setError('');
+                setSuccessMessage('');
+              }}
               className={`flex-1 py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
                 isLogin 
                   ? 'bg-white text-gray-900 shadow-sm' 
@@ -215,7 +384,12 @@ const AuthPage = () => {
               Conectare
             </button>
             <button
-              onClick={() => setIsLogin(false)}
+              onClick={() => {
+                setIsLogin(false);
+                setValidationErrors({});
+                setError('');
+                setSuccessMessage('');
+              }}
               className={`flex-1 py-2.5 sm:py-3 px-4 rounded-lg font-semibold transition-colors text-sm sm:text-base ${
                 !isLogin 
                   ? 'bg-white text-gray-900 shadow-sm' 
@@ -238,12 +412,20 @@ const AuthPage = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                    className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                      validationErrors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Bogdan Popescu"
                     required={!isLogin}
                   />
                   <User className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
+                {validationErrors.name && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    {validationErrors.name}
+                  </p>
+                )}
               </div>
             )}
 
@@ -256,12 +438,25 @@ const AuthPage = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                  className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                    validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="bogdan@exemplu.com"
                   required
                 />
                 <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+                {isValidating && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-nexar-accent border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </div>
+              {validationErrors.email && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  {validationErrors.email}
+                </p>
+              )}
             </div>
 
             {!isLogin && (
@@ -275,12 +470,20 @@ const AuthPage = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                      className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                        validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="0790 45 46 47"
                       required={!isLogin}
                     />
                     <Phone className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
+                  {validationErrors.phone && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {validationErrors.phone}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -292,12 +495,20 @@ const AuthPage = () => {
                       type="text"
                       value={formData.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                      className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                        validationErrors.location ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="București, România"
                       required={!isLogin}
                     />
                     <MapPin className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
+                  {validationErrors.location && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      {validationErrors.location}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -329,7 +540,9 @@ const AuthPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                  className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                    validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="••••••••"
                   required
                 />
@@ -342,6 +555,12 @@ const AuthPage = () => {
                   {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
               </div>
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  {validationErrors.password}
+                </p>
+              )}
             </div>
 
             {!isLogin && (
@@ -354,12 +573,20 @@ const AuthPage = () => {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base"
+                    className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 border rounded-xl focus:ring-2 focus:ring-nexar-accent focus:border-transparent transition-colors text-sm sm:text-base ${
+                      validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="••••••••"
                     required={!isLogin}
                   />
                   <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
+                {validationErrors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    {validationErrors.confirmPassword}
+                  </p>
+                )}
               </div>
             )}
 
@@ -401,12 +628,18 @@ const AuthPage = () => {
                     Politica de Confidențialitate
                   </a>
                 </span>
+                {validationErrors.agreeToTerms && (
+                  <p className="text-sm text-red-600 flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    {validationErrors.agreeToTerms}
+                  </p>
+                )}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isValidating}
               className="w-full bg-nexar-accent text-white py-2.5 sm:py-3 rounded-xl font-semibold hover:bg-nexar-gold transition-colors transform hover:scale-105 duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {isLoading ? 'Se procesează...' : (isLogin ? 'Conectează-te' : 'Creează Cont')}
@@ -418,7 +651,12 @@ const AuthPage = () => {
             <p className="text-sm text-gray-600">
               {isLogin ? 'Nu ai cont?' : 'Ai deja cont?'}{' '}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setValidationErrors({});
+                  setError('');
+                  setSuccessMessage('');
+                }}
                 className="text-nexar-accent hover:text-nexar-gold font-semibold transition-colors"
               >
                 {isLogin ? 'Înregistrează-te aici' : 'Conectează-te aici'}
