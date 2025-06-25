@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Star, Shield, Users, TrendingUp, ArrowRight, CheckCircle, Heart, MapPin, Calendar, Gauge, Filter, X, SlidersHorizontal, Zap, Building, ChevronLeft, ChevronRight } from 'lucide-react';
+import { listings } from '../lib/supabase';
 
 const HomePage = () => {
   // On desktop, show filters by default. On mobile, hide them by default
@@ -16,11 +17,64 @@ const HomePage = () => {
     yearMax: '',
     location: ''
   });
+  const [allListings, setAllListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const itemsPerPage = 6; // Show 6 listings per page
 
+  // Load real listings from Supabase
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  const loadListings = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('🔄 Loading listings from Supabase...');
+      
+      const { data, error } = await listings.getAll();
+      
+      if (error) {
+        console.error('❌ Error loading listings:', error);
+        setError('Nu s-au putut încărca anunțurile');
+        return;
+      }
+      
+      console.log('✅ Loaded listings:', data?.length || 0);
+      
+      // Formatăm datele pentru afișare
+      const formattedListings = (data || []).map((listing: any) => ({
+        id: listing.id,
+        title: listing.title,
+        price: listing.price,
+        year: listing.year,
+        mileage: listing.mileage,
+        location: listing.location,
+        images: listing.images || [],
+        rating: listing.rating || 4.5,
+        category: listing.category,
+        brand: listing.brand,
+        seller: listing.seller_name,
+        sellerId: listing.seller_id,
+        sellerType: listing.seller_type,
+        featured: listing.featured || false
+      }));
+      
+      setAllListings(formattedListings);
+      
+    } catch (err) {
+      console.error('💥 Error in loadListings:', err);
+      setError('A apărut o eroare la încărcarea anunțurilor');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Update showFilters state when window is resized
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setShowFilters(window.innerWidth >= 1024);
     };
@@ -28,161 +82,6 @@ const HomePage = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const allListings = [
-    {
-      id: 1,
-      title: "Yamaha YZF-R1 2023",
-      price: 18500,
-      year: 2023,
-      mileage: 2500,
-      location: "București",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.9,
-      category: "Sport",
-      brand: "Yamaha",
-      seller: "Moto Expert SRL",
-      sellerId: "dealer-1",
-      sellerType: "dealer"
-    },
-    {
-      id: 2,
-      title: "BMW S1000RR 2022",
-      price: 16800,
-      year: 2022,
-      mileage: 8200,
-      location: "Cluj-Napoca",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.8,
-      category: "Sport",
-      brand: "BMW",
-      seller: "BMW Moto Center",
-      sellerId: "dealer-2",
-      sellerType: "dealer"
-    },
-    {
-      id: 3,
-      title: "Ducati Panigale V4",
-      price: 22000,
-      year: 2023,
-      mileage: 1200,
-      location: "Timișoara",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 5.0,
-      category: "Sport",
-      brand: "Ducati",
-      seller: "Ducati Premium",
-      sellerId: "dealer-3",
-      sellerType: "dealer"
-    },
-    {
-      id: 4,
-      title: "BMW R1250GS Adventure",
-      price: 19800,
-      year: 2023,
-      mileage: 3200,
-      location: "Iași",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.9,
-      category: "Adventure",
-      brand: "BMW",
-      seller: "BMW Adventure",
-      sellerId: "dealer-4",
-      sellerType: "dealer"
-    },
-    {
-      id: 5,
-      title: "Harley-Davidson Street Glide",
-      price: 24500,
-      year: 2022,
-      mileage: 5600,
-      location: "București",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.7,
-      category: "Touring",
-      brand: "Harley-Davidson",
-      seller: "Harley Center",
-      sellerId: "dealer-5",
-      sellerType: "dealer"
-    },
-    {
-      id: 6,
-      title: "KTM 1290 Super Duke R",
-      price: 16200,
-      year: 2022,
-      mileage: 7300,
-      location: "Cluj-Napoca",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.6,
-      category: "Naked",
-      brand: "KTM",
-      seller: "KTM Center",
-      sellerId: "dealer-6",
-      sellerType: "dealer"
-    },
-    {
-      id: 7,
-      title: "Honda CBR600RR 2021",
-      price: 12800,
-      year: 2021,
-      mileage: 4500,
-      location: "Constanța",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.5,
-      category: "Sport",
-      brand: "Honda",
-      seller: "Honda Center",
-      sellerId: "dealer-7",
-      sellerType: "dealer"
-    },
-    {
-      id: 8,
-      title: "Suzuki GSX-R1000R",
-      price: 15800,
-      year: 2021,
-      mileage: 12000,
-      location: "Brașov",
-      images: [
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-        "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-      ],
-      rating: 4.5,
-      category: "Sport",
-      brand: "Suzuki",
-      seller: "Suzuki Center",
-      sellerId: "dealer-8",
-      sellerType: "dealer"
-    }
-  ];
 
   // Filtrare și căutare
   const filteredListings = useMemo(() => {
@@ -308,6 +207,15 @@ const HomePage = () => {
       navigate(`/profil/${listing.sellerId}`);
     };
 
+    // Funcție pentru a obține imaginea corectă
+    const getListingImage = () => {
+      if (listing.images && listing.images.length > 0 && listing.images[currentImageIndex]) {
+        return listing.images[currentImageIndex];
+      }
+      // Fallback la imagine placeholder
+      return "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+    };
+
     return (
       <Link
         to={`/anunt/${listing.id}`}
@@ -322,13 +230,18 @@ const HomePage = () => {
             onTouchEnd={handleTouchEnd}
           >
             <img
-              src={listing.images[currentImageIndex]}
+              src={getListingImage()}
               alt={listing.title}
               className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                // Fallback la imagine placeholder dacă imaginea nu se încarcă
+                const target = e.currentTarget as HTMLImageElement;
+                target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+              }}
             />
             
             {/* Navigation Arrows - Only show if multiple images */}
-            {listing.images.length > 1 && (
+            {listing.images && listing.images.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
@@ -346,7 +259,7 @@ const HomePage = () => {
                 
                 {/* Image indicators */}
                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                  {listing.images.map((_, index) => (
+                  {listing.images.map((_: any, index: number) => (
                     <div
                       key={index}
                       className={`w-1.5 h-1.5 rounded-full transition-colors ${
@@ -829,61 +742,140 @@ const HomePage = () => {
                 </p>
               </div>
 
+              {/* Loading State */}
+              {isLoading && (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+                  <div className="w-16 h-16 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Se încarcă anunțurile...</h3>
+                  <p className="text-gray-600">Te rugăm să aștepți</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <X className="h-8 w-8 text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Eroare la încărcare</h3>
+                  <p className="text-gray-600 mb-6">{error}</p>
+                  <button
+                    onClick={loadListings}
+                    className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                  >
+                    Încearcă din nou
+                  </button>
+                </div>
+              )}
+
               {/* No Results */}
-              {filteredListings.length === 0 && (
+              {!isLoading && !error && filteredListings.length === 0 && (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
                   <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
                   <p className="text-gray-600 mb-6">
-                    Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
+                    {allListings.length === 0 
+                      ? 'Nu există anunțuri publicate încă. Fii primul care adaugă un anunț!'
+                      : 'Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.'
+                    }
                   </p>
+                  {allListings.length === 0 ? (
+                    <Link
+                      to="/adauga-anunt"
+                      className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                    >
+                      Adaugă primul anunț
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={clearFilters}
+                      className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                    >
+                      Șterge Toate Filtrele
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Listings */}
+              {!isLoading && !error && filteredListings.length > 0 && (
+                <div className="space-y-4">
+                  {currentListings.map((listing) => (
+                    <ListingRow key={listing.id} listing={listing} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Listings - Show directly after filters button */}
+          <div className="block lg:hidden">
+            {/* Loading State */}
+            {isLoading && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+                <div className="w-12 h-12 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">Se încarcă anunțurile...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <X className="h-6 w-6 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Eroare la încărcare</h3>
+                <p className="text-gray-600 mb-6 text-sm">{error}</p>
+                <button
+                  onClick={loadListings}
+                  className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                >
+                  Încearcă din nou
+                </button>
+              </div>
+            )}
+
+            {/* No Results */}
+            {!isLoading && !error && filteredListings.length === 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  {allListings.length === 0 
+                    ? 'Nu există anunțuri publicate încă. Fii primul care adaugă un anunț!'
+                    : 'Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.'
+                  }
+                </p>
+                {allListings.length === 0 ? (
+                  <Link
+                    to="/adauga-anunt"
+                    className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                  >
+                    Adaugă primul anunț
+                  </Link>
+                ) : (
                   <button
                     onClick={clearFilters}
                     className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
                   >
                     Șterge Toate Filtrele
                   </button>
-                </div>
-              )}
+                )}
+              </div>
+            )}
 
-              {/* Listings */}
+            {/* Mobile Listings */}
+            {!isLoading && !error && filteredListings.length > 0 && (
               <div className="space-y-4">
                 {currentListings.map((listing) => (
                   <ListingRow key={listing.id} listing={listing} />
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Mobile Listings - Show directly after filters button */}
-          <div className="block lg:hidden">
-            {/* No Results */}
-            {filteredListings.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
-                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
-                <p className="text-gray-600 mb-6 text-sm">
-                  Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
-                </p>
-                <button
-                  onClick={clearFilters}
-                  className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
-                >
-                  Șterge Toate Filtrele
-                </button>
-              </div>
             )}
-
-            {/* Mobile Listings */}
-            <div className="space-y-4">
-              {currentListings.map((listing) => (
-                <ListingRow key={listing.id} listing={listing} />
-              ))}
-            </div>
           </div>
 
           {/* Pagination - Show on all devices */}
-          {filteredListings.length > 0 && totalPages > 1 && (
+          {!isLoading && !error && filteredListings.length > 0 && totalPages > 1 && (
             <div className="mt-8 flex justify-center">
               <div className="flex items-center space-x-2">
                 <button

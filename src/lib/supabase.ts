@@ -212,6 +212,8 @@ export const auth = {
 export const listings = {
   getAll: async (filters?: any) => {
     try {
+      console.log('🔍 Fetching all listings from Supabase...')
+      
       let query = supabase
         .from('listings')
         .select('*')
@@ -236,9 +238,16 @@ export const listings = {
       }
 
       const { data, error } = await query
-      return { data, error }
+      
+      if (error) {
+        console.error('❌ Error fetching listings:', error)
+        return { data: null, error }
+      }
+      
+      console.log(`✅ Successfully fetched ${data?.length || 0} listings`)
+      return { data, error: null }
     } catch (err) {
-      console.error('Error fetching listings:', err)
+      console.error('💥 Error in listings.getAll:', err)
       return { data: null, error: err }
     }
   },
@@ -292,7 +301,32 @@ export const listings = {
       
       console.log('✅ Profile found:', profile)
       
-      // 3. Încărcăm imaginile în storage (dacă există)
+      // 3. Verificăm dacă bucket-ul există, dacă nu îl creăm
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+      
+      if (bucketsError) {
+        console.error('❌ Error checking buckets:', bucketsError)
+      }
+      
+      const listingImagesBucket = buckets?.find(bucket => bucket.name === 'listing-images')
+      
+      if (!listingImagesBucket) {
+        console.log('📦 Creating listing-images bucket...')
+        const { error: createBucketError } = await supabase.storage.createBucket('listing-images', {
+          public: true,
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          fileSizeLimit: 5242880 // 5MB
+        })
+        
+        if (createBucketError) {
+          console.error('❌ Error creating bucket:', createBucketError)
+          // Continuăm fără să aruncăm eroare, poate bucket-ul există deja
+        } else {
+          console.log('✅ Bucket created successfully')
+        }
+      }
+      
+      // 4. Încărcăm imaginile în storage (dacă există)
       const imageUrls: string[] = []
       
       if (images && images.length > 0) {
@@ -303,27 +337,36 @@ export const listings = {
           const fileName = `${uuidv4()}.${fileExt}`
           const filePath = `${profile.id}/${fileName}`
           
-          const { error: uploadError, data } = await supabase.storage
+          console.log(`📤 Uploading image: ${fileName}`)
+          
+          const { error: uploadError, data: uploadData } = await supabase.storage
             .from('listing-images')
-            .upload(filePath, image)
+            .upload(filePath, image, {
+              cacheControl: '3600',
+              upsert: false
+            })
           
           if (uploadError) {
-            console.error('Error uploading image:', uploadError)
+            console.error('❌ Error uploading image:', uploadError)
+            // Continuăm cu următoarea imagine în loc să oprim procesul
             continue
           }
+          
+          console.log('✅ Image uploaded:', uploadData.path)
           
           // Obținem URL-ul public pentru imagine
           const { data: { publicUrl } } = supabase.storage
             .from('listing-images')
             .getPublicUrl(filePath)
           
+          console.log('🔗 Public URL:', publicUrl)
           imageUrls.push(publicUrl)
         }
         
         console.log(`✅ Uploaded ${imageUrls.length} images successfully`)
       }
       
-      // 4. Pregătim datele pentru anunț cu seller_id corect
+      // 5. Pregătim datele pentru anunț cu seller_id corect
       const listingData = {
         ...listing,
         id: uuidv4(),
@@ -343,7 +386,7 @@ export const listings = {
         images: `${imageUrls.length} images`
       })
       
-      // 5. Creăm anunțul în baza de date
+      // 6. Creăm anunțul în baza de date
       const { data, error } = await supabase
         .from('listings')
         .insert([listingData])
@@ -751,6 +794,20 @@ export const testConnection = async () => {
     for (const bucket of requiredBuckets) {
       if (!existingBuckets.includes(bucket)) {
         console.warn(`⚠️ Bucket ${bucket} not found`)
+        
+        // Creăm bucket-ul dacă nu există
+        console.log(`📦 Creating ${bucket} bucket...`)
+        const { error: createBucketError } = await supabase.storage.createBucket(bucket, {
+          public: true,
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          fileSizeLimit: 5242880 // 5MB
+        })
+        
+        if (createBucketError) {
+          console.error(`❌ Error creating ${bucket} bucket:`, createBucketError)
+        } else {
+          console.log(`✅ Bucket ${bucket} created successfully`)
+        }
       } else {
         console.log(`✅ Bucket ${bucket} exists`)
       }

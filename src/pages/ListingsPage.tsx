@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, Heart, MapPin, Calendar, Gauge, ChevronLeft, ChevronRight, Settings, Fuel, User, X, SlidersHorizontal, Building } from 'lucide-react';
+import { listings } from '../lib/supabase';
 
 const ListingsPage = () => {
   // On desktop, show filters by default. On mobile, hide them by default
@@ -23,6 +24,9 @@ const ListingsPage = () => {
     condition: '',
     sellerType: ''
   });
+  const [allListings, setAllListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -39,262 +43,63 @@ const ListingsPage = () => {
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
+    loadListings();
   }, []);
 
-  const allListings = [
-    {
-      id: 1,
-      title: "Yamaha YZF-R1 2023",
-      price: 18500,
-      year: 2023,
-      mileage: 2500,
-      location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.9,
-      seller: "Moto Expert SRL",
-      sellerId: "dealer-1",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "Yamaha",
-      model: "YZF-R1",
-      engine: 998,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "La comandă",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "BMW S1000RR 2022",
-      price: 16800,
-      year: 2022,
-      mileage: 8200,
-      location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.8,
-      seller: "BMW Moto Center",
-      sellerId: "dealer-2",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "BMW",
-      model: "S1000RR",
-      engine: 999,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Excelentă",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Ducati Panigale V4",
-      price: 22000,
-      year: 2023,
-      mileage: 1200,
-      location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 5.0,
-      seller: "Ducati Premium",
-      sellerId: "dealer-3",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "Ducati",
-      model: "Panigale V4",
-      engine: 1103,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "La comandă",
-      featured: true
-    },
-    {
-      id: 4,
-      title: "Honda CBR600RR 2007",
-      price: 7200,
-      year: 2007,
-      mileage: 11000,
-      location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.3,
-      seller: "Alexandru Popescu",
-      sellerId: "privat-1",
-      sellerType: "individual",
-      category: "Sport",
-      brand: "Honda",
-      model: "CBR600RR",
-      engine: 600,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Bună",
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Kawasaki Ninja ZX-10R",
-      price: 17200,
-      year: 2022,
-      mileage: 6500,
-      location: "Constanța",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.6,
-      seller: "Kawasaki Pro",
-      sellerId: "dealer-5",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "Kawasaki",
-      model: "Ninja ZX-10R",
-      engine: 998,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Foarte bună",
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Suzuki GSX-R1000R",
-      price: 15800,
-      year: 2021,
-      mileage: 12000,
-      location: "Brașov",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.5,
-      seller: "Suzuki Center",
-      sellerId: "dealer-6",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "Suzuki",
-      model: "GSX-R1000R",
-      engine: 999,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Bună",
-      featured: false
-    },
-    {
-      id: 7,
-      title: "Aprilia RSV4 1100 Factory",
-      price: 21500,
-      year: 2023,
-      mileage: 1800,
-      location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.9,
-      seller: "Aprilia Racing",
-      sellerId: "dealer-7",
-      sellerType: "dealer",
-      category: "Sport",
-      brand: "Aprilia",
-      model: "RSV4 1100 Factory",
-      engine: 1077,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "La comandă",
-      featured: true
-    },
-    {
-      id: 8,
-      title: "KTM 1290 Super Duke R",
-      price: 16200,
-      year: 2022,
-      mileage: 7300,
-      location: "Cluj-Napoca",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.7,
-      seller: "KTM Center",
-      sellerId: "dealer-8",
-      sellerType: "dealer",
-      category: "Naked",
-      brand: "KTM",
-      model: "1290 Super Duke R",
-      engine: 1301,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Foarte bună",
-      featured: false
-    },
-    {
-      id: 9,
-      title: "Triumph Speed Triple 1200 RS",
-      price: 18900,
-      year: 2023,
-      mileage: 2100,
-      location: "Timișoara",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.8,
-      seller: "Triumph Dealer",
-      sellerId: "dealer-9",
-      sellerType: "dealer",
-      category: "Naked",
-      brand: "Triumph",
-      model: "Speed Triple 1200 RS",
-      engine: 1160,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Excelentă",
-      featured: false
-    },
-    {
-      id: 10,
-      title: "Harley-Davidson Sportster S",
-      price: 14800,
-      year: 2022,
-      mileage: 5600,
-      location: "București",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.6,
-      seller: "Harley Center",
-      sellerId: "dealer-10",
-      sellerType: "dealer",
-      category: "Cruiser",
-      brand: "Harley-Davidson",
-      model: "Sportster S",
-      engine: 1252,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Foarte bună",
-      featured: false
-    },
-    {
-      id: 11,
-      title: "BMW R1250GS Adventure",
-      price: 19800,
-      year: 2023,
-      mileage: 3200,
-      location: "Iași",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 4.9,
-      seller: "BMW Adventure",
-      sellerId: "dealer-11",
-      sellerType: "dealer",
-      category: "Adventure",
-      brand: "BMW",
-      model: "R1250GS Adventure",
-      engine: 1254,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "Excelentă",
-      featured: true
-    },
-    {
-      id: 12,
-      title: "Ducati Multistrada V4 S",
-      price: 23500,
-      year: 2023,
-      mileage: 1500,
-      location: "Constanța",
-      image: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      rating: 5.0,
-      seller: "Ducati Adventure",
-      sellerId: "dealer-12",
-      sellerType: "dealer",
-      category: "Adventure",
-      brand: "Ducati",
-      model: "Multistrada V4 S",
-      engine: 1158,
-      fuel: "Benzină",
-      transmission: "Manuală",
-      condition: "La comandă",
-      featured: true
+  // Load real listings from Supabase
+  const loadListings = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('🔄 Loading listings from Supabase...');
+      
+      const { data, error } = await listings.getAll();
+      
+      if (error) {
+        console.error('❌ Error loading listings:', error);
+        setError('Nu s-au putut încărca anunțurile');
+        return;
+      }
+      
+      console.log('✅ Loaded listings:', data?.length || 0);
+      
+      // Formatăm datele pentru afișare
+      const formattedListings = (data || []).map((listing: any) => ({
+        id: listing.id,
+        title: listing.title,
+        price: listing.price,
+        year: listing.year,
+        mileage: listing.mileage,
+        location: listing.location,
+        image: listing.images && listing.images.length > 0 ? listing.images[0] : "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+        rating: listing.rating || 4.5,
+        seller: listing.seller_name,
+        sellerId: listing.seller_id,
+        sellerType: listing.seller_type,
+        category: listing.category,
+        brand: listing.brand,
+        model: listing.model,
+        engine: listing.engine_capacity,
+        fuel: listing.fuel_type,
+        transmission: listing.transmission,
+        condition: listing.condition,
+        featured: listing.featured || false,
+        views_count: listing.views_count || 0,
+        favorites_count: listing.favorites_count || 0,
+        created_at: listing.created_at,
+        status: listing.status
+      }));
+      
+      setAllListings(formattedListings);
+      
+    } catch (err) {
+      console.error('💥 Error in loadListings:', err);
+      setError('A apărut o eroare la încărcarea anunțurilor');
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   // Filtrare și căutare avansată
   const filteredListings = useMemo(() => {
@@ -398,6 +203,11 @@ const ListingsPage = () => {
             src={listing.image}
             alt={listing.title}
             className="w-full h-48 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              // Fallback la imagine placeholder dacă imaginea nu se încarcă
+              const target = e.currentTarget as HTMLImageElement;
+              target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+            }}
           />
           <div className="absolute top-3 left-3">
             <span className="bg-nexar-accent text-white px-3 py-1 rounded-full text-xs font-semibold">
@@ -813,11 +623,17 @@ const ListingsPage = () => {
             <div className="mb-5">
               <div className="flex justify-between items-center">
                 <p className="text-gray-600">
-                  Afișez <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, filteredListings.length)}</span> din <span className="font-semibold">{filteredListings.length}</span> rezultate
-                  {searchQuery && (
-                    <span className="ml-2 text-nexar-accent">
-                      pentru "{searchQuery}"
-                    </span>
+                  {isLoading ? (
+                    <span>Se încarcă anunțurile...</span>
+                  ) : (
+                    <>
+                      Afișez <span className="font-semibold">{filteredListings.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredListings.length)}</span> din <span className="font-semibold">{filteredListings.length}</span> rezultate
+                      {searchQuery && (
+                        <span className="ml-2 text-nexar-accent">
+                          pentru "{searchQuery}"
+                        </span>
+                      )}
+                    </>
                   )}
                 </p>
                 <select className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-nexar-accent focus:border-transparent">
@@ -831,25 +647,63 @@ const ListingsPage = () => {
               </div>
             </div>
 
-            {/* No Results */}
-            {filteredListings.length === 0 && (
+            {/* Loading State */}
+            {isLoading && (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
-                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
-                <p className="text-gray-600 mb-6">
-                  Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.
-                </p>
+                <div className="w-16 h-16 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Se încarcă anunțurile...</h3>
+                <p className="text-gray-600">Te rugăm să aștepți</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {!isLoading && error && (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <X className="h-8 w-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Eroare la încărcare</h3>
+                <p className="text-gray-600 mb-6">{error}</p>
                 <button
-                  onClick={clearFilters}
+                  onClick={loadListings}
                   className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
                 >
-                  Șterge Toate Filtrele
+                  Încearcă din nou
                 </button>
               </div>
             )}
 
+            {/* No Results */}
+            {!isLoading && !error && filteredListings.length === 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nu am găsit rezultate</h3>
+                <p className="text-gray-600 mb-6">
+                  {allListings.length === 0 
+                    ? 'Nu există anunțuri publicate încă. Fii primul care adaugă un anunț!'
+                    : 'Încearcă să modifici criteriile de căutare sau filtrele pentru a găsi mai multe rezultate.'
+                  }
+                </p>
+                {allListings.length === 0 ? (
+                  <Link
+                    to="/adauga-anunt"
+                    className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                  >
+                    Adaugă primul anunț
+                  </Link>
+                ) : (
+                  <button
+                    onClick={clearFilters}
+                    className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+                  >
+                    Șterge Toate Filtrele
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Listings List */}
-            {filteredListings.length > 0 && (
+            {!isLoading && !error && filteredListings.length > 0 && (
               <div className="space-y-4">
                 {currentListings.map((listing) => (
                   <ListingRow key={listing.id} listing={listing} />
@@ -858,7 +712,7 @@ const ListingsPage = () => {
             )}
 
             {/* Pagination */}
-            {filteredListings.length > 0 && totalPages > 1 && (
+            {!isLoading && !error && filteredListings.length > 0 && totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <div className="flex items-center space-x-2">
                   <button

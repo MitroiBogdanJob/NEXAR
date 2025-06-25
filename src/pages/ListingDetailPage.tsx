@@ -4,8 +4,9 @@ import {
   Star, Heart, Share2, MapPin, Calendar, Gauge, Fuel, 
   Settings, Shield, Phone, Mail, MessageCircle, 
   ChevronLeft, ChevronRight, Check,
-  Car, Zap, Cog, Palette, Award, User, ExternalLink, Building
+  Car, Zap, Cog, Palette, Award, User, ExternalLink, Building, AlertTriangle
 } from 'lucide-react';
+import { listings, supabase } from '../lib/supabase';
 
 const ListingDetailPage = () => {
   const { id } = useParams();
@@ -14,11 +15,116 @@ const ListingDetailPage = () => {
   const [showContactForm, setShowContactForm] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const [listing, setListing] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    if (id) {
+      loadListing(id);
+    }
   }, [id]);
+
+  const loadListing = async (listingId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('🔄 Loading listing details for ID:', listingId);
+      
+      const { data, error } = await listings.getById(listingId);
+      
+      if (error) {
+        console.error('❌ Error loading listing:', error);
+        setError('Nu s-a putut încărca anunțul');
+        return;
+      }
+      
+      if (!data) {
+        console.error('❌ Listing not found');
+        setError('Anunțul nu a fost găsit');
+        return;
+      }
+      
+      console.log('✅ Listing loaded successfully:', data);
+      
+      // Obținem detalii despre vânzător
+      const { data: sellerData, error: sellerError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.seller_id)
+        .single();
+      
+      if (sellerError) {
+        console.error('❌ Error loading seller profile:', sellerError);
+      }
+      
+      // Formatăm datele pentru afișare
+      const formattedListing = {
+        id: data.id,
+        title: data.title,
+        price: `€${data.price.toLocaleString()}`,
+        year: data.year,
+        mileage: `${data.mileage.toLocaleString()} km`,
+        location: data.location,
+        coordinates: "44.4268,26.1025", // Placeholder pentru coordonate
+        images: data.images && data.images.length > 0 
+          ? data.images 
+          : ["https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"],
+        rating: data.rating || 4.5,
+        seller: {
+          id: data.seller_id,
+          name: data.seller_name,
+          rating: sellerData?.rating || 4.5,
+          reviews: sellerData?.reviews_count || 0,
+          verified: sellerData?.verified || false,
+          phone: sellerData?.phone || "0790 454 647",
+          email: sellerData?.email || "contact@nexar.ro",
+          avatar: sellerData?.avatar_url || "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
+          type: data.seller_type
+        },
+        category: data.category,
+        engine: `${data.engine_capacity}cc`,
+        fuel: data.fuel_type,
+        transmission: data.transmission,
+        color: data.color,
+        condition: data.condition,
+        features: data.features || [
+          "ABS", "Control tracțiune", "Suspensie reglabilă", "Frâne Brembo"
+        ],
+        description: data.description || "Descriere indisponibilă",
+        posted: formatDate(data.created_at),
+        views: data.views_count || 0,
+        featured: data.featured || false
+      };
+      
+      setListing(formattedListing);
+      
+    } catch (err) {
+      console.error('💥 Error in loadListing:', err);
+      setError('A apărut o eroare la încărcarea anunțului');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Astăzi';
+    if (diffDays === 1) return 'Ieri';
+    if (diffDays < 7) return `Acum ${diffDays} zile`;
+    if (diffDays < 30) return `Acum ${Math.floor(diffDays / 7)} săptămâni`;
+    if (diffDays < 365) return `Acum ${Math.floor(diffDays / 30)} luni`;
+    return `Acum ${Math.floor(diffDays / 365)} ani`;
+  };
 
   // Handle touch events for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -30,7 +136,7 @@ const ListingDetailPage = () => {
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
+    if (!touchStartX.current || !touchEndX.current || !listing) return;
     
     const distance = touchStartX.current - touchEndX.current;
     const isLeftSwipe = distance > 50;
@@ -48,86 +154,65 @@ const ListingDetailPage = () => {
     touchEndX.current = null;
   };
 
-  const listing = {
-    id: 1,
-    title: "Yamaha YZF-R1 2023",
-    price: "€18,500",
-    year: 2023,
-    mileage: "2,500 km",
-    location: "București, Sector 1",
-    coordinates: "44.4268,26.1025", // Coordonate pentru Google Maps
-    images: [
-      "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg"
-    ],
-    rating: 4.9,
-    seller: {
-      id: "dealer-1",
-      name: "Moto Expert SRL",
-      rating: 4.8,
-      reviews: 127,
-      verified: true,
-      phone: "0790 454 647",
-      email: "contact@motoexpert.ro",
-      avatar: "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg",
-      type: "dealer" // dealer sau privat
-    },
-    category: "Sport",
-    engine: "998cc",
-    fuel: "Benzină",
-    transmission: "Manual",
-    color: "Albastru Racing",
-    condition: "Excelentă",
-    features: [
-      "ABS",
-      "Control tracțiune",
-      "Suspensie reglabilă",
-      "Frâne Brembo",
-      "Quickshifter",
-      "Sistem de navigație",
-      "Încălzire mânere",
-      "LED complet"
-    ],
-    description: `
-      Yamaha YZF-R1 2023 în stare impecabilă, cu doar 2,500 km parcurși. 
-      Motocicleta a fost întreținută exclusiv la service-ul autorizat Yamaha și 
-      vine cu toate documentele în regulă.
-      
-      Caracteristici tehnice:
-      - Motor: 998cc, 4 cilindri în linie
-      - Putere: 200 CP
-      - Cuplu: 112.4 Nm
-      - Greutate: 199 kg
-      
-      Dotări speciale:
-      - Pachet electronic complet (ABS, TC, Launch Control)
-      - Suspensie Öhlins reglabilă
-      - Frâne Brembo cu discuri flotante
-      - Jante din aliaj ușor
-      - Sistem de evacuare Akrapovic (opțional)
-      
-      Motocicleta nu a fost implicată în accidente și nu prezintă defecte.
-      Disponibilă pentru test drive cu programare prealabilă.
-    `,
-    posted: "Acum 2 zile",
-    views: 1247,
-    featured: true
-  };
-
   const nextImage = () => {
+    if (!listing) return;
     setCurrentImageIndex((prev) => 
       prev === listing.images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
+    if (!listing) return;
     setCurrentImageIndex((prev) => 
       prev === 0 ? listing.images.length - 1 : prev - 1
     );
   };
+
+  const openGoogleMaps = () => {
+    if (!listing) return;
+    const url = `https://www.google.com/maps/search/?api=1&query=${listing.coordinates}`;
+    window.open(url, '_blank');
+  };
+
+  const handleSellerClick = () => {
+    if (!listing) return;
+    navigate(`/profil/${listing.seller.id}`);
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <div className="w-16 h-16 border-4 border-nexar-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Se încarcă anunțul...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !listing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md">
+          <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {error || 'Anunț negăsit'}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || 'Anunțul căutat nu există sau a fost șters.'}
+          </p>
+          <Link
+            to="/anunturi"
+            className="bg-nexar-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-nexar-gold transition-colors"
+          >
+            Vezi toate anunțurile
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const technicalSpecs = [
     { icon: Calendar, label: "Categorie", value: listing.category, color: "text-blue-600" },
@@ -136,15 +221,6 @@ const ListingDetailPage = () => {
     { icon: Award, label: "Stare", value: listing.condition, color: "text-emerald-600" },
     { icon: MapPin, label: "Locație", value: listing.location, color: "text-red-600" }
   ];
-
-  const openGoogleMaps = () => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${listing.coordinates}`;
-    window.open(url, '_blank');
-  };
-
-  const handleSellerClick = () => {
-    navigate(`/profil/${listing.seller.id}`);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
@@ -164,6 +240,11 @@ const ListingDetailPage = () => {
                   src={listing.images[currentImageIndex]}
                   alt={listing.title}
                   className="w-full h-64 sm:h-96 object-cover"
+                  onError={(e) => {
+                    // Fallback la imagine placeholder dacă imaginea nu se încarcă
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                  }}
                 />
                 
                 {listing.featured && (
@@ -198,7 +279,7 @@ const ListingDetailPage = () => {
                 </button>
                 
                 <div className="absolute bottom-3 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                  {listing.images.map((_, index) => (
+                  {listing.images.map((_: any, index: number) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -213,7 +294,7 @@ const ListingDetailPage = () => {
               {/* Thumbnail Gallery - Hidden on mobile */}
               <div className="p-4 hidden sm:block">
                 <div className="flex space-x-2 overflow-x-auto">
-                  {listing.images.map((image, index) => (
+                  {listing.images.map((image: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
@@ -225,6 +306,11 @@ const ListingDetailPage = () => {
                         src={image}
                         alt={`${listing.title} ${index + 1}`}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback la imagine placeholder dacă imaginea nu se încarcă
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                        }}
                       />
                     </button>
                   ))}
@@ -329,7 +415,7 @@ const ListingDetailPage = () => {
                   </h3>
                   
                   <div className="grid grid-cols-1 gap-2 sm:gap-3">
-                    {listing.features.map((feature, index) => (
+                    {listing.features.map((feature: string, index: number) => (
                       <div key={index} className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
                         <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-nexar-accent/10 rounded-full flex items-center justify-center">
                           <Check className="h-3 w-3 sm:h-4 sm:w-4 text-nexar-accent" />
@@ -348,7 +434,7 @@ const ListingDetailPage = () => {
                   <span>Descriere Detaliată</span>
                 </h3>
                 <div className="prose max-w-none text-gray-700 leading-relaxed text-sm sm:text-base">
-                  {listing.description.split('\n').map((paragraph, index) => (
+                  {listing.description.split('\n').map((paragraph: string, index: number) => (
                     <p key={index} className="mb-3 sm:mb-4">{paragraph}</p>
                   ))}
                 </div>
@@ -365,6 +451,11 @@ const ListingDetailPage = () => {
                   src={listing.seller.avatar}
                   alt={listing.seller.name}
                   className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover"
+                  onError={(e) => {
+                    // Fallback la imagine placeholder dacă imaginea nu se încarcă
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src = "https://images.pexels.com/photos/2116475/pexels-photo-2116475.jpeg";
+                  }}
                 />
                 <div>
                   <div className="flex items-center space-x-2">
