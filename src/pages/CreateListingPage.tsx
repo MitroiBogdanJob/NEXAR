@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, X, Plus, Check, AlertTriangle, Camera } from 'lucide-react';
 import { listings, isAuthenticated, supabase } from '../lib/supabase';
+import SuccessModal from '../components/SuccessModal';
 
 const CreateListingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -11,6 +12,8 @@ const CreateListingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdListingId, setCreatedListingId] = useState<string | null>(null);
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -105,6 +108,20 @@ const CreateListingPage = () => {
   const transmissionTypes = ['Manual', 'Automat', 'Semi-automat'];
   const conditions = ['Nouă', 'Excelentă', 'Foarte bună', 'Bună', 'Satisfăcătoare'];
   
+  // Lista completă a orașelor din România
+  const romanianCities = [
+    'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați',
+    'Ploiești', 'Oradea', 'Bacău', 'Pitești', 'Arad', 'Sibiu', 'Târgu Mureș', 'Baia Mare',
+    'Buzău', 'Botoșani', 'Satu Mare', 'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava',
+    'Piatra Neamț', 'Târgu Jiu', 'Tulcea', 'Focșani', 'Bistrița', 'Reșița', 'Alba Iulia',
+    'Deva', 'Hunedoara', 'Slatina', 'Vaslui', 'Călărași', 'Giurgiu', 'Slobozia', 'Zalău',
+    'Turda', 'Mediaș', 'Onești', 'Gheorgheni', 'Pașcani', 'Dej', 'Reghin', 'Roman',
+    'Câmpina', 'Caracal', 'Făgăraș', 'Lugoj', 'Mangalia', 'Moreni', 'Oltenița', 'Petroșani',
+    'Râmnicu Sărat', 'Roșiorii de Vede', 'Săcele', 'Sebeș', 'Sfântu Gheorghe', 'Tecuci',
+    'Toplița', 'Voluntari', 'Pantelimon', 'Popești-Leordeni', 'Chiajna', 'Otopeni',
+    'Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5', 'Sector 6'
+  ];
+  
   const availableFeatures = [
     'ABS', 'Control tracțiune', 'Suspensie reglabilă', 'Frâne Brembo',
     'Quickshifter', 'Sistem de navigație', 'Încălzire mânere', 'LED complet',
@@ -193,7 +210,11 @@ const CreateListingPage = () => {
         if (!formData.transmission) newErrors.transmission = 'Transmisia este obligatorie';
         if (!formData.color.trim()) newErrors.color = 'Culoarea este obligatorie';
         if (!formData.condition) newErrors.condition = 'Starea este obligatorie';
-        if (!formData.location.trim()) newErrors.location = 'Locația este obligatorie';
+        if (!formData.location.trim()) {
+          newErrors.location = 'Locația este obligatorie';
+        } else if (!romanianCities.includes(formData.location.trim())) {
+          newErrors.location = 'Te rugăm să selectezi un oraș din lista disponibilă';
+        }
         break;
 
       case 2:
@@ -358,16 +379,33 @@ const CreateListingPage = () => {
       
       console.log('✅ Listing created successfully:', data);
       
-      // Afișăm mesaj de succes
-      alert('Anunțul a fost publicat cu succes! Vei fi redirecționat către pagina principală.');
+      // Salvăm ID-ul anunțului creat pentru a putea naviga la el
+      setCreatedListingId(data.id);
       
-      // Redirecționăm la pagina principală
-      navigate('/');
+      // Afișăm modal-ul de succes
+      setShowSuccessModal(true);
+      
     } catch (error: any) {
       console.error('💥 Error creating listing:', error);
       setErrors({ submit: error.message || 'A apărut o eroare la publicarea anunțului. Te rog încearcă din nou.' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleGoHome = () => {
+    setShowSuccessModal(false);
+    navigate('/');
+  };
+
+  const handleViewListing = () => {
+    if (createdListingId) {
+      setShowSuccessModal(false);
+      navigate(`/anunt/${createdListingId}`);
     }
   };
 
@@ -724,15 +762,18 @@ const CreateListingPage = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Locația *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                     className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent ${
                       errors.location ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="ex: București, Sector 1"
-                  />
+                  >
+                    <option value="">Selectează orașul</option>
+                    {romanianCities.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
                   {errors.location && (
                     <p className="mt-1 text-sm text-red-600 flex items-center">
                       <AlertTriangle className="h-4 w-4 mr-1" />
@@ -1026,6 +1067,17 @@ const CreateListingPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        onGoHome={handleGoHome}
+        onViewListing={handleViewListing}
+        title="Felicitări!"
+        message="Anunțul a fost publicat cu succes! Acum este vizibil pentru toți utilizatorii platformei."
+        showViewButton={true}
+      />
     </div>
   );
 };
